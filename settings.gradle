@@ -1,2 +1,2 @@
 rootProject.name='Libzy'
-include ':app'
+include ':app', ':spotify-auth', ':spotify-app-remote'

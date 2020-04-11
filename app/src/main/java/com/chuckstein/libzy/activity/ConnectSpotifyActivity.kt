@@ -12,4 +12,19 @@ class ConnectSpotifyActivity : AppCompatActivity() {
         setContentView(R.layout.activity_connect_spotify)
         initializeBackground()
     }
+
+    // TODO: delete what's not needed here
+    override fun onStart() {
+        super.onStart()
+        // We will start writing our code here.
+    }
+
+    private fun connected() {
+        // Then we will write some more code here.
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Aaand we will finish off here.
+    }
 }

@@ -8,3 +8,4 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - improve button styling, make responsive to presses
 - make "Connect Spotify" button on-brand
 - decide on minimum and target SDK
+- determine whether .arr modules should be added to git or .gitignore
