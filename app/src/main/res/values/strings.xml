@@ -1,4 +1,20 @@
 <resources>
+
+    <!-- Application properties -->
     <string name="app_name">Libzy</string>
-    <string name="connectSpotify">Connect Spotify</string>
+    <string name="spotify_prefs_name">spotify_preferences</string>
+
+    <!-- Spotify SDK -->
+    <string name="spotify_client_id">058c796e8b3740d190136f2ebc4d64ab</string>
+    <string name="com_spotify_sdk_redirect_scheme">com.chuckstein.libzy</string>
+    <string name="com_spotify_sdk_redirect_host">spotify-auth</string>
+
+    <!-- SharedPreferences keys -->
+    <string name="spotify_connected_key">spotify.connected</string>
+    <string name="spotify_access_token_key">"spotify.accesstoken"</string>
+    <string name="spotify_token_expiry_key">spotify.accesstoken.expiry</string>
+
+    <!-- UI text -->
+    <string name="connect_spotify">Connect Spotify</string>
+
 </resources>
