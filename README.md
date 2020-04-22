@@ -27,3 +27,17 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - debug "pending vsync event" warning
 - determine whether my project actually needs dependency injection (are there any nested dependencies? are there any shared dependencies?)
 - create a develop branch and start using feature/bugfix branches
+- check my kotlin syntax / practices (e.g. am I writing constructors correctly?)
+- figure out what to do if SpotifyRepository tries to make a call with an expired access token (spotify auth activity must be universally accessible)
+- review the [Android Architecture Samples](https://github.com/android/architecture-samples/tree/master) for guidance
+- apply a Google or JetBrains style guide
+- maybe use adamint's wrapper for auth if it can do it as elegantly as spotify sdk, because then access tokens can always be in the backend
+- add a timer for access token expiration with a callback that uses spotify auth sdk then returns to whatever activity user was in
+- figure out how to auto-refresh the spotify token (may need a server for spotify's Authorization Code Flow)
+- talk to adamint team to see if there's an alternative to requiring `exclude 'META-INF/*.kotlin_module'`
+- change "Hey There!" message in SelectGenresActivity to dynamically-decided "Good Evening!" or "Good morning!" or "Good afternoon!"
+- rename colors to something more applicable
+- determine proper parent theme
+- add version constants to build.gradle
+- remove unnecessary logs
+- complete all inline TODOs

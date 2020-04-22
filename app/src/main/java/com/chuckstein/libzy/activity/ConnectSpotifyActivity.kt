@@ -44,8 +44,8 @@ class ConnectSpotifyActivity : AppCompatActivity() {
 
     private fun getRedirectUri(): Uri {
         return Uri.Builder()
-            .scheme(getString(R.string.com_spotify_sdk_redirect_scheme))
-            .authority(getString(R.string.com_spotify_sdk_redirect_host))
+            .scheme(getString(R.string.spotify_auth_redirect_scheme))
+            .authority(getString(R.string.spotify_auth_redirect_host))
             .build()
     }
 
@@ -58,7 +58,7 @@ class ConnectSpotifyActivity : AppCompatActivity() {
                 AuthorizationResponse.Type.TOKEN -> {
                     // Auth flow was successful
                     saveToken(response.accessToken, response.expiresIn)
-                    startActivity(Intent(this, FilterActivity::class.java))
+                    startActivity(Intent(this, SelectGenresActivity::class.java))
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     // Auth flow was unsuccessful
@@ -67,16 +67,15 @@ class ConnectSpotifyActivity : AppCompatActivity() {
                 }
                 else -> {
                     // Auth flow was most likely cancelled
-                    Log.w(
-                        TAG,
-                        "Spotify authorization failed without an error, most likely cancelled"
-                    )
+                    Log.w(TAG,"Spotify authorization failed without an error, most likely cancelled")
                 }
             }
         }
     }
 
+    // TODO: move this to a ViewModel?
     private fun saveToken(accessToken: String, expiresIn: Int) {
+        Log.d(TAG, "got access token which expires in $expiresIn seconds");
         val sharedPref =
             getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
         val currTime = (System.currentTimeMillis() / 1000.0).roundToInt()

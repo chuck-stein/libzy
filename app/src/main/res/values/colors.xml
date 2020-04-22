@@ -4,7 +4,7 @@
     <color name="primaryDark">#340080</color>
     <color name="primaryDarker">#0E0023</color>
     <color name="primaryDarkest">#05000E</color>
-    <color name="accent">#B8B8B8</color>
+    <color name="accent">#CFCFCF</color>
     <color name="black">#000</color>
     <color name="transparent">#00FFFFFF</color>
 </resources>
