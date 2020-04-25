@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.chuckstein.libzy"
-        minSdkVersion 21
+        minSdkVersion 28
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -86,4 +86,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:2.2.2"
     implementation "androidx.navigation:navigation-dynamic-features-fragment:2.3.0-alpha05"
     androidTestImplementation "androidx.navigation:navigation-testing:2.3.0-alpha05"
+
+    // Programmatic Styling
+    implementation 'com.airbnb.android:paris:1.4.0'
 }

@@ -1,11 +1,10 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Colors -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">#370085</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorAccent">@color/offWhite</item>
 
         <!-- Window-->
         <item name="android:windowTranslucentStatus">true</item>
@@ -13,25 +12,29 @@
         <item name="android:windowBackground">@drawable/bkg_gradient_anim</item>
         <item name="android:windowActivityTransitions">true</item>
 
-            <!-- TODO: remove if unnecessary -->
-<!--        <item name="android:windowEnterTransition"></item>-->
-<!--        <item name="android:windowExitTransition">@transition/explode</item>-->
-
         <!-- Styles -->
         <item name="android:textViewStyle">@style/TextView</item>
-        <item name="buttonStyle">@style/Button</item>
+        <item name="materialButtonStyle">@style/Button</item>
+        <item name="chipStyle">@style/Chip</item>
     </style>
 
-    <style name="Button" parent="Widget.AppCompat.Button">
-        <item name="android:background">@drawable/button</item>
-        <item name="android:textSize">24sp</item>
+    <style name="Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">@color/primary</item>
+        <item name="cornerRadius">18dp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:fontFamily">@font/varela_round</item>
     </style>
 
-    <style name="TextView" parent="Widget.AppCompat.TextView">
-        <item name="android:textColor">@color/accent</item>
+    <style name="TextView" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textColor">@color/offWhite</item>
         <item name="android:fontFamily">@font/varela_round</item>
         <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="Chip" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="android:textAlignment">center</item>
+        <item name="android:fontFamily">@font/varela_round</item>
+        <item name="rippleColor">@color/accent</item>
     </style>
 
 </resources>

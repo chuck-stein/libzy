@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary">#6900FF</color>
-    <color name="primaryDark">#340080</color>
-    <color name="primaryDarker">#0E0023</color>
-    <color name="primaryDarkest">#05000E</color>
-    <color name="accent">#CFCFCF</color>
+    <color name="primaryDark">#1D0E33</color>
+    <color name="primaryDarker">#210943</color>
+    <color name="darkPurple">#0E0023</color>
+    <color name="darkerPurple">#05000E</color>
+    <color name="accent">#8063A6</color>
+    <color name="offWhite">#CACACA</color>
+    <color name="darkGray">#272727</color>
     <color name="black">#000</color>
     <color name="transparent">#00FFFFFF</color>
 </resources>

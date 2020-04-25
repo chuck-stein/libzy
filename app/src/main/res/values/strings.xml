@@ -18,5 +18,6 @@
     <string name="connect_spotify_button_text">Connect Spotify</string>
     <string name="greeting_text">Hey there!</string>
     <string name="fetching_library_data_text">Fetching your library data…</string>
+    <string name="select_genres_instructions_text">Which genres are you in the mood for?</string>
 
 </resources>

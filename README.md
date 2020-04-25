@@ -36,8 +36,36 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - figure out how to auto-refresh the spotify token (may need a server for spotify's Authorization Code Flow)
 - talk to adamint team to see if there's an alternative to requiring `exclude 'META-INF/*.kotlin_module'`
 - change "Hey There!" message in SelectGenresActivity to dynamically-decided "Good Evening!" or "Good morning!" or "Good afternoon!"
-- rename colors to something more applicable
+- rename colors to something more applicable (and remove unused colors)
 - determine proper parent theme
 - add version constants to build.gradle
 - remove unnecessary logs
 - complete all inline TODOs
+- remove unused resources
+- replaced one-parameter lambdas with "it" when appropriate
+- use jetpack navigation component
+- update all UI and styling
+- use a RecyclerView for the genres ChipGroup?
+- better constraints for bottom nav bar and horizontal orientation, especially w/ genre chip group 
+- handle UI rotations
+- remove placeholder chips from SelectGenreActivity layout, because real loading chips are added programmatically (and delete where I programmatically remove them)
+- decide on consistent view ID naming convention (either camel case or snake case, because used as both ID and class instance)
+- fix gradient not appearing since I updated to Material Theme
+- just go through Android developer docs in order
+- center genre option chips
+- try Dan's mockup font to see how it compares to varela round
+- handle failed API calls
+- show number of results on each genre option chip
+- fix bug in SelectGenresActivity where you can't scroll after changing orientation
+
+## Planned Features
+- ability to hide recently played genres or top genres, to try something new
+- integration with spotify remote SDK to play/queue results directly from Libzy
+- ability to remove saved albums from library directly from Libzy
+- ability to remove album's association with a certain genre so it not longer appears in results for that genre
+- ability to visit the Spotify page for an album without playing it
+- separate page for individual albums, showing genre data (with options to browse those genres or add them to your selected categories?) & other info available from API like audio analysis of tracks
+- support for searching by individual tracks instead of only albums
+- display 1-3 sample albums for each genre in the list on SelectGenreActivity
+- list currently selected genres at top of SelectGenreActivity
+- "discover more from this genre" button to the right of the genre header in BrowseAlbumsActivity (brings them to an activity similar to BrowseAlbums but with one vertical scrolling grid list of albums, and maybe a description of the genre pulled from google/wikipedia below the genre header)
