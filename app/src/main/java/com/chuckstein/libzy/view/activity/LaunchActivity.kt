@@ -1,11 +1,11 @@
-package com.chuckstein.libzy.activity
+package com.chuckstein.libzy.view.activity
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.extension.initializeBackground
+import com.chuckstein.libzy.view.activity.extension.initializeBackground
 
 class LaunchActivity : AppCompatActivity() {
 
@@ -23,10 +23,7 @@ class LaunchActivity : AppCompatActivity() {
     }
 
     // TODO: determine whether this is necessary
-    private fun spotifyConnected(): Boolean {
-        val sharedPref =
-            getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
-        return sharedPref.getBoolean(getString(R.string.spotify_connected_key), false)
-    }
+    private fun spotifyConnected() = getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
+        .getBoolean(getString(R.string.spotify_connected_key), false)
 
 }

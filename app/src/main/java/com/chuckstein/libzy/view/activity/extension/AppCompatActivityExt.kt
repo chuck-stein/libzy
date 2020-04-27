@@ -1,8 +1,7 @@
-package com.chuckstein.libzy.extension
+package com.chuckstein.libzy.view.activity.extension
 
 import android.graphics.drawable.AnimationDrawable
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
 

@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.repository
+package com.chuckstein.libzy.model.repository
 
 import android.content.Context
 import android.util.Log

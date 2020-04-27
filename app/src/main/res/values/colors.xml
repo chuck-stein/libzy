@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary">#6900FF</color>
-    <color name="primaryDark">#1D0E33</color>
-    <color name="primaryDarker">#210943</color>
-    <color name="darkPurple">#0E0023</color>
-    <color name="darkerPurple">#05000E</color>
+    <color name="primary_dark">#370085</color>
+    <color name="primary_darker">#1D0E33</color>
+    <color name="primary_darkest">#210943</color>
+
+    <color name="bkg_light">#0E0023</color>
+    <color name="bkg_dark">#05000E</color>
+
     <color name="accent">#8063A6</color>
-    <color name="offWhite">#CACACA</color>
-    <color name="darkGray">#272727</color>
+
+    <color name="off_white">#CACACA</color>
+    <color name="gray">#808080</color>
+    <color name="dark_gray">#272727</color>
     <color name="black">#000</color>
+
     <color name="transparent">#00FFFFFF</color>
 </resources>

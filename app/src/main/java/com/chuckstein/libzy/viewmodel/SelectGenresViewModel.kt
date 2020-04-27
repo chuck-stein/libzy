@@ -3,7 +3,7 @@ package com.chuckstein.libzy.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.chuckstein.libzy.repository.SpotifyRepository
+import com.chuckstein.libzy.model.repository.SpotifyRepository
 
 class SelectGenresViewModel(application: Application) : AndroidViewModel(application) {
     private val spotifyRepository = SpotifyRepository(application)

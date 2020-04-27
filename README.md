@@ -49,7 +49,7 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - better constraints for bottom nav bar and horizontal orientation, especially w/ genre chip group 
 - handle UI rotations
 - remove placeholder chips from SelectGenreActivity layout, because real loading chips are added programmatically (and delete where I programmatically remove them)
-- decide on consistent view ID naming convention (either camel case or snake case, because used as both ID and class instance)
+- decide on consistent view ID naming convention (either camel case or snake case, because used as both ID and class instance) ORRR just use view binding
 - fix gradient not appearing since I updated to Material Theme
 - just go through Android developer docs in order
 - center genre option chips
@@ -57,6 +57,25 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - handle failed API calls
 - show number of results on each genre option chip
 - fix bug in SelectGenresActivity where you can't scroll after changing orientation
+- make bottom of UI layout relative to nav bar
+- sort order selector for BrowseResultsActivity (alphabetical, num albums)
+- labeled scroll bar for BrowseResultsActivity
+- ability to collapse a genre in BrowseResultsActivity
+- understand and tweak each xml attribute of nested RecyclerView concoction
+- change genresGroupedByAlbums to a DTO?
+- use Kotlin's Flow API for getting Spotify data?
+- use Android Coroutines Extension
+- instead of using Spotify API wrapper, call it myself using Retrofit, following similar pattern as GithubBrowserSample in android-architecture-components-samples (gives a good model for using Dagger 2 as well)
+- use fragments?
+- cache user library info using Room (determine when I would want to use SharedPreferences instead)
+- think about performance in every line of code
+- add more color types to main app theme styling
+- use dimens constants for everything in layout
+- add splash screen for LaunchActivity
+- make a more exciting "Connect Spotify" screen... maybe add welcome images and descriptions of waht the app can do and what we use your Spotify for?
+- figure out how to constrain top and bottom to nav/status bars instead of screen edge
+- move android:fitsSystemWindows to the main app theme
+- *********** use adamint update to push new access token to Spotify API wrapper via SharedPreferencesListener
 
 ## Planned Features
 - ability to hide recently played genres or top genres, to try something new

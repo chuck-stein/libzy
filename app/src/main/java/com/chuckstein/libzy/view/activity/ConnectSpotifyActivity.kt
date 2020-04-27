@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.activity
+package com.chuckstein.libzy.view.activity
 
 import android.content.Context
 import android.content.Intent
@@ -8,10 +8,11 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.extension.initializeBackground
+import com.chuckstein.libzy.view.activity.extension.initializeBackground
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
+import kotlinx.android.synthetic.main.activity_connect_spotify.*
 import kotlin.math.roundToInt
 
 class ConnectSpotifyActivity : AppCompatActivity() {
@@ -25,14 +26,13 @@ class ConnectSpotifyActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect_spotify)
         initializeBackground()
+        connectSpotifyButton.setOnClickListener {
+            AuthorizationClient.openLoginActivity(this, SPOTIFY_AUTH_REQUEST_CODE, buildAuthRequest())
+        }
     }
 
-    fun connectSpotifyButtonClicked(view: View) {
-        AuthorizationClient.openLoginActivity(this, SPOTIFY_AUTH_REQUEST_CODE, buildAuthRequest())
-    }
-
-    private fun buildAuthRequest(): AuthorizationRequest {
-        return AuthorizationRequest.Builder(
+    private fun buildAuthRequest() =
+        AuthorizationRequest.Builder(
             // TODO: if client_id isn't used anywhere else, remove it from strings.xml and make it local
             getString(R.string.spotify_client_id),
             AuthorizationResponse.Type.TOKEN,
@@ -40,14 +40,12 @@ class ConnectSpotifyActivity : AppCompatActivity() {
         )
             .setScopes(arrayOf("user-library-read")) // TODO: determine which scopes I need
             .build()
-    }
 
-    private fun getRedirectUri(): Uri {
-        return Uri.Builder()
+    private fun getRedirectUri() =
+        Uri.Builder()
             .scheme(getString(R.string.spotify_auth_redirect_scheme))
             .authority(getString(R.string.spotify_auth_redirect_host))
             .build()
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
@@ -83,9 +81,7 @@ class ConnectSpotifyActivity : AppCompatActivity() {
             putString(getString(R.string.spotify_access_token_key), accessToken)
             putInt(getString(R.string.spotify_token_expiry_key), currTime + expiresIn)
             // set flag that we've connected before, so don't ask on subsequent sessions
-            if (!sharedPref.getBoolean(getString(R.string.spotify_connected_key), false)) {
-                putBoolean(getString(R.string.spotify_connected_key), true)
-            }
+            if (!sharedPref.getBoolean(getString(R.string.spotify_connected_key), false)) putBoolean(getString(R.string.spotify_connected_key), true)
             apply()
         }
     }

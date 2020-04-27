@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.activity
+package com.chuckstein.libzy.view.activity
 
 import androidx.appcompat.app.AppCompatActivity
 
