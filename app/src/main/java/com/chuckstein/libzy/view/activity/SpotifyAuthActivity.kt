@@ -9,5 +9,5 @@ abstract class AbstractSpotifyAuthActivity : AppCompatActivity() {
         private const val SPOTIFY_AUTH_REQUEST_CODE = 1104
     }
 
-    // TODO: move auth stuff here, determine what functions will be abstract
+    // TODO: move auth stuff here
 }

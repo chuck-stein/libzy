@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.viewmodel.data.GenreData
-import kotlinx.android.synthetic.main.list_item_genre_result.view.genre_name as genreName
 import kotlinx.android.synthetic.main.list_item_genre_result.view.albums_recycler as albumsRecycler
+import kotlinx.android.synthetic.main.list_item_genre_result.view.genre_name as genreName
 
 class GenresRecyclerAdapter(private val onAlbumClick: (spotifyUri: String) -> Unit) :
     RecyclerView.Adapter<GenresRecyclerAdapter.ViewHolder>() {
@@ -20,7 +20,7 @@ class GenresRecyclerAdapter(private val onAlbumClick: (spotifyUri: String) -> Un
             notifyDataSetChanged() // TODO: use DiffUtil if I'll ever need to update data set after filling the initial data
         }
 
-    private val viewPool = RecyclerView.RecycledViewPool()
+    private val albumsViewPool = RecyclerView.RecycledViewPool()
 
     override fun getItemCount() = genres.size
 
@@ -37,7 +37,7 @@ class GenresRecyclerAdapter(private val onAlbumClick: (spotifyUri: String) -> Un
         with(holder.albumsRecycler) {
             layoutManager = albumsLayoutManager
             adapter = AlbumsRecyclerAdapter(genre.albums, onAlbumClick)
-            setRecycledViewPool(viewPool)
+            setRecycledViewPool(albumsViewPool)
         }
     }
 
