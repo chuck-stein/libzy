@@ -9,9 +9,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.viewmodel.data.AlbumData
-import kotlinx.android.synthetic.main.layout_album_result.view.album_art as albumArt
-import kotlinx.android.synthetic.main.layout_album_result.view.album_title as albumTitle
-import kotlinx.android.synthetic.main.layout_album_result.view.album_artist as albumArtist
+import kotlinx.android.synthetic.main.list_item_album_result.view.album_art as albumArt
+import kotlinx.android.synthetic.main.list_item_album_result.view.album_title as albumTitle
+import kotlinx.android.synthetic.main.list_item_album_result.view.album_artist as albumArtist
 
 class AlbumsRecyclerAdapter(private val albums: List<AlbumData>) :
     RecyclerView.Adapter<AlbumsRecyclerAdapter.ViewHolder>() {
@@ -23,7 +23,7 @@ class AlbumsRecyclerAdapter(private val albums: List<AlbumData>) :
     override fun getItemCount() = albums.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_album_result, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.list_item_album_result, parent, false)
         return ViewHolder(view)
     }
 

@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.viewmodel.data.GenreData
-import kotlinx.android.synthetic.main.layout_genre_result.view.genre_name as genreName
-import kotlinx.android.synthetic.main.layout_genre_result.view.albums_recycler as albumsRecycler
+import kotlinx.android.synthetic.main.list_item_genre_result.view.genre_name as genreName
+import kotlinx.android.synthetic.main.list_item_genre_result.view.albums_recycler as albumsRecycler
 
 class GenresRecyclerAdapter : RecyclerView.Adapter<GenresRecyclerAdapter.ViewHolder>() {
 
@@ -24,7 +24,7 @@ class GenresRecyclerAdapter : RecyclerView.Adapter<GenresRecyclerAdapter.ViewHol
     override fun getItemCount() = genres.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_genre_result, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.list_item_genre_result, parent, false)
         return ViewHolder(view)
     }
 

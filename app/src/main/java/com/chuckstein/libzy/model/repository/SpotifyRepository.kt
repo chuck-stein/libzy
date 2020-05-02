@@ -53,23 +53,11 @@ class SpotifyRepository(context: Context) {
         }
 
         val artistIdBatches = albumsGroupedByArtist.keys.chunked(API_ARG_LIMIT)
-//        var batchesComplete = 0   TODO: delete if unused
         for (artistIdBatch in artistIdBatches) {
             val artists = api.artists.getArtists(*artistIdBatch.toTypedArray()).complete()
             addArtistGenresToAlbums(artists, albumsGroupedByArtist, albumsGroupedByGenre)
-
-            // TODO: delete if unused
-//            api.artists.getArtists(*artistIdBatch.toTypedArray()).queue { artists ->
-//                addArtistGenresToAlbums(artists, albumsGroupedByArtist, albumsGroupedByGenre)
-//                batchesComplete++
-//                if (batchesComplete == artistIdBatches.size) {
-//                    val elapsedTime = System.currentTimeMillis() - startTime
-//                    Log.d(TAG, "Finished collecting album & genre data in $elapsedTime milliseconds.")
-//                    resultLiveData.postValue(albumsGroupedByGenre)
-//                    resultReadyLiveData.postValue(true)
-//                }
-//            }
         }
+
         val elapsedTime = System.currentTimeMillis() - startTime
         Log.d(TAG, "Finished collecting album & genre data in $elapsedTime milliseconds.")
         return albumsGroupedByGenre

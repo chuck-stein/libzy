@@ -94,6 +94,7 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - dynamically load album results as the user scrolls
 - organize packages better, probably based on GithubBrowser sample
 - remove unnecessary logs
+- search through inline TODOs and delete any that are already done
 - *********** use adamint update to push new access token to Spotify API wrapper via SharedPreferencesListener
 
 ## Planned Features
