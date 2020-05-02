@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/instructionsText"
+        android:id="@+id/instructions_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/standard_spacing"
@@ -30,27 +30,28 @@
         app:layout_constraintTop_toBottomOf="@+id/greeting_text" />
 
     <ScrollView
-        android:id="@+id/genreOptionsScrollView"
+        android:id="@+id/genre_options_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginVertical="@dimen/standard_spacing"
-        android:paddingHorizontal="@dimen/standard_spacing"
-        app:layout_constraintBottom_toTopOf="@+id/submitGenresButton"
+        app:layout_constraintBottom_toTopOf="@+id/submit_genres_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/instructionsText">
+        app:layout_constraintTop_toBottomOf="@+id/instructions_text">
 
         <com.google.android.material.chip.ChipGroup
-            android:id="@+id/genreOptionsChipGroup"
+            android:id="@+id/genre_options_chip_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:paddingHorizontal="@dimen/standard_spacing"
             app:chipSpacingHorizontal="@dimen/horizontal_chip_spacing"
             app:chipSpacingVertical="@dimen/vertical_chip_spacing">
 
 
-            <!-- These chips are placeholders for testing UI -->
+            <!-- Uncomment these chips to see sample genre options that shouldn't actually be inflated -->
 
+            <!--
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip1"
                 android:layout_width="wrap_content"
@@ -102,12 +103,14 @@
                 android:layout_height="wrap_content"
                 android:text="chillwave" />
 
+            -->
+
         </com.google.android.material.chip.ChipGroup>
 
     </ScrollView>
 
     <Button
-        android:id="@+id/submitGenresButton"
+        android:id="@+id/submit_genres_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/standard_spacing"

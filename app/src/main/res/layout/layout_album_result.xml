@@ -6,21 +6,22 @@
     android:orientation="vertical">
 
     <ImageView
-        android:id="@+id/albumArt"
+        android:id="@+id/album_art"
         android:layout_width="@dimen/album_art_size"
         android:layout_height="@dimen/album_art_size"
         android:contentDescription="@string/album_art_desc"
         android:src="@drawable/placeholder_album_art" />
 
     <TextView
-        android:id="@+id/albumTitle"
+        android:id="@+id/album_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="@string/album_title_placeholder" />
+    <!-- TODO: support line wrap, max 2 lines (and maybe for artist name as well? -->
 
     <TextView
-        android:id="@+id/albumArtist"
+        android:id="@+id/album_artist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/artist_name_placeholder"

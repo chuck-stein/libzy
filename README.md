@@ -56,7 +56,6 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - try Dan's mockup font to see how it compares to varela round
 - handle failed API calls
 - show number of results on each genre option chip
-- fix bug in SelectGenresActivity where you can't scroll after changing orientation
 - make bottom of UI layout relative to nav bar
 - sort order selector for BrowseResultsActivity (alphabetical, num albums)
 - labeled scroll bar for BrowseResultsActivity
@@ -75,6 +74,26 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - make a more exciting "Connect Spotify" screen... maybe add welcome images and descriptions of waht the app can do and what we use your Spotify for?
 - figure out how to constrain top and bottom to nav/status bars instead of screen edge
 - move android:fitsSystemWindows to the main app theme
+- look into using view binding / data binding
+- use activity lifecycle callbacks to improve performance and persist state [(guide)](https://classroom.udacity.com/courses/ud9012/lessons/e487c600-ed68-4576-a35a-12f211cf032e/concepts/4c1503f9-2de5-45ea-88ae-2138b0482ecc)
+- use Timber? 
+- use Lifecycle library?
+- make a getter for MutableLiveData to cast it as LiveData
+- follow architecture of GithubBrowserSample
+- figure out why background gradient animation takes so long to start
+- somehow share background gradient animation across activities, might need to use Application or Window or something?
+- destroy background gradient animation resource in onDestroy?
+- delete SpotifyAuthActivity.kt if it's unused
+- make genre options scrollbar not quite on the very edge of the screen
+- make alternate layouts when necessary for landscape mode (e.g. SelectGenresActivity)
+- if activity themes don't extend AppCompatTheme, then the Activity classes can't extend AppCompatActivity
+- make a ConnectSpotifyViewModel to store non-Activity/View-related functions in ConnectSpotifyActivity
+- use data binding for any click handlers or LiveData or other data that should communicate with a viewmodel directly
+- use LiveData map transformations when applicable
+- typealias for Map<String, Set<String>> and MutableMap<String, MutableSet<String>>?
+- dynamically load album results as the user scrolls
+- organize packages better, probably based on GithubBrowser sample
+- remove unnecessary logs
 - *********** use adamint update to push new access token to Spotify API wrapper via SharedPreferencesListener
 
 ## Planned Features

@@ -24,7 +24,8 @@ class SpotifyRepository(context: Context) {
     }
 
     init {
-        val sharedPref = context.getSharedPreferences(context.getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
+        val sharedPref =
+            context.getSharedPreferences(context.getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
         val tokenKey = context.getString(R.string.spotify_access_token_key)
         val accessToken = sharedPref.getString(tokenKey, null)
         val authorization = SpotifyUserAuthorizationBuilder(tokenString = accessToken).build()
@@ -38,34 +39,40 @@ class SpotifyRepository(context: Context) {
     }
 
     // TODO: if we've previously gotten this info for the current user, only get new albums that have been saved since then, and append that to previous result
-    fun loadSavedAlbumsGroupedByGenre(resultLiveData: MutableLiveData<Map<String, Set<String>>>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            // a map of genre names to album IDs associated with that genre
-            val albumsGroupedByGenre = mutableMapOf<String, MutableSet<String>>()
-            // a map of artist IDs to album IDs associated with that artist
-            val albumsGroupedByArtist = mutableMapOf<String, MutableSet<String>>()
-            val startTime = System.currentTimeMillis()
+    fun loadSavedAlbumsGroupedByGenre() : Map<String, Set<String>> {
+        // a map of genre names to album IDs associated with that genre
+        val albumsGroupedByGenre = mutableMapOf<String, MutableSet<String>>()
+        // a map of artist IDs to album IDs associated with that artist
+        val albumsGroupedByArtist = mutableMapOf<String, MutableSet<String>>()
+        val startTime = System.currentTimeMillis()
 
-            val albums = api.library.getSavedAlbums().getAllItems().complete().map { savedAlbum -> savedAlbum.album }
-            for (album in albums) {
-                addToGrouping(album.id, album.genres, albumsGroupedByGenre)
-                addToGrouping(album.id, album.artists.map { a -> a.id }, albumsGroupedByArtist)
-            }
-
-            val artistIdBatches = albumsGroupedByArtist.keys.chunked(API_ARG_LIMIT)
-            var batchesComplete = 0
-            for (artistIdBatch in artistIdBatches) {
-                api.artists.getArtists(*artistIdBatch.toTypedArray()).queue { artists ->
-                    addArtistGenresToAlbums(artists, albumsGroupedByArtist, albumsGroupedByGenre)
-                    batchesComplete++
-                    if (batchesComplete == artistIdBatches.size) {
-                        val elapsedTime = System.currentTimeMillis() - startTime
-                        Log.d(TAG, "Finished collecting album & genre data in $elapsedTime milliseconds.")
-                        resultLiveData.postValue(albumsGroupedByGenre)
-                    }
-                }
-            }
+        val albums = api.library.getSavedAlbums().getAllItems().complete().map { savedAlbum -> savedAlbum.album }
+        for (album in albums) {
+            addToGrouping(album.id, album.genres, albumsGroupedByGenre)
+            addToGrouping(album.id, album.artists.map { a -> a.id }, albumsGroupedByArtist)
         }
+
+        val artistIdBatches = albumsGroupedByArtist.keys.chunked(API_ARG_LIMIT)
+//        var batchesComplete = 0   TODO: delete if unused
+        for (artistIdBatch in artistIdBatches) {
+            val artists = api.artists.getArtists(*artistIdBatch.toTypedArray()).complete()
+            addArtistGenresToAlbums(artists, albumsGroupedByArtist, albumsGroupedByGenre)
+
+            // TODO: delete if unused
+//            api.artists.getArtists(*artistIdBatch.toTypedArray()).queue { artists ->
+//                addArtistGenresToAlbums(artists, albumsGroupedByArtist, albumsGroupedByGenre)
+//                batchesComplete++
+//                if (batchesComplete == artistIdBatches.size) {
+//                    val elapsedTime = System.currentTimeMillis() - startTime
+//                    Log.d(TAG, "Finished collecting album & genre data in $elapsedTime milliseconds.")
+//                    resultLiveData.postValue(albumsGroupedByGenre)
+//                    resultReadyLiveData.postValue(true)
+//                }
+//            }
+        }
+        val elapsedTime = System.currentTimeMillis() - startTime
+        Log.d(TAG, "Finished collecting album & genre data in $elapsedTime milliseconds.")
+        return albumsGroupedByGenre
     }
 
     private fun addArtistGenresToAlbums(

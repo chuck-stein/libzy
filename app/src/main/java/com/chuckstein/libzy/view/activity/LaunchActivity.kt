@@ -3,16 +3,14 @@ package com.chuckstein.libzy.view.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.view.activity.extension.initializeBackground
+import com.chuckstein.libzy.view.activity.common.GradientBackgroundActivity
 
-class LaunchActivity : AppCompatActivity() {
+class LaunchActivity : GradientBackgroundActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch)
-        initializeBackground()
 
         // TODO: only show ConnectSpotifyActivity the first time, otherwise do auth here (first check if the current access code hasn't expired yet)
 //        val targetActivity = if (spotifyConnected()) FilterActivity::class.java else ConnectSpotifyActivity::class.java

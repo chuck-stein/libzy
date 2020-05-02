@@ -5,17 +5,15 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.view.activity.extension.initializeBackground
+import com.chuckstein.libzy.view.activity.common.GradientBackgroundActivity
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
-import kotlinx.android.synthetic.main.activity_connect_spotify.*
+import kotlinx.android.synthetic.main.activity_connect_spotify.connect_spotify_button as connectSpotifyButton
 import kotlin.math.roundToInt
 
-class ConnectSpotifyActivity : AppCompatActivity() {
+class ConnectSpotifyActivity : GradientBackgroundActivity() {
 
     companion object {
         private val TAG = ConnectSpotifyActivity::class.java.simpleName
@@ -25,7 +23,6 @@ class ConnectSpotifyActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect_spotify)
-        initializeBackground()
         connectSpotifyButton.setOnClickListener {
             AuthorizationClient.openLoginActivity(this, SPOTIFY_AUTH_REQUEST_CODE, buildAuthRequest())
         }
@@ -65,7 +62,7 @@ class ConnectSpotifyActivity : AppCompatActivity() {
                 }
                 else -> {
                     // Auth flow was most likely cancelled
-                    Log.w(TAG,"Spotify authorization failed without an error, most likely cancelled")
+                    Log.w(TAG, "Spotify authorization failed without an error, most likely cancelled")
                 }
             }
         }
@@ -81,7 +78,9 @@ class ConnectSpotifyActivity : AppCompatActivity() {
             putString(getString(R.string.spotify_access_token_key), accessToken)
             putInt(getString(R.string.spotify_token_expiry_key), currTime + expiresIn)
             // set flag that we've connected before, so don't ask on subsequent sessions
-            if (!sharedPref.getBoolean(getString(R.string.spotify_connected_key), false)) putBoolean(getString(R.string.spotify_connected_key), true)
+            if (!sharedPref.getBoolean(getString(R.string.spotify_connected_key), false)) {
+                putBoolean(getString(R.string.spotify_connected_key), true)
+            }
             apply()
         }
     }
