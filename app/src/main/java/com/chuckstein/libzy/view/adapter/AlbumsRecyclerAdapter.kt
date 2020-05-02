@@ -13,7 +13,10 @@ import kotlinx.android.synthetic.main.list_item_album_result.view.album_art as a
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_title as albumTitle
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_artist as albumArtist
 
-class AlbumsRecyclerAdapter(private val albums: List<AlbumData>) :
+class AlbumsRecyclerAdapter(
+    private val albums: List<AlbumData>,
+    private val onAlbumClick: (spotifyUri: String) -> Unit
+) :
     RecyclerView.Adapter<AlbumsRecyclerAdapter.ViewHolder>() {
 
     companion object {
@@ -31,9 +34,12 @@ class AlbumsRecyclerAdapter(private val albums: List<AlbumData>) :
         Log.d(TAG, "onBindViewHolder called");
         val album = albums[position]
         with(holder) {
-            albumArt.setImageURI(album.albumArtUri) // TODO: use Glide for image loading?
-            albumTitle.text = album.albumTitle
-            albumArtist.text = album.albumArtist
+            albumArt.setImageURI(album.artworkUri) // TODO: use Glide for image loading?
+            albumTitle.text = album.title
+            albumArtist.text = album.artist
+
+            // TODO: if it violates separation of concerns to have the spotify URI in the view data, then instead pass in a 2d genre/album position for the ViewModel to figure out the spotify URI from
+            itemView.setOnClickListener { onAlbumClick(album.spotifyUri) }
         }
     }
 

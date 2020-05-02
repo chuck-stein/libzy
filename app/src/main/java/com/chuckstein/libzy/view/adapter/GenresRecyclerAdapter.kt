@@ -11,12 +11,13 @@ import com.chuckstein.libzy.viewmodel.data.GenreData
 import kotlinx.android.synthetic.main.list_item_genre_result.view.genre_name as genreName
 import kotlinx.android.synthetic.main.list_item_genre_result.view.albums_recycler as albumsRecycler
 
-class GenresRecyclerAdapter : RecyclerView.Adapter<GenresRecyclerAdapter.ViewHolder>() {
+class GenresRecyclerAdapter(private val onAlbumClick: (spotifyUri: String) -> Unit) :
+    RecyclerView.Adapter<GenresRecyclerAdapter.ViewHolder>() {
 
     var genres = listOf<GenreData>()
         set(value) {
             field = value
-            notifyDataSetChanged() // TODO: do this in a better way (see Udacity lesson)
+            notifyDataSetChanged() // TODO: use DiffUtil if I'll ever need to update data set after filling the initial data
         }
 
     private val viewPool = RecyclerView.RecycledViewPool()
@@ -35,7 +36,7 @@ class GenresRecyclerAdapter : RecyclerView.Adapter<GenresRecyclerAdapter.ViewHol
         albumsLayoutManager.initialPrefetchItemCount = 5 // TODO: determine ideal value
         with(holder.albumsRecycler) {
             layoutManager = albumsLayoutManager
-            adapter = AlbumsRecyclerAdapter(genre.albums)
+            adapter = AlbumsRecyclerAdapter(genre.albums, onAlbumClick)
             setRecycledViewPool(viewPool)
         }
     }

@@ -23,8 +23,9 @@ class BrowseResultsActivity : GradientBackgroundActivity() {
         setContentView(R.layout.activity_browse_results)
 
         // TODO: ensure when modifying a view in a RecyclerView, it gets recycled correctly (see Udacity lesson)
-        val genresRecyclerAdapter = GenresRecyclerAdapter()
+        val genresRecyclerAdapter = GenresRecyclerAdapter { clickedAlbumUri -> model.playAlbum(clickedAlbumUri) }
         genresRecycler.adapter = genresRecyclerAdapter
         model.genreResults.observe(this, Observer { genresRecyclerAdapter.genres = it })
     }
+
 }

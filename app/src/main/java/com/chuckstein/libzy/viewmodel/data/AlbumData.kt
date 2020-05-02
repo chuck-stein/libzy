@@ -3,7 +3,8 @@ package com.chuckstein.libzy.viewmodel.data
 import android.net.Uri
 
 data class AlbumData(
-    val albumArtUri: Uri,
-    val albumTitle: String,
-    val albumArtist: String
+    val title: String,
+    val artist: String,
+    val artworkUri: Uri,
+    val spotifyUri: String // TODO: does putting the Spotify URI in the object used for view display violate separation of concerns? also, can it be a Uri object?
 )

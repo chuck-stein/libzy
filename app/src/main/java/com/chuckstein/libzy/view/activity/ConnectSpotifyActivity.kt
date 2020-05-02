@@ -28,6 +28,7 @@ class ConnectSpotifyActivity : GradientBackgroundActivity() {
         }
     }
 
+    // TODO: move to ViewModel
     private fun buildAuthRequest() =
         AuthorizationRequest.Builder(
             // TODO: if client_id isn't used anywhere else, remove it from strings.xml and make it local
@@ -38,12 +39,14 @@ class ConnectSpotifyActivity : GradientBackgroundActivity() {
             .setScopes(arrayOf("user-library-read")) // TODO: determine which scopes I need
             .build()
 
+    // TODO: move to ViewModel
     private fun getRedirectUri() =
         Uri.Builder()
             .scheme(getString(R.string.spotify_auth_redirect_scheme))
             .authority(getString(R.string.spotify_auth_redirect_host))
             .build()
 
+    // TODO: delegate to ViewModel
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
 

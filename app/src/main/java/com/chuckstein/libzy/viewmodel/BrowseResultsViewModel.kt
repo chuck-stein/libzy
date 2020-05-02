@@ -18,67 +18,71 @@ class BrowseResultsViewModel(selectedGenres: Array<String>) : ViewModel() {
         _genreResults.value = listOf(
             GenreData(
                 "Metal", listOf(
-                    AlbumData(Uri.EMPTY, "Crack the Skye", "Mastodon"),
-                    AlbumData(Uri.EMPTY, "AEnima", "Tool"),
-                    AlbumData(Uri.EMPTY, "Dopethrone", "Electric Wizard"),
-                    AlbumData(Uri.EMPTY, "Baroness", "Purple")
+                    AlbumData("Crack the Skye", "Mastodon", Uri.EMPTY,""),
+                    AlbumData("AEnima", "Tool", Uri.EMPTY,""),
+                    AlbumData("Dopethrone", "Electric Wizard", Uri.EMPTY,""),
+                    AlbumData("Baroness", "Purple", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Noise Rock", listOf(
-                    AlbumData(Uri.EMPTY, "Feelin Kinda Free", "The Drones"),
-                    AlbumData(Uri.EMPTY, "You Won't Get What You Want", "Daughters")
+                    AlbumData("Feelin Kinda Free", "The Drones", Uri.EMPTY,""),
+                    AlbumData("You Won't Get What You Want", "Daughters", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Emo", listOf(
-                    AlbumData(Uri.EMPTY, "American Football", "American Football"),
-                    AlbumData(Uri.EMPTY, "The Devil And God Are Raging Inside Me", "Brand New"),
-                    AlbumData(Uri.EMPTY, "The Black Parade", "My Chemical Romance")
+                    AlbumData("American Football", "American Football", Uri.EMPTY,""),
+                    AlbumData("The Devil And God Are Raging Inside Me", "Brand New", Uri.EMPTY,""),
+                    AlbumData("The Black Parade", "My Chemical Romance", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Metal 2", listOf(
-                    AlbumData(Uri.EMPTY, "Crack the Skye", "Mastodon"),
-                    AlbumData(Uri.EMPTY, "AEnima", "Tool"),
-                    AlbumData(Uri.EMPTY, "Dopethrone", "Electric Wizard")
+                    AlbumData("Crack the Skye", "Mastodon", Uri.EMPTY,""),
+                    AlbumData("AEnima", "Tool", Uri.EMPTY,""),
+                    AlbumData("Dopethrone", "Electric Wizard", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Noise Rock 2", listOf(
-                    AlbumData(Uri.EMPTY, "Feelin Kinda Free", "The Drones"),
-                    AlbumData(Uri.EMPTY, "You Won't Get What You Want", "Daughters")
+                    AlbumData("Feelin Kinda Free", "The Drones", Uri.EMPTY,""),
+                    AlbumData("You Won't Get What You Want", "Daughters", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Emo 2", listOf(
-                    AlbumData(Uri.EMPTY, "American Football", "American Football"),
-                    AlbumData(Uri.EMPTY, "The Devil And God Are Raging Inside Me", "Brand New"),
-                    AlbumData(Uri.EMPTY, "The Black Parade", "My Chemical Romance")
+                    AlbumData("American Football", "American Football", Uri.EMPTY,""),
+                    AlbumData("The Devil And God Are Raging Inside Me", "Brand New", Uri.EMPTY,""),
+                    AlbumData("The Black Parade", "My Chemical Romance", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Metal 3", listOf(
-                    AlbumData(Uri.EMPTY, "Crack the Skye", "Mastodon"),
-                    AlbumData(Uri.EMPTY, "AEnima", "Tool"),
-                    AlbumData(Uri.EMPTY, "Dopethrone", "Electric Wizard")
+                    AlbumData("Crack the Skye", "Mastodon", Uri.EMPTY,""),
+                    AlbumData("AEnima", "Tool", Uri.EMPTY,""),
+                    AlbumData("Dopethrone", "Electric Wizard", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Noise Rock 3", listOf(
-                    AlbumData(Uri.EMPTY, "Feelin Kinda Free", "The Drones"),
-                    AlbumData(Uri.EMPTY, "You Won't Get What You Want", "Daughters")
+                    AlbumData("Feelin Kinda Free", "The Drones", Uri.EMPTY,""),
+                    AlbumData("You Won't Get What You Want", "Daughters", Uri.EMPTY,"")
                 )
             ),
             GenreData(
                 "Emo 3", listOf(
-                    AlbumData(Uri.EMPTY, "American Football", "American Football"),
-                    AlbumData(Uri.EMPTY, "The Devil And God Are Raging Inside Me", "Brand New"),
-                    AlbumData(Uri.EMPTY, "The Black Parade", "My Chemical Romance")
+                    AlbumData("American Football", "American Football", Uri.EMPTY,""),
+                    AlbumData("The Devil And God Are Raging Inside Me", "Brand New", Uri.EMPTY,""),
+                    AlbumData("The Black Parade", "My Chemical Romance", Uri.EMPTY,"")
                 )
             )
 
         )
+    }
+
+    fun playAlbum(spotifyUri: String) {
+        // TODO
     }
 
 }

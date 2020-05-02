@@ -88,13 +88,14 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - make alternate layouts when necessary for landscape mode (e.g. SelectGenresActivity)
 - if activity themes don't extend AppCompatTheme, then the Activity classes can't extend AppCompatActivity
 - make a ConnectSpotifyViewModel to store non-Activity/View-related functions in ConnectSpotifyActivity
-- use data binding for any click handlers or LiveData or other data that should communicate with a viewmodel directly
+- use data binding for any click handlers or LiveData or other data that should communicate between data and layout directly, skipping UI controller
 - use LiveData map transformations when applicable
 - typealias for Map<String, Set<String>> and MutableMap<String, MutableSet<String>>?
 - dynamically load album results as the user scrolls
 - organize packages better, probably based on GithubBrowser sample
 - remove unnecessary logs
 - search through inline TODOs and delete any that are already done
+- follow advice from RecyclerView Udacity lesson more closely (e.g. refactoring ViewHolder, using data binding, etc.)
 - *********** use adamint update to push new access token to Spotify API wrapper via SharedPreferencesListener
 
 ## Planned Features
