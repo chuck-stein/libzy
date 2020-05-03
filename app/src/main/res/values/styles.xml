@@ -15,7 +15,7 @@
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowBackground">@drawable/bkg_gradient_anim</item>
-        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowActivityTransitions">true</item> <!-- TODO: delete this if unnecessary -->
 
         <!-- Styles -->
         <item name="android:textViewStyle">@style/TextView</item>
@@ -24,9 +24,9 @@
     </style>
 
     <style name="Button" parent="Widget.MaterialComponents.Button">
-        <item name="android:backgroundTint">@color/primary</item>
-        <item name="cornerRadius">18dp</item>
-        <item name="android:textSize">14sp</item>
+        <item name="cornerRadius">@dimen/corner_radius</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/content_text_size</item>
         <item name="android:fontFamily">@font/varela_round</item>
     </style>
 
@@ -36,6 +36,7 @@
     </style>
 
     <style name="Chip" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipCornerRadius">@dimen/corner_radius</item>
         <item name="rippleColor">@color/accent</item>
         <item name="android:fontFamily">@font/varela_round</item>
     </style>

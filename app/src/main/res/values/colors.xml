@@ -4,6 +4,7 @@
     <color name="primary_dark">#370085</color>
     <color name="primary_darker">#1D0E33</color>
     <color name="primary_darkest">#210943</color>
+    <color name="primary_transparent">#806900FF</color>
 
     <color name="bkg_light">#0E0023</color>
     <color name="bkg_dark">#05000E</color>

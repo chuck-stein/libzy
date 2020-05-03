@@ -1,11 +1,15 @@
 # Development To-Do
 
+- after incorporating Dagger 2, make SpotifyAuthManager a dependency instead of singleton
 - flesh out README
 - incorporate unit testing
 - clean up gradle.build
 - improve button styling, make responsive to presses
+- remove legacy/compatibility stuff I don't need with my min SDK version
+- determine whether I should continue to use @ExperimentalTime and @ExperimentalStdlibApi
 - make "Connect Spotify" button on-brand
 - decide on minimum and target SDK
+- determine whether SpotifyAuthManager as Fragment and Activity dependency is best practice
 - determine whether .arr modules should be added to git or .gitignore
 - add a modal popup to install spotify if it's not detected on the device when necessary
 - document all code
@@ -22,6 +26,7 @@
 - define button callbacks in layout xml instead of Activity code
 - define gradle version constants
 - remove unused dependencies from build.gradle, such as kotlinx and dagger-android
+- suppress or debug nav_graph xml error
 - debug "pending vsync event" warning
 - determine whether my project actually needs dependency injection (are there any nested dependencies? are there any shared dependencies?)
 - create a develop branch and start using feature/bugfix branches
@@ -110,3 +115,4 @@
             - in onActivityResult, if that request code was used, delegate to current ViewModel (find a mechanism for this), telling them to restart job
     - SpotifyRepository gets an expired token error anyway?
         - fail safe callback and restart/resume the request job? or just show error message to user?
+- use gradle constants for common version numbers, e.g. `buildscript { ext.kotlin_version = '1.3.72'`

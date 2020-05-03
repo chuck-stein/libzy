@@ -14,23 +14,20 @@
     <string name="spotify_access_token_key">"spotify.accesstoken"</string>
     <string name="spotify_token_expiry_key">spotify.accesstoken.expiry</string>
 
-    <!-- ConnectSpotifyActivity -->
+    <!-- ConnectSpotifyFragment -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
 
-    <!-- SelectGenresActivity -->
+    <!-- SelectGenresFragment -->
     <string name="greeting_text">Hey there!</string>
     <string name="fetching_library_data_text">Fetching your library data…</string>
     <string name="select_genres_instructions_text">Which genres are you in the mood for?</string>
     <string name="submit_genres_button_text">Ready, show me some albums!</string>
 
-    <!-- BrowseResultsActivity -->
+    <!-- BrowseResultsFragment -->
     <string name="genre_name_placeholder">Genre</string>
     <string name="album_title_placeholder">Album Title</string>
     <string name="artist_name_placeholder">Album Artist</string>
     <string name="album_art_desc">album artwork</string>
-
-    <!-- Intent extra names -->
-    <string name="selected_genres_extra">com.chuckstein.libzy.activity.SelectedGenres</string>
     
     <!-- Uncategorized -->
 

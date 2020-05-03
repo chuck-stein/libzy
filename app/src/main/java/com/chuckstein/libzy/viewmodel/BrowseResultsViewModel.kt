@@ -1,5 +1,6 @@
 package com.chuckstein.libzy.viewmodel
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +16,17 @@ class BrowseResultsViewModel(selectedGenres: Array<String>) : ViewModel() {
 
     init {
         // TODO: delete this dummy data, make actual request for full album data for each selected genre
+        _genreResults.value = selectedGenres.map { genre ->
+            GenreData(
+                genre.capitalizeEachWord(), listOf(
+                    AlbumData("Crack the Skye", "Mastodon", Uri.EMPTY,""),
+                    AlbumData("AEnima", "Tool", Uri.EMPTY,""),
+                    AlbumData("Dopethrone", "Electric Wizard", Uri.EMPTY,""),
+                    AlbumData("Baroness", "Purple", Uri.EMPTY,"")
+                )
+            )
+        }
+        /*
         _genreResults.value = listOf(
             GenreData(
                 "Metal", listOf(
@@ -79,10 +91,16 @@ class BrowseResultsViewModel(selectedGenres: Array<String>) : ViewModel() {
             )
 
         )
+         */
     }
 
     fun playAlbum(spotifyUri: String) {
         // TODO
     }
+
+    // TODO: break this out into Util singleton if further need arises
+    @SuppressLint("DefaultLocale")
+    private fun String.capitalizeEachWord() =
+        split(" ").joinToString(" ") { it.capitalize() }
 
 }

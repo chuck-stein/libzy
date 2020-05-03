@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".view.activity.SelectGenresActivity">
+    tools:context=".view.fragment.SelectGenresFragment">
 
     <TextView
         android:id="@+id/greeting_text"
@@ -114,6 +114,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/standard_spacing"
+        android:enabled="false"
         android:text="@string/submit_genres_button_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

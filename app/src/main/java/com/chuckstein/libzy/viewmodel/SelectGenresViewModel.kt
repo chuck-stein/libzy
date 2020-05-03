@@ -33,7 +33,6 @@ class SelectGenresViewModel(application: Application) : AndroidViewModel(applica
         _newGenreDataReady.value = false
         CoroutineScope(Dispatchers.Main + loadSavedAlbumsGroupedByGenreJob).launch {
             _albumsGroupedByGenre.value = loadSavedAlbumsGroupedByGenre()
-            Log.d(TAG, "Done loading library data, marking newGenreDataReady") // TODO: delete
             _newGenreDataReady.value = true
         }
     }
