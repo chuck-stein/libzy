@@ -76,7 +76,6 @@
 - add splash screen for LaunchActivity
 - make a more exciting "Connect Spotify" screen... maybe add welcome images and descriptions of waht the app can do and what we use your Spotify for?
 - figure out how to constrain top and bottom to nav/status bars instead of screen edge
-- move android:fitsSystemWindows to the main app theme
 - look into using view binding / data binding
 - use activity lifecycle callbacks to improve performance and persist state [(guide)](https://classroom.udacity.com/courses/ud9012/lessons/e487c600-ed68-4576-a35a-12f211cf032e/concepts/4c1503f9-2de5-45ea-88ae-2138b0482ecc)
 - use Timber? 
