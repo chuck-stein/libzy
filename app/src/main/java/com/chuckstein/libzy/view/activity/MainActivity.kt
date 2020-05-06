@@ -1,20 +1,26 @@
 package com.chuckstein.libzy.view.activity
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.drawable.AnimationDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.auth.SpotifyAuthManager
+import com.chuckstein.libzy.auth.SpotifyAuthMediator
+import com.chuckstein.libzy.auth.SpotifyAuthServerProxy
+import com.chuckstein.libzy.common.currentTimeSeconds
 import com.chuckstein.libzy.view.fragment.ConnectSpotifyFragmentDirections
 import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
+import kotlinx.coroutines.channels.Channel
 import kotlinx.android.synthetic.main.activity_main.nav_host_fragment as navHost
-import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
@@ -29,31 +35,38 @@ import kotlin.time.ExperimentalTime
  * Interacts with Spotify SDK's auth library by opening an authorization activity when the user's access token
  * should refresh, and handling when an authorization activity returns.
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SpotifyAuthServerProxy {
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
+        private const val CONNECT_SPOTIFY_REQUEST_CODE = 1104
+        private const val REFRESH_SPOTIFY_TOKEN_REQUEST_CODE = 1105
     }
 
     private lateinit var spotifyPrefs: SharedPreferences
 
     private lateinit var backgroundGradient: AnimationDrawable
 
+    // TODO: are channels the best way to do what I'm doing? it's only emitting one value...
+    private val accessTokenChannel = Channel<String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         spotifyPrefs = getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
+        SpotifyAuthMediator.authServerProxy = this
     }
 
     @ExperimentalTime
     override fun onStart() {
         super.onStart()
 
-        initializeBackgroundAnimation()
+        initializeBackgroundAnimation() // TODO: does this need to be in onStart?
 
-        if (spotifyConnected() && tokenShouldRefresh()) {
-            SpotifyAuthManager.refreshSpotifyToken(this)
-        }
+        // TODO: uncomment this if block when done testing
+//        if (spotifyConnected() && tokenShouldRefresh()) {
+//            SpotifyAuthManager.refreshSpotifyToken(this)
+//        }
         // TODO: if spotifyConnected() && !tokenShouldRefresh(), set a timed callback to refresh it if we're still on screen when it's about to expire
     }
 
@@ -91,6 +104,7 @@ class MainActivity : AppCompatActivity() {
                 AuthorizationResponse.Type.TOKEN -> {
                     saveToken(response.accessToken, response.expiresIn)
                     if (SpotifyAuthManager.isConnectSpotifyRequest(requestCode)) onSpotifyConnected()
+                    accessTokenChannel.offer(response.accessToken)
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     Log.e(TAG, "Error performing Spotify authorization: ${response.error}")
@@ -100,6 +114,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 else -> {
                     // Auth flow was most likely cancelled
+                    // TODO: somehow relay a failure to refreshAccessToken()?
                     Log.w(TAG, "Spotify authorization failed without an error, most likely cancelled")
                 }
             }
@@ -107,14 +122,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveToken(accessToken: String, expiresIn: Int) {
-        Log.d(TAG, "got access token which expires in $expiresIn seconds");
+        Log.d(TAG, "got access token which expires in $expiresIn seconds: '$accessToken'");
         with(spotifyPrefs.edit()) {
             putInt(getString(R.string.spotify_token_expiry_key), currentTimeSeconds() + expiresIn)
-            putString(getString(R.string.spotify_access_token_key), accessToken)
+            putString(getString(R.string.spotify_access_token_key), accessToken) // TODO: make this just accessToken again
             apply()
         }
     }
 
+    // TODO: maybe this can go in ConnectSpotifyFragment after all, now that connectSpotify() is a suspend function?
     private fun onSpotifyConnected() {
         Log.d(TAG, "Spotify connected!")
         with(spotifyPrefs.edit()) {
@@ -123,12 +139,39 @@ class MainActivity : AppCompatActivity() {
         }
         val navController = navHost.findNavController()
         if (navController.currentDestination?.id == R.id.connectSpotifyFragment) {
-            navController.navigate(
-                ConnectSpotifyFragmentDirections.actionConnectSpotifyFragmentToSelectGenresFragment())
+            navController
+                .navigate(ConnectSpotifyFragmentDirections.actionConnectSpotifyFragmentToSelectGenresFragment())
         }
     }
 
-    // TODO: break this out into Util singleton if further need arises
-    private fun currentTimeSeconds() = (System.currentTimeMillis() / 1000.0).roundToInt()
+    override suspend fun connectSpotify() {
+        requestAuthorization(CONNECT_SPOTIFY_REQUEST_CODE)
+        // TODO: should I .receive() something here?
+    }
+
+    override suspend fun refreshAccessToken(): String {
+        requestAuthorization(REFRESH_SPOTIFY_TOKEN_REQUEST_CODE)
+        return accessTokenChannel.receive()
+    }
+
+    private fun requestAuthorization(requestCode: Int) {
+        AuthorizationClient.openLoginActivity(this, requestCode, buildAuthRequest())
+    }
+
+    private fun buildAuthRequest() =
+        AuthorizationRequest.Builder(
+            // TODO: if client_id isn't used anywhere else, remove it from strings.xml and make it a static const
+            getString(R.string.spotify_client_id),
+            AuthorizationResponse.Type.TOKEN,
+            getRedirectUri().toString()
+        )
+            .setScopes(arrayOf("user-library-read")) // TODO: determine which scopes I need
+            .build()
+
+    private fun getRedirectUri() =
+        Uri.Builder()
+            .scheme(getString(R.string.spotify_auth_redirect_scheme))
+            .authority(getString(R.string.spotify_auth_redirect_host))
+            .build()
 
 }

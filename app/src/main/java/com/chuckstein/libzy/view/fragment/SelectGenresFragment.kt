@@ -41,7 +41,8 @@ class SelectGenresFragment : Fragment() {
 
         submitGenresButton.setOnClickListener { submitGenreSelection() }
         if (model.albumsGroupedByGenre.value == null) createLoadingChips()
-        model.newGenreDataReady.observe(viewLifecycleOwner, Observer { if (it) clearLoadingChips() })
+        model.loadingShouldBegin.observe(viewLifecycleOwner, Observer { if (it) startLoadingChipAnimations() })
+        model.loadingShouldEnd.observe(viewLifecycleOwner, Observer { if (it) clearLoadingChips() })
         model.albumsGroupedByGenre.observe(viewLifecycleOwner, Observer(::onGenreOptionsReady))
     }
 
@@ -60,13 +61,17 @@ class SelectGenresFragment : Fragment() {
     // TODO: Determine if there's a cleaner way to do this that doesn't involve guessing the number of chips to add then removing extras
     private fun createLoadingChips() {
         repeat(50) { // TODO: to support tablets, calculate this based on scroll view size and average chip size
-            val chip = Chip(requireContext())
-            with(chip) {
-                text = "\t".repeat(Random.nextInt(5, 20)) // random-length spacing text for random chip size
-                isClickable = false
+            // TODO: clean up this nested apply() syntax if it's unreadable or bad practice
+            // chip container to make it shimmer to indicate loading
+            val chipShimmer = (ShimmerFrameLayout(requireContext()/*add attribute*/)).apply {
+                // shouldn't start shimmering until model sends the loading start event
+                stopShimmer()
+                addView(Chip(requireContext()).apply {
+                    // random-length spacing text for random chip size
+                    text = "\t".repeat(Random.nextInt(5, 20))
+                    isClickable = false
+                })
             }
-            val chipShimmer = ShimmerFrameLayout(requireContext())  // chip container to make it shimmer to indicate loading
-            chipShimmer.addView(chip)
             genreOptionsChipGroup.addView(chipShimmer)
             loadingChips.add(chipShimmer)
         }
@@ -82,6 +87,14 @@ class SelectGenresFragment : Fragment() {
                 chipIndex--
             }
         }
+    }
+
+    // TODO: determine why the animations start before Spotify auth still
+    private fun startLoadingChipAnimations() {
+        for (loadingChip in loadingChips) {
+//            loadingChip.startShimmer()
+        }
+        model.onLoadingStarted()
     }
 
     private fun clearLoadingChips() {
