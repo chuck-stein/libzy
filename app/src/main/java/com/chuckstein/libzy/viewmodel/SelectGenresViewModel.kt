@@ -5,51 +5,43 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.chuckstein.libzy.model.repository.SpotifyRepository
-import kotlinx.coroutines.*
+import androidx.lifecycle.viewModelScope
+import com.adamratzman.spotify.SpotifyException
+import com.chuckstein.libzy.network.SpotifyClient
+import com.chuckstein.libzy.network.auth.SpotifyAuthException
+import kotlinx.coroutines.launch
+import java.lang.Exception
 
 // TODO: refactor this to only contain list of genres, as that's all the View needs, and move the genre-album grouping to a deeper architecture layer
-// TODO: override onCleared and tell SpotifyRepository to cancel Spotify requests (maybe implement this using an Rx library and pass an observable in to loadSavedAlbumsGroupedByGenre which will get subscribed to cancel coroutines if onCleared pushes an event?)
-//          (or if SpotifyRepository ends up as a singleton, don't do this and instead keep the data cached somewhere to be checked next time the request is made)
-class SelectGenresViewModel(application: Application) : AndroidViewModel(application) {
+class SelectGenresViewModel(applicationContext: Application) : AndroidViewModel(applicationContext) {
 
     companion object {
         private val TAG = SelectGenresViewModel::class.java.simpleName
     }
 
-    private val spotifyRepository = SpotifyRepository(application)
+    private val spotifyClient = SpotifyClient(applicationContext)
 
-    private val _newGenreDataReady = MutableLiveData<Boolean>()
-    val newGenreDataReady: LiveData<Boolean>
-        get() = _newGenreDataReady
+    private val _genreOptions = MutableLiveData<Map<String, Set<String>>>()
+    val genreOptions: LiveData<Map<String, Set<String>>>
+        get() = _genreOptions
 
-    private val _albumsGroupedByGenre = MutableLiveData<Map<String, Set<String>>>()
-    val albumsGroupedByGenre: LiveData<Map<String, Set<String>>>
-        get() = _albumsGroupedByGenre
-
-    private val loadSavedAlbumsGroupedByGenreJob = Job()
+    // TODO: abstract this (and its fragment Observer) to an abstract class or interface
+    private val _receivedSpotifyNetworkError = MutableLiveData<Boolean>()
+    val receivedSpotifyNetworkError: LiveData<Boolean>
+        get() = _receivedSpotifyNetworkError
 
     init {
-        _newGenreDataReady.value = false
-        CoroutineScope(Dispatchers.Main + loadSavedAlbumsGroupedByGenreJob).launch {
-            _albumsGroupedByGenre.value = loadSavedAlbumsGroupedByGenre()
-            _newGenreDataReady.value = true
+        viewModelScope.launch {
+            try {
+                _genreOptions.value = spotifyClient.loadSavedAlbumsGroupedByGenre()
+            } catch (e: Exception) {
+                // TODO: abstract this (and its fragment Observer) to an abstract class or interface
+                if (e is SpotifyException || e is SpotifyAuthException) {
+                    Log.e(TAG, "Received a Spotify network error", e)
+                    _receivedSpotifyNetworkError.value = true
+                } else throw e
+            }
         }
-    }
-
-    private suspend fun loadSavedAlbumsGroupedByGenre(): Map<String, Set<String>> {
-        return withContext(Dispatchers.IO) {
-            spotifyRepository.loadSavedAlbumsGroupedByGenre()
-        }
-    }
-
-    fun onLoadingEnded() {
-        _newGenreDataReady.value = false
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        loadSavedAlbumsGroupedByGenreJob.cancel()
     }
 
 }

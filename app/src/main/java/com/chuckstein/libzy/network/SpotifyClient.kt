@@ -1,52 +1,29 @@
-package com.chuckstein.libzy.model.repository
+package com.chuckstein.libzy.network
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import com.adamratzman.spotify.SpotifyClientApi
-import com.adamratzman.spotify.SpotifyClientApiBuilder
-import com.adamratzman.spotify.SpotifyUserAuthorizationBuilder
 import com.adamratzman.spotify.models.Artist
-import com.chuckstein.libzy.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 // TODO: read up on android Services to see if I should delegate to a Service for extended API calls that will take time?
 //       or find alternate best way? should it be a singleton? why are singletons bad again?
-class SpotifyRepository(context: Context) {
-
-    private val api: SpotifyClientApi
+class SpotifyClient(context: Context) {
 
     companion object {
-        private val TAG = SpotifyRepository::class.java.simpleName
+        private val TAG = SpotifyClient::class.java.simpleName
         private const val API_ARG_LIMIT = 50
     }
 
-    init {
-        val sharedPref =
-            context.getSharedPreferences(context.getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
-        val tokenKey = context.getString(R.string.spotify_access_token_key)
-        val accessToken = sharedPref.getString(tokenKey, null)
-        val authorization = SpotifyUserAuthorizationBuilder(tokenString = accessToken).build()
-        api = SpotifyClientApiBuilder(authorization = authorization).build() // TODO: customize api options
-
-//        sharedPref.registerOnSharedPreferenceChangeListener { prefs, key ->
-//            if (key == tokenKey) {
-//                // TODO: set API's access token to the new one
-//            }
-//        }
-    }
+    private val api = SpotifyApiDelegator(context)
 
     // TODO: if we've previously gotten this info for the current user, only get new albums that have been saved since then, and append that to previous result
-    fun loadSavedAlbumsGroupedByGenre() : Map<String, Set<String>> {
+    suspend fun loadSavedAlbumsGroupedByGenre(): Map<String, Set<String>> {
         // a map of genre names to album IDs associated with that genre
         val albumsGroupedByGenre = mutableMapOf<String, MutableSet<String>>()
         // a map of artist IDs to album IDs associated with that artist
         val albumsGroupedByArtist = mutableMapOf<String, MutableSet<String>>()
         val startTime = System.currentTimeMillis()
 
-        val albums = api.library.getSavedAlbums().getAllItems().complete().map { savedAlbum -> savedAlbum.album }
+        val albums = api.getAllSavedAlbums().map { savedAlbum -> savedAlbum.album }
         for (album in albums) {
             addToGrouping(album.id, album.genres, albumsGroupedByGenre)
             addToGrouping(album.id, album.artists.map { a -> a.id }, albumsGroupedByArtist)
@@ -54,11 +31,11 @@ class SpotifyRepository(context: Context) {
 
         val artistIdBatches = albumsGroupedByArtist.keys.chunked(API_ARG_LIMIT)
         for (artistIdBatch in artistIdBatches) {
-            val artists = api.artists.getArtists(*artistIdBatch.toTypedArray()).complete()
+            val artists = api.getArtists(artistIdBatch)
             addArtistGenresToAlbums(artists, albumsGroupedByArtist, albumsGroupedByGenre)
         }
 
-        val elapsedTime = System.currentTimeMillis() - startTime
+        val elapsedTime = System.currentTimeMillis() - startTime // TODO: use measureTimeMillis instaed
         Log.d(TAG, "Finished collecting album & genre data in $elapsedTime milliseconds.")
         return albumsGroupedByGenre
     }

@@ -31,7 +31,7 @@
 - determine whether my project actually needs dependency injection (are there any nested dependencies? are there any shared dependencies?)
 - create a develop branch and start using feature/bugfix branches
 - check my kotlin syntax / practices (e.g. am I writing constructors correctly?)
-- figure out what to do if SpotifyRepository tries to make a call with an expired access token (spotify auth activity must be universally accessible)
+- figure out what to do if SpotifyClient tries to make a call with an expired access token (spotify auth activity must be universally accessible)
 - review the [Android Architecture Samples](https://github.com/android/architecture-samples/tree/master) for guidance
 - apply a Google or JetBrains style guide
 - maybe use adamint's wrapper for auth if it can do it as elegantly as spotify sdk, because then access tokens can always be in the backend
@@ -58,6 +58,7 @@
 - center genre option chips
 - try Dan's mockup font to see how it compares to varela round
 - handle failed API calls
+- capitalize genre option chips?
 - show number of results on each genre option chip
 - make bottom of UI layout relative to nav bar
 - sort order selector for BrowseResultsActivity (alphabetical, num albums)
@@ -100,18 +101,35 @@
 - follow advice from RecyclerView Udacity lesson more closely (e.g. refactoring ViewHolder, using data binding, etc.)
 - check if adamint uses a coroutine internally, if so I only need the Main one, not the IO one
 - use adamint API wrapper caching, look into other features
+- determine whether adamint's get all albums requests 1 at a time.. or maybe it doesn't and that first album is just tog et the total number to batch requests. if it does, make it better
 - rework access token management (do after switching to Navigation libary):
     - app initialized? (or user started Spotify-requiring session/task from eventual home screen?)
         - shared preferences contains unexpired access token?
-            - initialize SpotifyRepository with that token and expiry (pass them down)
+            - initialize SpotifyClient with that token and expiry (pass them down)
         - shared preferences has no token or expired token?
             - run Spotify auth (should be its own activity, or master activity when using Navigation library)
             - store new token and expiration in SharedPreferences
-            - initialize SpotifyRepository with that token and expiry (pass them down)
-    - SpotifyRepository is about to start a request job without sufficient time left before token expiry?
+            - initialize SpotifyClient with that token and expiry (pass them down)
+    - SpotifyClient is about to start a request job without sufficient time left before token expiry?
         - first call refresh token callback which was passed down from main Activity
             - callback opens a Spotify auth login activity with a separate request code from app initialization request
             - in onActivityResult, if that request code was used, delegate to current ViewModel (find a mechanism for this), telling them to restart job
-    - SpotifyRepository gets an expired token error anyway?
+    - SpotifyClient gets an expired token error anyway?
         - fail safe callback and restart/resume the request job? or just show error message to user?
 - use gradle constants for common version numbers, e.g. `buildscript { ext.kotlin_version = '1.3.72'`
+- think about and handle edge cases with shared preferences auth communication / refreshing from Activity to SpotifyClientFactory
+- figure out programmatic styling myself instead of using air b&b paris
+- ensure every coroutine is associated with a cancellable job
+- hunt for bugs
+- check all my couroutine scopes (probably finish kotlin udacity course first)
+- use retrofit instead of adamint
+- test all auth refresh conditions
+- fix checked chips not being saved on configuration change (saved state handle? livedata?)
+- figure out when to use liveData builder
+- ask adamint team why they use GlobalScope for requests instead of a scope with Dispatchers.IO
+- using Spotify auth SDK, if user does not have Spotify downloaded, move them to the download page
+- figure out why auth is requested on SelectGenresFragment right after requesting it from ConnectSpotifyFragment
+- switch automatic backup to be true again in AndroidManifest
+- finish navigation udacity course, with stuff like animated transitions
+- improve Spotify error handling -- just used cached data and notify them of error with option to retry connection/request, 
+    instead of reverting their current session to Connect Spotify screen (but fall back to Connect Spotify screen if no cached data)

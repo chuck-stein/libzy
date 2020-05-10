@@ -1,12 +1,12 @@
 package com.chuckstein.libzy.viewmodel
 
-import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.chuckstein.libzy.viewmodel.data.AlbumData
 import com.chuckstein.libzy.viewmodel.data.GenreData
+import com.chuckstein.libzy.common.capitalizeEachWord
 
 class BrowseResultsViewModel(selectedGenres: Array<String>) : ViewModel() {
 
@@ -19,10 +19,10 @@ class BrowseResultsViewModel(selectedGenres: Array<String>) : ViewModel() {
         _genreResults.value = selectedGenres.map { genre ->
             GenreData(
                 genre.capitalizeEachWord(), listOf(
-                    AlbumData("Crack the Skye", "Mastodon", Uri.EMPTY,""),
-                    AlbumData("AEnima", "Tool", Uri.EMPTY,""),
-                    AlbumData("Dopethrone", "Electric Wizard", Uri.EMPTY,""),
-                    AlbumData("Baroness", "Purple", Uri.EMPTY,"")
+                    AlbumData("Crack the Skye", "Mastodon", Uri.EMPTY, ""),
+                    AlbumData("AEnima", "Tool", Uri.EMPTY, ""),
+                    AlbumData("Dopethrone", "Electric Wizard", Uri.EMPTY, ""),
+                    AlbumData("Baroness", "Purple", Uri.EMPTY, "")
                 )
             )
         }
@@ -97,10 +97,5 @@ class BrowseResultsViewModel(selectedGenres: Array<String>) : ViewModel() {
     fun playAlbum(spotifyUri: String) {
         // TODO
     }
-
-    // TODO: break this out into Util singleton if further need arises
-    @SuppressLint("DefaultLocale")
-    private fun String.capitalizeEachWord() =
-        split(" ").joinToString(" ") { it.capitalize() }
 
 }

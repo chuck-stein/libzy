@@ -16,6 +16,8 @@
 
     <!-- ConnectSpotifyFragment -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
+    <string name="toast_connecting_spotify_account_failed">Failed to authorize your Spotify account! Please try again.</string>
+    <string name="toast_spotify_network_error">There was a problem connecting to Spotify! Please try again.</string>
 
     <!-- SelectGenresFragment -->
     <string name="greeting_text">Hey there!</string>
