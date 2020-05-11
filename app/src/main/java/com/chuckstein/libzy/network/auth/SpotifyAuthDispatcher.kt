@@ -64,7 +64,7 @@ object SpotifyAuthDispatcher {
                 pendingAuthCallbacks.add(spotifyAuthCallback)
 
                 // create a timeout to fail with an exception if auth client doesn't return in a reasonable time frame
-                Handler().postDelayed({
+                Handler().postDelayed({ // TODO: use withTimeout() instead?
                     if (continuation.isActive) {
                         pendingAuthCallbacks.remove(spotifyAuthCallback)
                         val errorMessage = "Timed out while waiting for Spotify auth callback"
