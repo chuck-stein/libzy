@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.fragment
+package com.chuckstein.libzy.view.connectspotify
 
 import android.content.Context
 import android.os.Bundle
@@ -11,14 +11,24 @@ import androidx.lifecycle.coroutineScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.chuckstein.libzy.R
+import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.network.auth.SpotifyAuthDispatcher
 import com.chuckstein.libzy.network.auth.SpotifyAuthException
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_connect_spotify.connect_spotify_button as connectSpotifyButton
 
 class ConnectSpotifyFragment : Fragment() {
 
+    @Inject
+    lateinit var spotifyAuthDispatcher: SpotifyAuthDispatcher
+
     private val navArgs: ConnectSpotifyFragmentArgs by navArgs()
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (requireActivity().application as LibzyApplication).appComponent.inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,7 +51,7 @@ class ConnectSpotifyFragment : Fragment() {
     private fun onConnectSpotifyButtonClicked() {
         lifecycle.coroutineScope.launch {
             try {
-                SpotifyAuthDispatcher.requestAuthorization()
+                spotifyAuthDispatcher.requestAuthorization()
                 recordSpotifyConnected()
                 requireView().findNavController()
                     .navigate(ConnectSpotifyFragmentDirections.actionConnectSpotifyFragmentToSelectGenresFragment())

@@ -1,5 +1,6 @@
-package com.chuckstein.libzy.view.fragment
+package com.chuckstein.libzy.view.selectgenres
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,12 +10,14 @@ import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.airbnb.paris.extensions.style
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.viewmodel.SelectGenresViewModel
+import com.chuckstein.libzy.common.LibzyApplication
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.chip.Chip
+import javax.inject.Inject
 import kotlin.random.Random
 import kotlinx.android.synthetic.main.fragment_select_genres.genre_options_chip_group as genreOptionsChipGroup
 import kotlinx.android.synthetic.main.fragment_select_genres.genre_options_scroll_view as genreOptionsScrollView
@@ -23,7 +26,15 @@ import kotlinx.android.synthetic.main.fragment_select_genres.submit_genres_butto
 
 class SelectGenresFragment : Fragment() {
 
-    private val model: SelectGenresViewModel by viewModels()
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val model by viewModels<SelectGenresViewModel> { viewModelFactory }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (requireActivity().application as LibzyApplication).appComponent.inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,8 +59,10 @@ class SelectGenresFragment : Fragment() {
                 selectedGenres.add(chip.text.toString())
             }
         }
-        val submitGenresNavAction = SelectGenresFragmentDirections
-            .actionSelectGenresFragmentToBrowseResultsFragment(selectedGenres.toTypedArray())
+        val submitGenresNavAction =
+            SelectGenresFragmentDirections.actionSelectGenresFragmentToBrowseResultsFragment(
+                selectedGenres.toTypedArray()
+            )
         requireView().findNavController().navigate(submitGenresNavAction)
     }
 

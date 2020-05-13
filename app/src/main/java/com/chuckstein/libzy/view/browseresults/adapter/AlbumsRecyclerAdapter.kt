@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.adapter
+package com.chuckstein.libzy.view.browseresults.adapter
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.viewmodel.data.AlbumData
+import com.chuckstein.libzy.view.browseresults.data.AlbumData
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_art as albumArt
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_title as albumTitle
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_artist as albumArtist

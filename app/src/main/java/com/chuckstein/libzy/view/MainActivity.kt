@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.activity
+package com.chuckstein.libzy.view
 
 import android.content.Context
 import android.content.Intent
@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
+import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.common.currentTimeSeconds
 import com.chuckstein.libzy.network.auth.SpotifyAuthCallback
 import com.chuckstein.libzy.network.auth.SpotifyAuthClientProxy
@@ -15,6 +16,7 @@ import com.chuckstein.libzy.network.auth.SpotifyAuthException
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.nav_host_fragment as navHost
 
 /**
@@ -32,14 +34,18 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
         private const val SPOTIFY_AUTH_REQUEST_CODE = 1104
     }
 
+    @Inject
+    lateinit var spotifyAuthDispatcher: SpotifyAuthDispatcher
+
     private var spotifyAuthCallback: SpotifyAuthCallback? = null
 
     private lateinit var backgroundGradient: AnimationDrawable
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        (applicationContext as LibzyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        SpotifyAuthDispatcher.authClientProxy = this
+        spotifyAuthDispatcher.authClientProxy = this
     }
 
     override fun onStart() {
@@ -95,7 +101,8 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     override fun initiateAuthRequest(callback: SpotifyAuthCallback) {
         spotifyAuthCallback = callback
-        AuthorizationClient.openLoginActivity(this, SPOTIFY_AUTH_REQUEST_CODE, buildAuthRequest())
+        AuthorizationClient.openLoginActivity(this,
+            SPOTIFY_AUTH_REQUEST_CODE, buildAuthRequest())
     }
 
     private fun buildAuthRequest() =

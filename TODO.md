@@ -133,3 +133,8 @@
 - finish navigation udacity course, with stuff like animated transitions
 - improve Spotify error handling -- just used cached data and notify them of error with option to retry connection/request, 
     instead of reverting their current session to Connect Spotify screen (but fall back to Connect Spotify screen if no cached data)
+- follow <application> IDE suggestion in AndroidManifest.xml (add backup info xml)
+- give "internal" modifier to Dagger stuff?
+- determine which fields should be dependency injected
+- figure out when things should be @Singletons, and when that's bad practice (e.g. memory leaks)
+- check Dagger efficiency (going back from results to select screen feels slower than before) -- or maybe that's always been like of tht because of lots of views for genre options, and I need a RecyclerView

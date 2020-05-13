@@ -1,19 +1,18 @@
 package com.chuckstein.libzy.network
 
-import android.content.Context
 import android.util.Log
 import com.adamratzman.spotify.models.Artist
+import javax.inject.Inject
+import javax.inject.Singleton
 
-// TODO: read up on android Services to see if I should delegate to a Service for extended API calls that will take time?
-//       or find alternate best way? should it be a singleton? why are singletons bad again?
-class SpotifyClient(context: Context) {
+// TODO: read up on android Services to see if I should delegate to a Service for extended API calls that will take time? or find alternate best way?
+@Singleton
+class SpotifyClient @Inject constructor(private val api: SpotifyApiDelegator) {
 
     companion object {
         private val TAG = SpotifyClient::class.java.simpleName
         private const val API_ARG_LIMIT = 50
     }
-
-    private val api = SpotifyApiDelegator(context)
 
     // TODO: if we've previously gotten this info for the current user, only get new albums that have been saved since then, and append that to previous result
     suspend fun loadSavedAlbumsGroupedByGenre(): Map<String, Set<String>> {

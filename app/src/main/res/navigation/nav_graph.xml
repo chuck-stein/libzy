@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/launchFragment"
-        android:name="com.chuckstein.libzy.view.fragment.LaunchFragment"
+        android:name="com.chuckstein.libzy.view.launch.LaunchFragment"
         android:label="fragment_launch"
         tools:layout="@layout/fragment_launch" >
         <action
@@ -23,7 +23,7 @@
     </fragment>
     <fragment
         android:id="@+id/browseResultsFragment"
-        android:name="com.chuckstein.libzy.view.fragment.BrowseResultsFragment"
+        android:name="com.chuckstein.libzy.view.browseresults.BrowseResultsFragment"
         android:label="fragment_browse_results"
         tools:layout="@layout/fragment_browse_results" >
         <argument
@@ -37,7 +37,7 @@
     </fragment>
     <fragment
         android:id="@+id/selectGenresFragment"
-        android:name="com.chuckstein.libzy.view.fragment.SelectGenresFragment"
+        android:name="com.chuckstein.libzy.view.selectgenres.SelectGenresFragment"
         android:label="fragment_select_genres"
         tools:layout="@layout/fragment_select_genres" >
         <action
@@ -51,7 +51,7 @@
     </fragment>
     <fragment
         android:id="@+id/connectSpotifyFragment"
-        android:name="com.chuckstein.libzy.view.fragment.ConnectSpotifyFragment"
+        android:name="com.chuckstein.libzy.view.connectspotify.ConnectSpotifyFragment"
         android:label="fragment_connect_spotify"
         tools:layout="@layout/fragment_connect_spotify" >
         <action
