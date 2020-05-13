@@ -138,3 +138,11 @@
 - determine which fields should be dependency injected
 - figure out when things should be @Singletons, and when that's bad practice (e.g. memory leaks)
 - check Dagger efficiency (going back from results to select screen feels slower than before) -- or maybe that's always been like of tht because of lots of views for genre options, and I need a RecyclerView
+- think of a better way to handle Spotify request errors, because redirecting to ConnectSpotifyFragment will only force trying auth SDK again, not trying API request again
+- debug skipped frames after running auth on ConnectSpotifyFragment, before transition to SelectGenresFragment (too much work on main thread -- probably instantiating things, maybe Dagger, could be the runBlocking{} call in adamint API initialization)
+- generally organize build.gradle files
+- use adamint snapshot or newer version which allows for custom token refresh
+- remove SpotifyAccessToken class after migrating away from adamint since we don't need the expiry from AuthDispatcher call anymore, just the token string
+- notify that updateTokenWith will always fail with auth exception because expiresAt hasn't changed
+- remove `freeCompilerArgs = ["-XXLanguage:+NewInference"]` from build.gradle if Kotlin compiler has issues with experimental flag
+- fix bug where list_item_genre_result layout height increases while scrolling to something with long album title/artist (enforcing a fixed # of lines for all title/artist text should do the trick)

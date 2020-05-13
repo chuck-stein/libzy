@@ -49,7 +49,7 @@ class SelectGenresFragment : Fragment() {
         submitGenresButton.setOnClickListener { submitGenreSelection() }
         if (model.genreOptions.value == null) createLoadingChips()
         model.genreOptions.observe(viewLifecycleOwner, Observer(::onGenreOptionsReady))
-        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, Observer { if (it) onSpotifyNetworkError() })
+        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, Observer { if (it) onSpotifyNetworkError() }) // TODO: abstract this
     }
 
     private fun submitGenreSelection() {
@@ -103,7 +103,7 @@ class SelectGenresFragment : Fragment() {
         // a list of genres in the user's library, sorted by how many of their saved albums fit that genre, descending
         val orderedGenres = genreOptions.keys.sortedByDescending { genreOptions[it]?.size }
 
-        for (genre in orderedGenres.take(100)) { // TODO: need a RecyclerView to prevent the lag when adding full list (take(100) is just so it doesn't lag for the time being)
+        for (genre in orderedGenres.take(300)) { // TODO: need a RecyclerView to prevent the lag when adding full list (take(100) is just so it doesn't lag for the time being)
             with(Chip(requireContext())) {
                 style(R.style.Chip) // TODO: partially works, but some material styling missing... probably an issue with the way I defined the style (or could it be because there are no shimmer wrappers? or no width/height/id? or maybe the style is just straight up right... but no the loading ones look bigger... could THAT be shimmer?)
                 text = genre
@@ -119,6 +119,7 @@ class SelectGenresFragment : Fragment() {
 
     private fun genresAreSelected() = genreOptionsChipGroup.checkedChipIds.size > 0
 
+    // TODO: abstract this
     private fun onSpotifyNetworkError() {
         val networkErrorNavAction = SelectGenresFragmentDirections.actionSelectGenresFragmentToConnectSpotifyFragment()
         networkErrorNavAction.networkErrorReceived = true

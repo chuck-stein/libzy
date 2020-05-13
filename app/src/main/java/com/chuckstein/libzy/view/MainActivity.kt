@@ -9,10 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.common.currentTimeSeconds
-import com.chuckstein.libzy.network.auth.SpotifyAuthCallback
-import com.chuckstein.libzy.network.auth.SpotifyAuthClientProxy
-import com.chuckstein.libzy.network.auth.SpotifyAuthDispatcher
-import com.chuckstein.libzy.network.auth.SpotifyAuthException
+import com.chuckstein.libzy.network.auth.*
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -73,23 +70,24 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
         if (requestCode == SPOTIFY_AUTH_REQUEST_CODE) {
             val response = AuthorizationClient.getResponse(resultCode, intent)
             when (response.type) {
-                AuthorizationResponse.Type.TOKEN -> onSpotifyAuthSuccess(response.accessToken, response.expiresIn)
+                AuthorizationResponse.Type.TOKEN ->
+                    onSpotifyAuthSuccess(SpotifyAccessToken(response.accessToken, response.expiresIn))
                 AuthorizationResponse.Type.ERROR -> onSpotifyAuthFailure(response.error)
                 else -> onSpotifyAuthFailure("Authorization was prematurely cancelled")
             }
         }
     }
 
-    private fun onSpotifyAuthSuccess(accessToken: String, expiresIn: Int) {
+    private fun onSpotifyAuthSuccess(accessToken: SpotifyAccessToken) {
         spotifyAuthCallback?.onSuccess(accessToken)
-        saveAccessToken(accessToken, expiresIn)
+        saveAccessToken(accessToken)
     }
 
-    private fun saveAccessToken(accessToken: String, expiresIn: Int) {
+    private fun saveAccessToken(accessToken: SpotifyAccessToken) {
         val spotifyPrefs = getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
         with(spotifyPrefs.edit()) {
-            putString(getString(R.string.spotify_access_token_key), accessToken)
-            putInt(getString(R.string.spotify_token_expiry_key), currentTimeSeconds() + expiresIn)
+            putString(getString(R.string.spotify_access_token_key), accessToken.token)
+            putInt(getString(R.string.spotify_token_expiry_key), currentTimeSeconds() + accessToken.expiresIn)
             apply()
         }
     }
@@ -101,8 +99,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     override fun initiateAuthRequest(callback: SpotifyAuthCallback) {
         spotifyAuthCallback = callback
-        AuthorizationClient.openLoginActivity(this,
-            SPOTIFY_AUTH_REQUEST_CODE, buildAuthRequest())
+        AuthorizationClient.openLoginActivity(this, SPOTIFY_AUTH_REQUEST_CODE, buildAuthRequest())
     }
 
     private fun buildAuthRequest() =
@@ -112,7 +109,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
             AuthorizationResponse.Type.TOKEN,
             getRedirectUri().toString()
         )
-            .setScopes(arrayOf("user-library-read")) // TODO: determine which scopes I need
+            .setScopes(arrayOf("user-library-read", "app-remote-control")) // TODO: determine which scopes I need
             .build()
 
     private fun getRedirectUri() =

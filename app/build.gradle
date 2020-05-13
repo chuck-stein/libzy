@@ -35,6 +35,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
+        freeCompilerArgs = ["-XXLanguage:+NewInference"]
     }
 
     packagingOptions {
@@ -55,7 +56,8 @@ android {
 
 repositories {
     mavenCentral()
-    jcenter() // For adamint's Spotify API wrapper
+    google() // For Glide
+    jcenter() // For adamint Spotify API wrapper
     flatDir {
         dirs 'libs'
     }
@@ -103,6 +105,10 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:2.2.2"
     implementation "androidx.navigation:navigation-dynamic-features-fragment:2.3.0-alpha06"
     androidTestImplementation "androidx.navigation:navigation-testing:2.3.0-alpha06"
+
+    // Image loading
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    kapt 'com.github.bumptech.glide:compiler:4.11.0'
 
     // Programmatic Styling
     implementation 'com.airbnb.android:paris:1.4.0'

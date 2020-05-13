@@ -9,7 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
+import com.bumptech.glide.Glide
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.view.browseresults.adapter.GenresRecyclerAdapter
@@ -41,10 +43,25 @@ class BrowseResultsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // TODO: ensure when modifying a view in a RecyclerView, it gets recycled correctly (see Udacity lesson)
-        val genresRecyclerAdapter = GenresRecyclerAdapter { clickedAlbumUri -> model.playAlbum(clickedAlbumUri) }
+        val placeholderAlbumArt =
+            resources.getDrawable(R.drawable.placeholder_album_art, requireContext().theme)
+        val genresRecyclerAdapter =
+            GenresRecyclerAdapter(Glide.with(this), placeholderAlbumArt) { clickedAlbumUri ->
+                model.playAlbum(clickedAlbumUri)
+            }
         genresRecycler.adapter = genresRecyclerAdapter
+        // TODO: provide placeholder GenreResults as skeleton screen to GenresRecyclerAdapter
 
         model.fetchResults(navArgs.selectedGenres)
         model.genreResults.observe(viewLifecycleOwner, Observer { genresRecyclerAdapter.genres = it })
+        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, Observer { if (it) onSpotifyNetworkError() }) // TODO: abstract this
+    }
+
+    // TODO: abstract this
+    private fun onSpotifyNetworkError() {
+        val networkErrorNavAction =
+            BrowseResultsFragmentDirections.actionBrowseResultsFragmentToConnectSpotifyFragment()
+        networkErrorNavAction.networkErrorReceived = true
+        requireView().findNavController().navigate(networkErrorNavAction)
     }
 }

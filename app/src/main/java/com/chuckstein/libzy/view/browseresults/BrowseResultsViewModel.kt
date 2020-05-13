@@ -1,37 +1,48 @@
 package com.chuckstein.libzy.view.browseresults
 
-import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.chuckstein.libzy.view.browseresults.data.AlbumData
-import com.chuckstein.libzy.view.browseresults.data.GenreData
-import com.chuckstein.libzy.common.capitalizeAsHeading
+import androidx.lifecycle.viewModelScope
+import com.adamratzman.spotify.SpotifyException
+import com.chuckstein.libzy.view.browseresults.data.GenreResult
 import com.chuckstein.libzy.network.SpotifyClient
+import com.chuckstein.libzy.network.auth.SpotifyAuthException
+import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 class BrowseResultsViewModel @Inject constructor(private val spotifyClient: SpotifyClient) : ViewModel() {
 
-    private val _genreResults = MutableLiveData<List<GenreData>>()
-    val genreResults: LiveData<List<GenreData>>
+    companion object {
+        private val TAG = BrowseResultsViewModel::class.java.simpleName
+    }
+
+    private val _genreResults = MutableLiveData<List<GenreResult>>()
+    val genreResults: LiveData<List<GenreResult>>
         get() = _genreResults
 
     private var requestedResults = false
 
+    // TODO: abstract this (and its fragment Observer) to an abstract class or interface
+    private val _receivedSpotifyNetworkError = MutableLiveData<Boolean>()
+    val receivedSpotifyNetworkError: LiveData<Boolean>
+        get() = _receivedSpotifyNetworkError
+
     fun fetchResults(selectedGenres: Array<String>) {
         if (!requestedResults) {
-            // TODO: delete this dummy data, make actual request for full album data for each selected genre
-            _genreResults.value = selectedGenres.map { genre ->
-                GenreData(
-                    genre.capitalizeAsHeading(), listOf(
-                        AlbumData("Crack the Skye", "Mastodon", Uri.EMPTY, ""),
-                        AlbumData("AEnima", "Tool", Uri.EMPTY, ""),
-                        AlbumData("Dopethrone", "Electric Wizard", Uri.EMPTY, ""),
-                        AlbumData("Baroness", "Purple", Uri.EMPTY, "")
-                    )
-                )
+            viewModelScope.launch {
+                try {
+                    _genreResults.value = spotifyClient.loadResultsFromGenreSelection(selectedGenres)
+                } catch (e: Exception) {
+                    // TODO: abstract this (and its fragment Observer) to an abstract class or interface
+                    if (e is SpotifyException || e is SpotifyAuthException) {
+                        Log.e(TAG, "Received a Spotify network error", e)
+                        _receivedSpotifyNetworkError.value = true
+                    } else throw e
+                }
             }
-
             requestedResults = true
         }
     }

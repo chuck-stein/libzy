@@ -1,6 +1,6 @@
 package com.chuckstein.libzy.view.browseresults.data
 
-data class GenreData(
+data class GenreResult(
     val name: String,
-    val albums: List<AlbumData>
+    val albums: List<AlbumResult>
 )

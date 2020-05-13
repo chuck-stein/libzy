@@ -3,8 +3,10 @@ package com.chuckstein.libzy.network
 import android.content.Context
 import android.content.SharedPreferences
 import com.adamratzman.spotify.*
+import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.Artist
 import com.adamratzman.spotify.models.SavedAlbum
+import com.adamratzman.spotify.utils.getCurrentTimeMs
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.currentTimeSeconds
 import com.chuckstein.libzy.network.auth.SpotifyAuthDispatcher
@@ -19,6 +21,9 @@ class SpotifyApiDelegator @Inject constructor(
     applicationContext: Context,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) {
+    companion object {
+        const val API_ARG_LIMIT = 50
+    }
 
     // do not access the delegate directly -- use getApiDelegate() which initializes it if null
     private var _apiDelegate: SpotifyClientApi? = null
@@ -41,7 +46,7 @@ class SpotifyApiDelegator @Inject constructor(
 
     private suspend fun initApiDelegateWithNewToken(): SpotifyClientApi {
         val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
-        val delegate = createApiDelegate(newAccessToken)
+        val delegate = createApiDelegate(newAccessToken.token)
         _apiDelegate = delegate
         return delegate
     }
@@ -52,15 +57,27 @@ class SpotifyApiDelegator @Inject constructor(
         return SpotifyClientApiBuilder(authorization = apiAuthorization, options = apiOptions).build()
     }
 
-    private suspend fun <T> doSafeApiCall(apiCall: suspend () -> T): T = withContext(Dispatchers.IO) {
-        try {
-            apiCall()
-        } catch (e: SpotifyException.BadRequestException) {
-            if (e.statusCode?.equals(401) == true) {
-                val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
-                getApiDelegate().updateTokenWith(newAccessToken)
+    private suspend fun <T> doSafeApiCall(apiCall: suspend () -> T): T {
+
+        suspend fun retryCallWithNewToken(): T {
+            val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
+            getApiDelegate().updateToken {
+                accessToken = newAccessToken.token
+                expiresIn = newAccessToken.expiresIn                                // duration of validity in seconds
+                expiresAt = newAccessToken.expiresIn * 1000 + getCurrentTimeMs()    // timestamp of expiry in ms
+            }
+            return apiCall()
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
                 apiCall()
-            } else throw e
+            } catch (e: SpotifyException.AuthenticationException) {
+                retryCallWithNewToken()
+            } catch (e: SpotifyException.BadRequestException) {
+                if (e.statusCode == 401) retryCallWithNewToken()
+                else throw e
+            }
         }
     }
 
@@ -68,8 +85,23 @@ class SpotifyApiDelegator @Inject constructor(
         getApiDelegate().library.getSavedAlbums().getAllItems().suspendQueue()
     }
 
-    suspend fun getArtists(ids: List<String>): List<Artist?> = doSafeApiCall {
-        getApiDelegate().artists.getArtists(*ids.toTypedArray()).suspendQueue()
+    suspend fun getArtists(ids: Collection<String>): List<Artist?> =
+        getBatchedItems(ids, getApiDelegate().artists::getArtists)
+
+    suspend fun getAlbums(ids: Collection<String>): List<Album?> =
+        getBatchedItems(ids, getApiDelegate().albums::getAlbums)
+
+    private suspend fun <T> getBatchedItems(
+        ids: Collection<String>,
+        endpoint: (Array<out String>) -> SpotifyRestAction<List<T?>>
+    ): List<T?> {
+        val items = mutableListOf<T?>()
+        val batches = ids.chunked(API_ARG_LIMIT)
+        for (batch in batches) {
+            val batchItems = doSafeApiCall { endpoint(*batch.toTypedArray()).suspendQueue() }
+            items.addAll(batchItems)
+        }
+        return items
     }
 
 }

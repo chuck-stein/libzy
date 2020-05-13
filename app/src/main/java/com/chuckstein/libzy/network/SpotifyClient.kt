@@ -1,7 +1,12 @@
 package com.chuckstein.libzy.network
 
-import android.util.Log
-import com.adamratzman.spotify.models.Artist
+import com.adamratzman.spotify.models.Album
+import com.adamratzman.spotify.models.SimpleArtist
+import com.adamratzman.spotify.models.SpotifyImage
+import com.chuckstein.libzy.common.capitalizeAsHeading
+import com.chuckstein.libzy.view.browseresults.data.AlbumResult
+import com.chuckstein.libzy.view.browseresults.data.GenreResult
+import java.lang.IllegalStateException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -9,10 +14,35 @@ import javax.inject.Singleton
 @Singleton
 class SpotifyClient @Inject constructor(private val api: SpotifyApiDelegator) {
 
-    companion object {
-        private val TAG = SpotifyClient::class.java.simpleName
-        private const val API_ARG_LIMIT = 50
+    // TODO: remove this quick hack in favor of SQLite caching (unless this makes sense for faster in-memory caching...? but still would use Room as backup)
+    private var cachedAlbumsByGenre: Map<String, Set<String>>? = null
+    suspend fun loadResultsFromGenreSelection(selectedGenres: Array<String>): List<GenreResult> {
+        cachedAlbumsByGenre.let { cachedAlbumsByGenre ->
+            if (cachedAlbumsByGenre == null) throw IllegalStateException("No cached library data!") // TODO: if client cache does end up being final, fix this
+            val results = mutableListOf<GenreResult>()
+            for (genre in selectedGenres) {
+                val albumIds = cachedAlbumsByGenre[genre]
+                    ?: throw IllegalArgumentException("The given genre $genre is not in the user's library!")
+                val albums = api.getAlbums(albumIds)
+                // TODO: log and/or error if an album is null, meaning we requested an invalid ID? instead of just filtering?
+                val albumResults = albums.filterNotNull().map { toAlbumResult(it) }
+                results.add(GenreResult(genre.capitalizeAsHeading(), albumResults))  // TODO: capitalization should go in ViewModel as a LiveData transformation map
+            }
+            return results
+        }
     }
+
+    // TODO: should these all be local functions?
+
+    private fun toAlbumResult(album: Album) =
+        AlbumResult(album.name, artistsToString(album.artists), getArtworkUri(album.images), album.uri.uri)
+
+    // TODO: maybe don't always use the largest image if I run into performance issues?
+    private fun getArtworkUri(albumImages: List<SpotifyImage>) = albumImages.getOrNull(0)?.url
+
+    // TODO: this should go in viewmodel
+    private fun artistsToString(artists: List<SimpleArtist>) = artists.joinToString(", ") { it.name }
+
 
     // TODO: if we've previously gotten this info for the current user, only get new albums that have been saved since then, and append that to previous result
     suspend fun loadSavedAlbumsGroupedByGenre(): Map<String, Set<String>> {
@@ -20,7 +50,6 @@ class SpotifyClient @Inject constructor(private val api: SpotifyApiDelegator) {
         val albumsGroupedByGenre = mutableMapOf<String, MutableSet<String>>()
         // a map of artist IDs to album IDs associated with that artist
         val albumsGroupedByArtist = mutableMapOf<String, MutableSet<String>>()
-        val startTime = System.currentTimeMillis()
 
         val albums = api.getAllSavedAlbums().map { savedAlbum -> savedAlbum.album }
         for (album in albums) {
@@ -28,22 +57,7 @@ class SpotifyClient @Inject constructor(private val api: SpotifyApiDelegator) {
             addToGrouping(album.id, album.artists.map { a -> a.id }, albumsGroupedByArtist)
         }
 
-        val artistIdBatches = albumsGroupedByArtist.keys.chunked(API_ARG_LIMIT)
-        for (artistIdBatch in artistIdBatches) {
-            val artists = api.getArtists(artistIdBatch)
-            addArtistGenresToAlbums(artists, albumsGroupedByArtist, albumsGroupedByGenre)
-        }
-
-        val elapsedTime = System.currentTimeMillis() - startTime // TODO: use measureTimeMillis instaed
-        Log.d(TAG, "Finished collecting album & genre data in $elapsedTime milliseconds.")
-        return albumsGroupedByGenre
-    }
-
-    private fun addArtistGenresToAlbums(
-        artists: List<Artist?>,
-        albumsGroupedByArtist: MutableMap<String, MutableSet<String>>,
-        albumsGroupedByGenre: MutableMap<String, MutableSet<String>>
-    ) {
+        val artists = api.getArtists(albumsGroupedByArtist.keys)
         for (artist in artists) {
             if (artist != null) {
                 val albumsByThisArtist = albumsGroupedByArtist[artist.id]
@@ -54,6 +68,9 @@ class SpotifyClient @Inject constructor(private val api: SpotifyApiDelegator) {
                 }
             }
         }
+
+        cachedAlbumsByGenre = albumsGroupedByGenre // TODO: delete after SQLite refactor
+        return albumsGroupedByGenre
     }
 
     private fun <T, S> addToGrouping(item: S, groups: Iterable<T>, grouping: MutableMap<T, MutableSet<S>>) {

@@ -33,7 +33,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
     private val pendingAuthCallbacks = mutableListOf<SpotifyAuthCallback>()
 
     private val onAuthComplete = object: SpotifyAuthCallback {
-        override fun onSuccess(accessToken: String) {
+        override fun onSuccess(accessToken: SpotifyAccessToken) {
             for (pendingAuthCallback in pendingAuthCallbacks) {
                 pendingAuthCallback.onSuccess(accessToken)
             }
@@ -49,13 +49,13 @@ class SpotifyAuthDispatcher @Inject constructor() {
 
     }
 
-    suspend fun requestAuthorization(): String = withContext(Dispatchers.IO) {
-        suspendCancellableCoroutine<String> { continuation ->
+    suspend fun requestAuthorization(): SpotifyAccessToken = withContext(Dispatchers.IO) {
+        suspendCancellableCoroutine<SpotifyAccessToken> { continuation ->
             CoroutineScope(Dispatchers.Main).launch { // TODO: is this the best way to ensure suspendCoroutine block runs on main thread?
 
                 // initialize an auth callback to unsuspend the coroutine upon completion with either a token or exception
                 val spotifyAuthCallback = object : SpotifyAuthCallback {
-                    override fun onSuccess(accessToken: String) {
+                    override fun onSuccess(accessToken: SpotifyAccessToken) {
                         continuation.resume(accessToken)
                     }
 
@@ -68,7 +68,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                 pendingAuthCallbacks.add(spotifyAuthCallback)
 
                 // create a timeout to fail with an exception if auth client doesn't return in a reasonable time frame
-                Handler().postDelayed({ // TODO: use withTimeout() instead?
+                Handler().postDelayed({ // TODO: use withTimeout() instead? can at least probably run that outside of suspendCancellableCoroutine to encapsulate the whole thing (and then maybe I don't need to assert Dispatchers.Main?)
                     if (continuation.isActive) {
                         pendingAuthCallbacks.remove(spotifyAuthCallback)
                         val errorMessage = "Timed out while waiting for Spotify auth callback"
