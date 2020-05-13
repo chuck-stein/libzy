@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.adapter
+package com.chuckstein.libzy.view.browseresults.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.viewmodel.data.GenreData
+import com.chuckstein.libzy.view.browseresults.data.GenreData
 import kotlinx.android.synthetic.main.list_item_genre_result.view.albums_recycler as albumsRecycler
 import kotlinx.android.synthetic.main.list_item_genre_result.view.genre_name as genreName
 

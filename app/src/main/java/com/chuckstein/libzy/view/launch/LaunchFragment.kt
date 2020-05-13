@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.fragment
+package com.chuckstein.libzy.view.launch
 
 import android.content.Context
 import android.os.Bundle

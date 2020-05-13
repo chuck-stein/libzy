@@ -1,25 +1,23 @@
-package com.chuckstein.libzy.viewmodel
+package com.chuckstein.libzy.view.selectgenres
 
-import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adamratzman.spotify.SpotifyException
 import com.chuckstein.libzy.network.SpotifyClient
 import com.chuckstein.libzy.network.auth.SpotifyAuthException
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import javax.inject.Inject
 
 // TODO: refactor this to only contain list of genres, as that's all the View needs, and move the genre-album grouping to a deeper architecture layer
-class SelectGenresViewModel(applicationContext: Application) : AndroidViewModel(applicationContext) {
+class SelectGenresViewModel @Inject constructor(private val spotifyClient: SpotifyClient) : ViewModel() {
 
     companion object {
         private val TAG = SelectGenresViewModel::class.java.simpleName
     }
-
-    private val spotifyClient = SpotifyClient(applicationContext)
 
     private val _genreOptions = MutableLiveData<Map<String, Set<String>>>()
     val genreOptions: LiveData<Map<String, Set<String>>>

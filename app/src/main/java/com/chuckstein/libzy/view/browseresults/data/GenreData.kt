@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.viewmodel.data
+package com.chuckstein.libzy.view.browseresults.data
 
 data class GenreData(
     val name: String,

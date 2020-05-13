@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'androidx.navigation.safeargs'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -95,10 +96,7 @@ dependencies {
 
     // Dependency Injection
     implementation 'com.google.dagger:dagger:2.27'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.27'
-    implementation 'com.google.dagger:dagger-android:2.27'
-    implementation 'com.google.dagger:dagger-android-support:2.27'
-    annotationProcessor 'com.google.dagger:dagger-android-processor:2.27'
+    kapt 'com.google.dagger:dagger-compiler:2.27'
 
     // Navigation
     implementation "androidx.navigation:navigation-fragment-ktx:2.2.2"

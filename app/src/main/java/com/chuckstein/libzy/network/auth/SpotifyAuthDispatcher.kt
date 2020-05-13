@@ -3,20 +3,24 @@ package com.chuckstein.libzy.network.auth
 import android.os.Handler
 import android.util.Log
 import kotlinx.coroutines.*
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /*
 TODO:
-    - make this an injected dependency instead of a singleton
     - look at actual request dispatchers like Spring MVC's for design advice
     - read up on coroutines to do this in the best way
     - unit test this
  */
-object SpotifyAuthDispatcher {
+@Singleton
+class SpotifyAuthDispatcher @Inject constructor() {
 
-    private const val AUTH_TIMEOUT_MILLIS = 10_000L
-    private val TAG = SpotifyAuthDispatcher::class.java.simpleName
+    companion object {
+        private const val AUTH_TIMEOUT_MILLIS = 10_000L
+        private val TAG = SpotifyAuthDispatcher::class.java.simpleName
+    }
 
     var authClientProxy: SpotifyAuthClientProxy? = null
         set(proxy) {

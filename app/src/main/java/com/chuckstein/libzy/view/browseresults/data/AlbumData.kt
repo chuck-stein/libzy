@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.viewmodel.data
+package com.chuckstein.libzy.view.browseresults.data
 
 import android.net.Uri
 
