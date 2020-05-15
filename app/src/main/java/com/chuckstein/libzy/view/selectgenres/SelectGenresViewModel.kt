@@ -6,8 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adamratzman.spotify.SpotifyException
-import com.chuckstein.libzy.network.SpotifyClient
-import com.chuckstein.libzy.network.auth.SpotifyAuthException
+import com.chuckstein.libzy.spotify.api.SpotifyClient
+import com.chuckstein.libzy.spotify.auth.SpotifyAuthException
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject

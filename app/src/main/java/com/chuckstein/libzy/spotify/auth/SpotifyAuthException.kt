@@ -1,3 +1,3 @@
-package com.chuckstein.libzy.network.auth
+package com.chuckstein.libzy.spotify.auth
 
 class SpotifyAuthException(message: String, cause: Throwable? = null) : Exception(message, cause)

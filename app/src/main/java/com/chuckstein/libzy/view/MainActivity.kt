@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.common.currentTimeSeconds
-import com.chuckstein.libzy.network.auth.*
+import com.chuckstein.libzy.spotify.auth.*
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     companion object {
         private const val SPOTIFY_AUTH_REQUEST_CODE = 1104
+        private val AUTH_SCOPES = arrayOf("user-library-read", "app-remote-control")
     }
 
     @Inject
@@ -104,18 +105,11 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     private fun buildAuthRequest() =
         AuthorizationRequest.Builder(
-            // TODO: if client_id isn't used anywhere else, remove it from strings.xml and make it a static const
             getString(R.string.spotify_client_id),
             AuthorizationResponse.Type.TOKEN,
-            getRedirectUri().toString()
+            getString(R.string.spotify_auth_redirect_uri)
         )
-            .setScopes(arrayOf("user-library-read", "app-remote-control")) // TODO: determine which scopes I need
-            .build()
-
-    private fun getRedirectUri() =
-        Uri.Builder()
-            .scheme(getString(R.string.spotify_auth_redirect_scheme))
-            .authority(getString(R.string.spotify_auth_redirect_host))
+            .setScopes(AUTH_SCOPES)
             .build()
 
 }

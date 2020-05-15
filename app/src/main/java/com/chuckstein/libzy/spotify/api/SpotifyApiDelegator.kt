@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.network
+package com.chuckstein.libzy.spotify.api
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -9,7 +9,7 @@ import com.adamratzman.spotify.models.SavedAlbum
 import com.adamratzman.spotify.utils.getCurrentTimeMs
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.currentTimeSeconds
-import com.chuckstein.libzy.network.auth.SpotifyAuthDispatcher
+import com.chuckstein.libzy.spotify.auth.SpotifyAuthDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -91,6 +91,7 @@ class SpotifyApiDelegator @Inject constructor(
     suspend fun getAlbums(ids: Collection<String>): List<Album?> =
         getBatchedItems(ids, getApiDelegate().albums::getAlbums)
 
+    // TODO: delegate batching responsibility to SpotifyClientApi once adamint fixes bulk request bug w/ empty JSON
     private suspend fun <T> getBatchedItems(
         ids: Collection<String>,
         endpoint: (Array<out String>) -> SpotifyRestAction<List<T?>>

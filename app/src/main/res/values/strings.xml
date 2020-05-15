@@ -6,8 +6,7 @@
 
     <!-- Spotify SDK -->
     <string name="spotify_client_id">058c796e8b3740d190136f2ebc4d64ab</string>
-    <string name="spotify_auth_redirect_scheme">com.chuckstein.libzy</string>
-    <string name="spotify_auth_redirect_host">spotify-auth</string>
+    <string name="spotify_auth_redirect_uri">com.chuckstein.libzy://spotify-auth</string>
 
     <!-- SharedPreferences keys -->
     <string name="spotify_connected_key">spotify.connected</string>
@@ -30,6 +29,7 @@
     <string name="album_title_placeholder">Album Title</string>
     <string name="artist_name_placeholder">Album Artist</string>
     <string name="album_art_desc">album artwork</string>
+    <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
     
     <!-- Uncategorized -->
 

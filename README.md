@@ -6,6 +6,7 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - integration with spotify remote SDK to play/queue results directly from Libzy
 - ability to remove saved albums from library directly from Libzy
 - ability to remove album's association with a certain genre so it not longer appears in results for that genre
+- ability to hide certain genres from options menu (and later restore them in settings)
 - ability to visit the Spotify page for an album without playing it
 - separate page for individual albums, showing genre data (with options to browse those genres or add them to your selected categories?) & other info available from API like audio analysis of tracks
 - support for searching by individual tracks instead of only albums

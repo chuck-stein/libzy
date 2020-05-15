@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.network.auth
+package com.chuckstein.libzy.spotify.auth
 
 interface SpotifyAuthCallback {
 

@@ -7,21 +7,30 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adamratzman.spotify.SpotifyException
 import com.chuckstein.libzy.view.browseresults.data.GenreResult
-import com.chuckstein.libzy.network.SpotifyClient
-import com.chuckstein.libzy.network.auth.SpotifyAuthException
+import com.chuckstein.libzy.spotify.api.SpotifyClient
+import com.chuckstein.libzy.spotify.auth.SpotifyAuthException
+import com.chuckstein.libzy.spotify.remote.SpotifyAppRemoteService
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject
 
-class BrowseResultsViewModel @Inject constructor(private val spotifyClient: SpotifyClient) : ViewModel() {
+class BrowseResultsViewModel @Inject constructor(
+    private val spotifyClient: SpotifyClient,
+    private val spotifyAppRemoteService: SpotifyAppRemoteService
+) : ViewModel() {
 
     companion object {
         private val TAG = BrowseResultsViewModel::class.java.simpleName
     }
 
+    // TODO: should not include view-specific stuff, but should do a map transformation into that format
+    // TODO: if this value ever changes after the initial data set, we'll have to somehow reset what's currently playing for the view to display
     private val _genreResults = MutableLiveData<List<GenreResult>>()
     val genreResults: LiveData<List<GenreResult>>
         get() = _genreResults
+
+    val spotifyPlayerState = spotifyAppRemoteService.playerState
+    val spotifyPlayerContext = spotifyAppRemoteService.playerContext
 
     private var requestedResults = false
 
@@ -47,8 +56,16 @@ class BrowseResultsViewModel @Inject constructor(private val spotifyClient: Spot
         }
     }
 
+    fun connectSpotifyAppRemote(onFailure: () -> Unit) {
+        spotifyAppRemoteService.connect(onFailure)
+    }
+
+    fun disconnectSpotifyAppRemote() {
+        spotifyAppRemoteService.disconnect()
+    }
+
     fun playAlbum(spotifyUri: String) {
-        // TODO (delegate to a SpotifyRemoteService?)
+        spotifyAppRemoteService.playAlbum(spotifyUri)
     }
 
 }

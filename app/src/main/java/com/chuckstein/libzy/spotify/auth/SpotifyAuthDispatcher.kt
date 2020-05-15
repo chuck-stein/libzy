@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.network.auth
+package com.chuckstein.libzy.spotify.auth
 
 import android.os.Handler
 import android.util.Log
@@ -56,11 +56,11 @@ class SpotifyAuthDispatcher @Inject constructor() {
                 // initialize an auth callback to unsuspend the coroutine upon completion with either a token or exception
                 val spotifyAuthCallback = object : SpotifyAuthCallback {
                     override fun onSuccess(accessToken: SpotifyAccessToken) {
-                        continuation.resume(accessToken)
+                        if (continuation.isActive) continuation.resume(accessToken)
                     }
 
                     override fun onFailure(exception: SpotifyAuthException) {
-                        continuation.resumeWithException(exception)
+                        if (continuation.isActive) continuation.resumeWithException(exception)
                     }
                 }
 
@@ -78,9 +78,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                 }, AUTH_TIMEOUT_MILLIS)
 
                 // remove auth callback upon coroutine cancellation, so it is not called with nowhere to continue
-                continuation.invokeOnCancellation {
-                    pendingAuthCallbacks.remove(spotifyAuthCallback)
-                }
+                continuation.invokeOnCancellation { pendingAuthCallbacks.remove(spotifyAuthCallback) }
 
                 // if this is the only pending auth callback, initiate auth since it is not already in progress
                 if (pendingAuthCallbacks.size == 1) {

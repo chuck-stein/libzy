@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.network.auth
+package com.chuckstein.libzy.spotify.auth
 
 data class SpotifyAccessToken(
     val token: String,

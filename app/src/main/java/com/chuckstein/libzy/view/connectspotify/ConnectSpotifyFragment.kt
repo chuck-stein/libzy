@@ -7,13 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
-import com.chuckstein.libzy.network.auth.SpotifyAuthDispatcher
-import com.chuckstein.libzy.network.auth.SpotifyAuthException
+import com.chuckstein.libzy.spotify.auth.SpotifyAuthDispatcher
+import com.chuckstein.libzy.spotify.auth.SpotifyAuthException
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_connect_spotify.connect_spotify_button as connectSpotifyButton
@@ -49,7 +49,7 @@ class ConnectSpotifyFragment : Fragment() {
     }
 
     private fun onConnectSpotifyButtonClicked() {
-        lifecycle.coroutineScope.launch {
+        lifecycleScope.launch {
             try {
                 spotifyAuthDispatcher.requestAuthorization()
                 recordSpotifyConnected()

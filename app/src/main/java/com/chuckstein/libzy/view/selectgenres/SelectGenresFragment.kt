@@ -28,7 +28,6 @@ class SelectGenresFragment : Fragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-
     private val model by viewModels<SelectGenresViewModel> { viewModelFactory }
 
     override fun onAttach(context: Context) {

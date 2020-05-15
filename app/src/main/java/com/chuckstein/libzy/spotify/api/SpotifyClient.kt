@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.network
+package com.chuckstein.libzy.spotify.api
 
 import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.SimpleArtist
