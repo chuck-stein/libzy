@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/genre_name_placeholder"
+        android:textStyle="bold"
         android:textAlignment="center"
         android:textSize="@dimen/subheading_text_size" />
 
@@ -19,6 +20,5 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/light_spacing"
         android:orientation="horizontal" />
-    <!--tools:layout_editor_absoluteX="74dp"   TODO: figure out what this does and why it was suggested -->
 
 </LinearLayout>

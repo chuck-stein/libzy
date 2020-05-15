@@ -47,8 +47,14 @@ class SpotifyAppRemoteService @Inject constructor(private val applicationContext
                     appRemote = remote
                     // TODO: ensure subscription isn't garbage collected when this function loses scope
                     // TODO: handle subscription errors/lifecycle in fragment
-                    remote.playerApi.subscribeToPlayerState().setEventCallback { _playerState.value = it }
-                    remote.playerApi.subscribeToPlayerContext().setEventCallback { _playerContext.value = it }
+                    remote.playerApi.subscribeToPlayerState().setEventCallback {
+                        _playerState.value = it
+                        Log.d(TAG, "Spotify switched player state: $it")
+                    }
+                    remote.playerApi.subscribeToPlayerContext().setEventCallback {
+                        _playerContext.value = it
+                        Log.d(TAG, "Spotify switched player context: $it")
+                    }
                 }
             }
 
@@ -65,7 +71,6 @@ class SpotifyAppRemoteService @Inject constructor(private val applicationContext
         SpotifyAppRemote.disconnect(appRemote)
     }
 
-    // TODO: catch IllegalStateException? Show a Toast?
     fun playAlbum(spotifyUri: String) {
         // TODO: clear the queue when the SDK supports that (a possible workaround for now is to check the player context, and while the type is "play_queue", skip to next track)
         requireRemote().playerApi.setShuffle(false)
