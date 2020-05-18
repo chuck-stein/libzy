@@ -19,6 +19,7 @@ class SelectGenresViewModel @Inject constructor(private val spotifyClient: Spoti
         private val TAG = SelectGenresViewModel::class.java.simpleName
     }
 
+    // TODO: don't need Set<String> as map value type here, just an int for # of results
     private val _genreOptions = MutableLiveData<Map<String, Set<String>>>()
     val genreOptions: LiveData<Map<String, Set<String>>>
         get() = _genreOptions

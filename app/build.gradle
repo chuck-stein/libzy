@@ -110,6 +110,11 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     kapt 'com.github.bumptech.glide:compiler:4.11.0'
 
+    // Reactive Extensions
+    implementation "io.reactivex.rxjava3:rxjava:3.0.3"
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation("io.reactivex.rxjava3:rxkotlin:3.0.0")
+
     // Programmatic Styling
     implementation 'com.airbnb.android:paris:1.4.0'
 }

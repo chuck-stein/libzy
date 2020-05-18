@@ -16,7 +16,11 @@ import com.bumptech.glide.Glide
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.view.browseresults.adapter.GenresRecyclerAdapter
-import java.lang.Exception
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_browse_results.genres_recycler as genresRecycler
 
@@ -43,13 +47,10 @@ class BrowseResultsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // TODO: ensure when modifying a view in a RecyclerView, it gets recycled correctly (see Udacity lesson)
-        val placeholderAlbumArt =
-            resources.getDrawable(R.drawable.placeholder_album_art, requireContext().theme)
-        val genresRecyclerAdapter =
-            GenresRecyclerAdapter(Glide.with(this), placeholderAlbumArt, ::onAlbumClicked)
+        val genresRecyclerAdapter = createGenresRecyclerAdapter()
         genresRecycler.adapter = genresRecyclerAdapter
-        // TODO: provide placeholder GenreResults as skeleton screen to GenresRecyclerAdapter
+        genresRecyclerAdapter.genres =
+            model.createSkeletonScreenResults(navArgs.selectedGenres, navArgs.numAlbumsPerSelectedGenre)
 
         model.fetchResults(navArgs.selectedGenres)
         model.genreResults.observe(viewLifecycleOwner, Observer { genresRecyclerAdapter.genres = it })
@@ -64,6 +65,20 @@ class BrowseResultsFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         model.disconnectSpotifyAppRemote()
+    }
+
+    private fun createGenresRecyclerAdapter(): GenresRecyclerAdapter {
+        val loadingAnimationTimer =
+            Observable.interval(1, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread()) // TODO: is this the most efficient Scheduler to subscribe on in this scenario?
+                .subscribeWith(PublishSubject.create())
+        // TODO: how do I unsubscribe the subject? Do I need to?
+
+        val placeholderAlbumArt =
+            resources.getDrawable(R.drawable.placeholder_album_art, requireContext().theme)
+
+        return GenresRecyclerAdapter(loadingAnimationTimer, Glide.with(this), placeholderAlbumArt, ::onAlbumClicked)
     }
 
     private fun onAlbumClicked(spotifyUri: String) {

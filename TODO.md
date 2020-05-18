@@ -160,6 +160,10 @@
 - test ConnectSpotifyFragment's coroutine scope by stopping fragment (but not destroying) in the middle of auth and see if coroutine still completes (navigation happens? auth cancelled exception?)
 - run IntelliJ code analysis
 - add "Now playing" bar at bottom of BrowseResultsFragment which updates with PlayerState and redirects to Spotify when tapped
+- make all UI text an @string resource, including AlbumResult placeholder title/artist
+- use RxJava or something else to sync album art loading shimmers (or if I give up and prevent scrolling while loading, do I really need to fill all the off screen albums?)
+- expand RxJava to RxKotlin
+- check with someone proficient with RxJava/Kotlin/Android about whether my timer sync implementation is good
 
 ## Priorities
 

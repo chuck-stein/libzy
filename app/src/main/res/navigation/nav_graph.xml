@@ -29,6 +29,9 @@
         <argument
             android:name="selectedGenres"
             app:argType="string[]" />
+        <argument
+            android:name="numAlbumsPerSelectedGenre"
+            app:argType="integer[]" />
         <action
             android:id="@+id/action_browseResultsFragment_to_connectSpotifyFragment"
             app:destination="@id/connectSpotifyFragment"

@@ -13,4 +13,4 @@ An app to narrow down a large Spotify library into suggested albums, based on th
 - display 1-3 sample albums for each genre in the list on SelectGenreActivity
 - list currently selected genres at top of SelectGenreActivity
 - sort results page (both genres and albums) by what's most relevant based on the SET of genres that were picked (or prioritize albums that fit the most of the selected genres)
-- "discover more from this genre" button to the right of the genre header in BrowseAlbumsActivity (brings them to an activity similar to BrowseAlbums but with one vertical scrolling grid list of albums, and maybe a description of the genre pulled from google/wikipedia below the genre header)
+- "genre detail" screen w BrowseResultsFragment (brings them to an activity similar to BrowseResults but with one vertical scrolling grid list of albums, and maybe a description of the genre pulled from google/wikipedia below the genre header)

@@ -2,16 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="@dimen/light_spacing"
     android:background="?android:attr/selectableItemBackground"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/album_art"
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/album_art_shimmer"
         android:layout_width="@dimen/album_art_size"
         android:layout_height="@dimen/album_art_size"
-        android:contentDescription="@string/album_art_desc"
-        android:src="@drawable/placeholder_album_art" />
+        app:shimmer_repeat_count="0">
+
+        <ImageView
+            android:id="@+id/album_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/album_art_desc"
+            android:src="@drawable/placeholder_album_art" />
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
 
     <TextView
         android:id="@+id/album_title"

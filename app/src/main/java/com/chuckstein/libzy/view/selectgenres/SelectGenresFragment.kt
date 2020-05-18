@@ -17,6 +17,7 @@ import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.chip.Chip
+import java.lang.IllegalStateException
 import javax.inject.Inject
 import kotlin.random.Random
 import kotlinx.android.synthetic.main.fragment_select_genres.genre_options_chip_group as genreOptionsChipGroup
@@ -52,15 +53,24 @@ class SelectGenresFragment : Fragment() {
     }
 
     private fun submitGenreSelection() {
-        val selectedGenres = mutableSetOf<String>()
+        val selectedGenres = mutableListOf<String>()
         for (chip in genreOptionsChipGroup.children) {
             if (chip is Chip && chip.isChecked) {
                 selectedGenres.add(chip.text.toString())
             }
         }
+
+        val numAlbumsPerSelectedGenre = mutableListOf<Int>()
+        for (genre in selectedGenres) {
+            val numAlbums = model.genreOptions.value?.get(genre)?.size
+                ?: throw IllegalStateException("Failed to retrieve number of albums for genre $genre")
+            numAlbumsPerSelectedGenre.add(numAlbums)
+        }
+
         val submitGenresNavAction =
             SelectGenresFragmentDirections.actionSelectGenresFragmentToBrowseResultsFragment(
-                selectedGenres.toTypedArray()
+                selectedGenres.toTypedArray(),
+                numAlbumsPerSelectedGenre.toIntArray()
             )
         requireView().findNavController().navigate(submitGenresNavAction)
     }

@@ -6,12 +6,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adamratzman.spotify.SpotifyException
+import com.chuckstein.libzy.common.capitalizeAsHeading
 import com.chuckstein.libzy.view.browseresults.data.GenreResult
 import com.chuckstein.libzy.spotify.api.SpotifyClient
 import com.chuckstein.libzy.spotify.auth.SpotifyAuthException
 import com.chuckstein.libzy.spotify.remote.SpotifyAppRemoteService
+import com.chuckstein.libzy.view.browseresults.data.AlbumResult
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 class BrowseResultsViewModel @Inject constructor(
@@ -25,6 +28,7 @@ class BrowseResultsViewModel @Inject constructor(
 
     // TODO: should not include view-specific stuff, but should do a map transformation into that format
     // TODO: if this value ever changes after the initial data set, we'll have to somehow reset what's currently playing for the view to display
+    // TODO: this should only be album data genre name is already taken care of in skeleton screen (when updating data set, think about weird cases where number of albums might be different from skeleton screen)
     private val _genreResults = MutableLiveData<List<GenreResult>>()
     val genreResults: LiveData<List<GenreResult>>
         get() = _genreResults
@@ -54,6 +58,26 @@ class BrowseResultsViewModel @Inject constructor(
             }
             requestedResults = true
         }
+    }
+
+    fun createSkeletonScreenResults(
+        selectedGenres: Array<String>,
+        numAlbumsPerSelectedGenre: IntArray
+    ): List<GenreResult> {
+        if (selectedGenres.size != numAlbumsPerSelectedGenre.size) {
+            throw IllegalArgumentException(
+                "The given arrays for selected genres and album count per selected genre must be of the same size"
+            )
+        }
+        val skeletonScreenGenres = mutableListOf<GenreResult>()
+        for ((index, genre) in selectedGenres.withIndex()) {
+            val skeletonScreenAlbums = List(numAlbumsPerSelectedGenre[index]) {
+                AlbumResult("Fetching album data", "Please wait...", isPlaceholder = true)
+                // TODO: instead of text placeholders, make text an empty string, add a shimmer, and make background non-transparent (if shimmerframelayout doesn't do that already)
+            }
+            skeletonScreenGenres.add(GenreResult(genre.capitalizeAsHeading(), skeletonScreenAlbums))
+        }
+        return skeletonScreenGenres
     }
 
     fun connectSpotifyAppRemote(onFailure: () -> Unit) {

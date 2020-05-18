@@ -68,6 +68,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                 pendingAuthCallbacks.add(spotifyAuthCallback)
 
                 // create a timeout to fail with an exception if auth client doesn't return in a reasonable time frame
+                // TODO: use Handler(Looper.getMainLooper()) to instantiate?
                 Handler().postDelayed({ // TODO: use withTimeout() instead? can at least probably run that outside of suspendCancellableCoroutine to encapsulate the whole thing (and then maybe I don't need to assert Dispatchers.Main?)
                     if (continuation.isActive) {
                         pendingAuthCallbacks.remove(spotifyAuthCallback)
