@@ -9,7 +9,7 @@
         android:id="@+id/launchFragment"
         android:name="com.chuckstein.libzy.view.launch.LaunchFragment"
         android:label="fragment_launch"
-        tools:layout="@layout/fragment_launch" >
+        tools:layout="@layout/fragment_launch">
         <action
             android:id="@+id/action_launchFragment_to_selectGenresFragment"
             app:destination="@id/selectGenresFragment"
@@ -25,7 +25,7 @@
         android:id="@+id/browseResultsFragment"
         android:name="com.chuckstein.libzy.view.browseresults.BrowseResultsFragment"
         android:label="fragment_browse_results"
-        tools:layout="@layout/fragment_browse_results" >
+        tools:layout="@layout/fragment_browse_results">
         <argument
             android:name="selectedGenres"
             app:argType="string[]" />
@@ -42,7 +42,7 @@
         android:id="@+id/selectGenresFragment"
         android:name="com.chuckstein.libzy.view.selectgenres.SelectGenresFragment"
         android:label="fragment_select_genres"
-        tools:layout="@layout/fragment_select_genres" >
+        tools:layout="@layout/fragment_select_genres">
         <action
             android:id="@+id/action_selectGenresFragment_to_browseResultsFragment"
             app:destination="@id/browseResultsFragment" />
@@ -56,7 +56,7 @@
         android:id="@+id/connectSpotifyFragment"
         android:name="com.chuckstein.libzy.view.connectspotify.ConnectSpotifyFragment"
         android:label="fragment_connect_spotify"
-        tools:layout="@layout/fragment_connect_spotify" >
+        tools:layout="@layout/fragment_connect_spotify">
         <action
             android:id="@+id/action_connectSpotifyFragment_to_selectGenresFragment"
             app:destination="@id/selectGenresFragment"
@@ -64,7 +64,7 @@
             app:popUpToInclusive="true" />
         <argument
             android:name="networkErrorReceived"
-            app:argType="boolean"
-            android:defaultValue="false" />
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
 </navigation>

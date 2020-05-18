@@ -32,7 +32,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
 
     private val pendingAuthCallbacks = mutableListOf<SpotifyAuthCallback>()
 
-    private val onAuthComplete = object: SpotifyAuthCallback {
+    private val onAuthComplete = object : SpotifyAuthCallback {
         override fun onSuccess(accessToken: SpotifyAccessToken) {
             for (pendingAuthCallback in pendingAuthCallbacks) {
                 pendingAuthCallback.onSuccess(accessToken)

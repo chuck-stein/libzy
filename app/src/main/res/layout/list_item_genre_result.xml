@@ -10,9 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/genre_name_placeholder"
-        android:textStyle="bold"
         android:textAlignment="center"
-        android:textSize="@dimen/subheading_text_size" />
+        android:textSize="@dimen/subheading_text_size"
+        android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/albums_recycler"

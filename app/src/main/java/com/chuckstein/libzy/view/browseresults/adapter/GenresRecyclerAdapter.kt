@@ -47,7 +47,8 @@ class GenresRecyclerAdapter(
         albumsLayoutManager.initialPrefetchItemCount = 5 // TODO: determine ideal value
         with(holder.albumsRecycler) {
             layoutManager = albumsLayoutManager
-            adapter = AlbumsRecyclerAdapter(genre.albums, loadingAnimationTimer, glide, albumArtPlaceholder, onAlbumClick)
+            adapter =
+                AlbumsRecyclerAdapter(genre.albums, loadingAnimationTimer, glide, albumArtPlaceholder, onAlbumClick)
             setRecycledViewPool(albumsViewPool)
         }
     }

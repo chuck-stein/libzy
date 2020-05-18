@@ -58,7 +58,7 @@ class AlbumsRecyclerAdapter(
         }
     }
 
-//    // TODO: ensure this is the opposite of onBindViewHolder, otherwise ViewHolder cache may get weird
+    // TODO: ensure this is the opposite of onBindViewHolder, otherwise ViewHolder cache may get weird
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
         holder.stopListeningToLoadingAnimationTimer()

@@ -30,7 +30,7 @@
     <string name="artist_name_placeholder">Album Artist</string>
     <string name="album_art_desc">album artwork</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
-    
+
     <!-- Uncategorized -->
 
 </resources>
