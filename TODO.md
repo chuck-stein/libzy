@@ -37,7 +37,6 @@
 - maybe use adamint's wrapper for auth if it can do it as elegantly as spotify sdk, because then access tokens can always be in the backend
 - add a timer for access token expiration with a callback that uses spotify auth sdk then returns to whatever activity user was in
 - figure out how to auto-refresh the spotify token (may need a server for spotify's Authorization Code Flow)
-- talk to adamint team to see if there's an alternative to requiring `exclude 'META-INF/*.kotlin_module'`
 - change "Hey There!" message in SelectGenresActivity to dynamically-decided "Good Evening!" or "Good morning!" or "Good afternoon!"
 - rename colors to something more applicable (and remove unused colors)
 - determine proper parent theme
@@ -164,10 +163,27 @@
 - use RxJava or something else to sync album art loading shimmers (or if I give up and prevent scrolling while loading, do I really need to fill all the off screen albums?)
 - expand RxJava to RxKotlin
 - check with someone proficient with RxJava/Kotlin/Android about whether my timer sync implementation is good
+- test SpotifyLibraryDatabase according to [Udacity lesson](https://classroom.udacity.com/courses/ud9012/lessons/fcd3f9aa-3632-4713-a299-ea39939d6fd7/concepts/15c00f79-ee50-40f2-8cf0-6f1ef6dcd453)
+- use CoordinatorLayout and Snackbars instead of Toasts
+- if a new Spotify account is ever linked, immediately invalidate the whole user library cache
+- use ::aLateInitVar.isInitialized instead of nullable vars whenever a var should only be null until assigned initial value
+- move all business logic out of ViewModels/Fragments/Activity
+- fade "fetching your library data" textview to new text "this first time may take a while" after a few seconds if cache is empty (first time loading the user's library)
+- rename "view" package to "ui" or something better encapsulating Fragments + ViewModels, a.k.a. "screens"
+- handle edge cases with updating cached data in the middle of an app session (e.g. # albums associated w genre changed, genre no longer in library, album no longer in library)
+- handle edge case where user has an empty library
+- check for all instances of "Skipped x frames!  The application may be doing too much work on its main thread." and fix them
+- don't show text until fonts have loaded
+- improve BrowseResultsFragment's skeleton screen loading shimmer timer (gets briefly out of sync when scrolling sometimes)
+- read more about Room to ensure I'm doing everything in an ideal way
+- decide on a good threshold for * imports and implement that for all current * imports
+- fade placeholder album art into actual album art when it loads, instead of immediately replacing it with no animation
+- use JUnit 5 instead of JUnit 4?
+- don't always use largest album artowrk image if I run into performance issues
 
 ## Priorities
 
-1. Get to MVP (implement responsive remote control in Browse Results screen, as well as skeleton screen and better results UI spacing)
+1. Address bugs from Google Keep list
 2. Address all in-code TODOs
 3. Add Dagger subcomponents and scopes
 4. Add Room caching and SpotifyRepository

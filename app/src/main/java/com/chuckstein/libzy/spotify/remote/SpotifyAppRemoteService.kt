@@ -14,7 +14,7 @@ import java.lang.IllegalStateException
 import javax.inject.Inject
 
 // TODO: test how I can play music when Spotify app is closed (when it gets closed both before and after SpotifyAppRemoteService's instantiation)
-class SpotifyAppRemoteService @Inject constructor(private val applicationContext: Context) {
+class SpotifyAppRemoteService @Inject constructor(private val context: Context) {
 
     companion object {
         private val TAG = SpotifyAppRemoteService::class.java.simpleName
@@ -29,8 +29,8 @@ class SpotifyAppRemoteService @Inject constructor(private val applicationContext
         get() = _playerContext
 
     private val connectionParams =
-        ConnectionParams.Builder(applicationContext.getString(R.string.spotify_client_id))
-            .setRedirectUri(applicationContext.getString(R.string.spotify_auth_redirect_uri))
+        ConnectionParams.Builder(context.getString(R.string.spotify_client_id))
+            .setRedirectUri(context.getString(R.string.spotify_auth_redirect_uri))
             .build()
 
     private var appRemote: SpotifyAppRemote? = null
@@ -40,7 +40,7 @@ class SpotifyAppRemoteService @Inject constructor(private val applicationContext
     fun connect(onFailure: () -> Unit) {
         remoteInUse = true
         SpotifyAppRemote.disconnect(appRemote)
-        SpotifyAppRemote.connect(applicationContext, connectionParams, object : Connector.ConnectionListener {
+        SpotifyAppRemote.connect(context, connectionParams, object : Connector.ConnectionListener {
 
             override fun onConnected(remote: SpotifyAppRemote) {
                 if (remoteInUse) {

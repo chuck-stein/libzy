@@ -13,14 +13,15 @@ import javax.inject.Singleton
 @Singleton
 @Component(
     modules = [
-        ViewModelModule::class
+        ViewModelModule::class,
+        DatabaseModule::class
     ]
 )
-interface ApplicationComponent {
+interface AppComponent {
 
     @Component.Factory
     interface Factory {
-        fun create(@BindsInstance applicationContext: Context): ApplicationComponent
+        fun create(@BindsInstance applicationContext: Context): AppComponent
     }
 
     // TODO: move these to their own subcomponents

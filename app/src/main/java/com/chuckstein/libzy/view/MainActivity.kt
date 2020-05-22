@@ -3,9 +3,9 @@ package com.chuckstein.libzy.view
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.AnimationDrawable
-import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.common.currentTimeSeconds
@@ -85,11 +85,9 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
     }
 
     private fun saveAccessToken(accessToken: SpotifyAccessToken) {
-        val spotifyPrefs = getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
-        with(spotifyPrefs.edit()) {
+        getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE).edit {
             putString(getString(R.string.spotify_access_token_key), accessToken.token)
             putInt(getString(R.string.spotify_token_expiry_key), currentTimeSeconds() + accessToken.expiresIn)
-            apply()
         }
     }
 

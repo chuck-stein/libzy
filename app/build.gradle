@@ -19,6 +19,12 @@ android {
         // vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas")
+            }
+        }
     }
 
     buildTypes {
@@ -66,26 +72,41 @@ repositories {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    // Android
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'com.google.android.material:material:1.2.0-alpha06'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.fragment:fragment-ktx:1.2.4'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0-alpha02'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-alpha02'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.0-alpha02'
-
     // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.4'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0'
+
+    // Android
+    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // Lifecycle
+    def lifecycle_version = "2.3.0-alpha02"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+
+    // Navigation
+    def navigation_version = "2.3.0-beta01"
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
+    implementation "androidx.navigation:navigation-dynamic-features-fragment:$navigation_version"
+    androidTestImplementation "androidx.navigation:navigation-testing:$navigation_version"
+
+    // Android UI
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.fragment:fragment-ktx:1.2.4'
+    implementation 'com.google.android.material:material:1.2.0-alpha06'
+
+    // UI
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+    implementation 'com.airbnb.android:paris:1.4.0'
+    def glide_version = "4.11.0"
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
 
     // Spotify
     implementation 'com.spotify.android:auth:1.2.3'
@@ -93,28 +114,30 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.adamratzman:spotify-api-kotlin:3.1.0-rc.1'
 
-    // Facebook
-    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+    // Database
+    def room_version = "2.2.5" // TODO: remove unused dependencies here
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    implementation "androidx.room:room-rxjava2:$room_version"
+    implementation "androidx.room:room-guava:$room_version"
+    testImplementation "androidx.room:room-testing:$room_version"
 
     // Dependency Injection
-    implementation 'com.google.dagger:dagger:2.27'
-    kapt 'com.google.dagger:dagger-compiler:2.27'
-
-    // Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:2.2.2"
-    implementation "androidx.navigation:navigation-ui-ktx:2.2.2"
-    implementation "androidx.navigation:navigation-dynamic-features-fragment:2.3.0-alpha06"
-    androidTestImplementation "androidx.navigation:navigation-testing:2.3.0-alpha06"
-
-    // Image loading
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    kapt 'com.github.bumptech.glide:compiler:4.11.0'
+    def dagger_version = "2.27"
+    implementation "com.google.dagger:dagger:$dagger_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Reactive Extensions
-    implementation "io.reactivex.rxjava3:rxjava:3.0.3"
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.3'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation("io.reactivex.rxjava3:rxkotlin:3.0.0")
+    implementation 'io.reactivex.rxjava3:rxkotlin:3.0.0'
 
-    // Programmatic Styling
-    implementation 'com.airbnb.android:paris:1.4.0'
+    // Testing
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support:support-annotations:28.0.0'
+
 }

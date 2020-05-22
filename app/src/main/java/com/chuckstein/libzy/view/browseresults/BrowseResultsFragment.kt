@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
@@ -20,6 +21,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_browse_results.genres_recycler as genresRecycler
@@ -52,8 +54,11 @@ class BrowseResultsFragment : Fragment() {
         genresRecyclerAdapter.genres =
             model.createSkeletonScreenResults(navArgs.selectedGenres, navArgs.numAlbumsPerSelectedGenre)
 
-        model.fetchResults(navArgs.selectedGenres)
-        model.genreResults.observe(viewLifecycleOwner, Observer { genresRecyclerAdapter.genres = it })
+        lifecycleScope.launch {
+            model.getResults(navArgs.selectedGenres.toList()).observe(viewLifecycleOwner, Observer { genreResults ->
+                if (genreResults.isNotEmpty()) genresRecyclerAdapter.genres = genreResults
+            })
+        }
         model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, Observer { if (it) onSpotifyNetworkError() }) // TODO: abstract this
     }
 
@@ -68,6 +73,7 @@ class BrowseResultsFragment : Fragment() {
     }
 
     private fun createGenresRecyclerAdapter(): GenresRecyclerAdapter {
+        // TODO: probably don't need this animation timer or the shimmer view anymore now that I'm loading almost immediately from db
         val loadingAnimationTimer =
             Observable.interval(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -85,7 +91,7 @@ class BrowseResultsFragment : Fragment() {
         try {
             model.playAlbum(spotifyUri)
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), getString(R.string.toast_spotify_remote_failed), Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), R.string.toast_spotify_remote_failed, Toast.LENGTH_LONG).show()
         }
     }
 

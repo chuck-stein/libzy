@@ -18,7 +18,7 @@ import javax.inject.Singleton
 // TODO: handle the case where getApiDelegate() is called, starts initializing the client, then is called again from elsewhere -- don't want to start initializing again
 @Singleton
 class SpotifyApiDelegator @Inject constructor(
-    applicationContext: Context,
+    context: Context,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) {
     companion object {
@@ -29,12 +29,12 @@ class SpotifyApiDelegator @Inject constructor(
     private var _apiDelegate: SpotifyClientApi? = null
 
     init {
-        val spotifyPrefs: SharedPreferences = applicationContext.getSharedPreferences(
-            applicationContext.getString(R.string.spotify_prefs_name),
+        val spotifyPrefs: SharedPreferences = context.getSharedPreferences(
+            context.getString(R.string.spotify_prefs_name),
             Context.MODE_PRIVATE
         )
-        val accessTokenKey: String = applicationContext.getString(R.string.spotify_access_token_key)
-        val expiryKey: String = applicationContext.getString(R.string.spotify_token_expiry_key)
+        val accessTokenKey: String = context.getString(R.string.spotify_access_token_key)
+        val expiryKey: String = context.getString(R.string.spotify_token_expiry_key)
         val savedAccessToken = spotifyPrefs.getString(accessTokenKey, null)
         val savedTokenExpiry = spotifyPrefs.getInt(expiryKey, 0)
         if (savedAccessToken != null && currentTimeSeconds() < savedTokenExpiry) {
@@ -87,9 +87,6 @@ class SpotifyApiDelegator @Inject constructor(
 
     suspend fun getArtists(ids: Collection<String>): List<Artist?> =
         getBatchedItems(ids, getApiDelegate().artists::getArtists)
-
-    suspend fun getAlbums(ids: Collection<String>): List<Album?> =
-        getBatchedItems(ids, getApiDelegate().albums::getAlbums)
 
     // TODO: delegate batching responsibility to SpotifyClientApi once adamint fixes bulk request bug w/ empty JSON
     private suspend fun <T> getBatchedItems(

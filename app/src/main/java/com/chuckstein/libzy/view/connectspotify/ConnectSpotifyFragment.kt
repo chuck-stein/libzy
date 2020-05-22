@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
@@ -41,8 +42,9 @@ class ConnectSpotifyFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // alert the user if they were directed to this fragment because of a network error
+        // TODO: only show this once, instead of after each configuration change (so a ViewModel is probably necessary) -- OR don't worry about this if yet if we shouldn't always redirect to Connect Spotify screen fro errors that can still occur once getting past this screen
         if (navArgs.networkErrorReceived) {
-            Toast.makeText(requireContext(), getString(R.string.toast_spotify_network_error), Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), R.string.toast_spotify_network_error, Toast.LENGTH_LONG).show()
         }
 
         connectSpotifyButton.setOnClickListener { onConnectSpotifyButtonClicked() }
@@ -57,22 +59,17 @@ class ConnectSpotifyFragment : Fragment() {
                     .navigate(ConnectSpotifyFragmentDirections.actionConnectSpotifyFragmentToSelectGenresFragment())
             } catch (e: SpotifyAuthException) {
                 val errorMessage =
-                    if (navArgs.networkErrorReceived) getString(R.string.toast_spotify_network_error)
-                    else getString(R.string.toast_connecting_spotify_account_failed)
+                    if (navArgs.networkErrorReceived) R.string.toast_spotify_network_error
+                    else R.string.toast_connecting_spotify_account_failed
                 Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private fun recordSpotifyConnected() {
-        val spotifyPrefs = requireContext().getSharedPreferences(
-            getString(R.string.spotify_prefs_name),
-            Context.MODE_PRIVATE
-        )
-        with(spotifyPrefs.edit()) {
-            putBoolean(getString(R.string.spotify_connected_key), true)
-            apply()
-        }
+       requireContext().getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE).edit {
+           putBoolean(getString(R.string.spotify_connected_key), true)
+       }
     }
 
 }

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.children
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -15,6 +14,7 @@ import androidx.navigation.findNavController
 import com.airbnb.paris.extensions.style
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
+import com.chuckstein.libzy.common.children
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.chip.Chip
 import java.lang.IllegalStateException
@@ -47,24 +47,22 @@ class SelectGenresFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         submitGenresButton.setOnClickListener { submitGenreSelection() }
-        if (model.genreOptions.value == null) createLoadingChips()
-        model.genreOptions.observe(viewLifecycleOwner, Observer(::onGenreOptionsReady))
+        if (model.genreOptions.value?.isEmpty() != false) createLoadingChips() // TODO: both the if condition and createLoadingChips take a few seconds, make it more efficient or do work on a background thread where I can
+        model.genreOptions.observe(viewLifecycleOwner, Observer(::onGenreOptionsUpdated)) // TODO: figure out why this line takes a few seconds and fix it (NOTE: next one does not, interestingly)
         model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, Observer { if (it) onSpotifyNetworkError() }) // TODO: abstract this
     }
 
     private fun submitGenreSelection() {
-        val selectedGenres = mutableListOf<String>()
-        for (chip in genreOptionsChipGroup.children) {
-            if (chip is Chip && chip.isChecked) {
-                selectedGenres.add(chip.text.toString())
-            }
-        }
 
-        val numAlbumsPerSelectedGenre = mutableListOf<Int>()
-        for (genre in selectedGenres) {
-            val numAlbums = model.genreOptions.value?.get(genre)?.size
-                ?: throw IllegalStateException("Failed to retrieve number of albums for genre $genre")
-            numAlbumsPerSelectedGenre.add(numAlbums)
+        // TODO: check how much slower this solution is than one-iteration for-loop approach, with large amount of selected genres
+        val selectedGenres =
+            genreOptionsChipGroup.children
+                .filter { it is Chip && it.isChecked }
+                .map { (it as Chip).text.toString() }
+
+        val numAlbumsPerSelectedGenre = selectedGenres.map {
+            model.genreOptions.value?.get(it)
+                ?: throw IllegalStateException("Failed to retrieve number of albums associated with genre $it")
         }
 
         val submitGenresNavAction =
@@ -102,17 +100,21 @@ class SelectGenresFragment : Fragment() {
         }
     }
 
-    private fun onGenreOptionsReady(genreOptions: Map<String, Set<String>>) {
-        genreOptionsChipGroup.removeAllViews() // ensure chip group is clear to display new genre options
-        populateGenreOptionsChipGroup(genreOptions)
-        instructionsText.text = getString(R.string.select_genres_instructions_text)
+    private fun onGenreOptionsUpdated(genreOptions: Map<String, Int>) {
+        if (genreOptions.isNotEmpty()) {
+            // TODO: only replace all views if the loading chips are present and not actual genre options (otherwise do a diff, handle new or removed genre options)
+            genreOptionsChipGroup.removeAllViews() // ensure chip group is clear to display new genre options
+            populateGenreOptionsChipGroup(genreOptions)
+            instructionsText.text = getString(R.string.select_genres_instructions_text)
+        }
     }
 
-    private fun populateGenreOptionsChipGroup(genreOptions: Map<String, Set<String>>) {
+    private fun populateGenreOptionsChipGroup(genreOptions: Map<String, Int>) {
         // a list of genres in the user's library, sorted by how many of their saved albums fit that genre, descending
-        val orderedGenres = genreOptions.keys.sortedByDescending { genreOptions[it]?.size }
+        val orderedGenres = genreOptions.keys.sortedByDescending { genreOptions[it] }
 
-        for (genre in orderedGenres.take(300)) { // TODO: need a RecyclerView to prevent the lag when adding full list (take(100) is just so it doesn't lag for the time being)
+        // TODO: fix skipped frames
+        for (genre in orderedGenres.take(150)) { // TODO: need a RecyclerView to prevent the lag when adding full list (take(150) is just so it doesn't lag for the time being)
             with(Chip(requireContext())) {
                 style(R.style.Chip) // TODO: partially works, but some material styling missing... probably an issue with the way I defined the style (or could it be because there are no shimmer wrappers? or no width/height/id? or maybe the style is just straight up right... but no the loading ones look bigger... could THAT be shimmer?)
                 text = genre

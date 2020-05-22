@@ -38,10 +38,10 @@ class AlbumsRecyclerAdapter(
         val album = albums[position]
         with(holder) {
             // TODO: look into Glide usage, error handling, null handling, other builder functions (e.g. centerCrop), etc.
-            if (album.artworkUri != null) glide.load(album.artworkUri).placeholder(albumArtPlaceholder).into(albumArt)
+            if (album.artworkUrl != null) glide.load(album.artworkUrl).placeholder(albumArtPlaceholder).into(albumArt)
             else albumArt.setImageDrawable(albumArtPlaceholder)
             albumTitle.text = album.title
-            albumArtist.text = album.artist
+            albumArtist.text = album.artists
 
             // TODO: try to eliminate any unnecessary work
             itemView.isClickable = !album.isPlaceholder

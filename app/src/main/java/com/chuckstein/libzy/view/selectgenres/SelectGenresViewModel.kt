@@ -1,28 +1,22 @@
 package com.chuckstein.libzy.view.selectgenres
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.adamratzman.spotify.SpotifyException
-import com.chuckstein.libzy.spotify.api.SpotifyClient
+import com.chuckstein.libzy.repository.UserLibraryRepository
 import com.chuckstein.libzy.spotify.auth.SpotifyAuthException
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject
 
-// TODO: refactor this to only contain list of genres, as that's all the View needs, and move the genre-album grouping to a deeper architecture layer
-class SelectGenresViewModel @Inject constructor(private val spotifyClient: SpotifyClient) : ViewModel() {
+class SelectGenresViewModel @Inject constructor(private val userLibraryRepository: UserLibraryRepository) :
+    ViewModel() {
 
     companion object {
         private val TAG = SelectGenresViewModel::class.java.simpleName
     }
 
-    // TODO: don't need Set<String> as map value type here, just an int for # of results
-    private val _genreOptions = MutableLiveData<Map<String, Set<String>>>()
-    val genreOptions: LiveData<Map<String, Set<String>>>
-        get() = _genreOptions
+    val genreOptions = userLibraryRepository.libraryGenres
 
     // TODO: abstract this (and its fragment Observer) to an abstract class or interface
     private val _receivedSpotifyNetworkError = MutableLiveData<Boolean>()
@@ -32,7 +26,7 @@ class SelectGenresViewModel @Inject constructor(private val spotifyClient: Spoti
     init {
         viewModelScope.launch {
             try {
-                _genreOptions.value = spotifyClient.loadSavedAlbumsGroupedByGenre()
+                userLibraryRepository.refreshLibraryData() // TODO: do I want to refresh here? or should it be a main activity/application thing? Check Udacity course for WorkManager stuff
             } catch (e: Exception) {
                 // TODO: abstract this (and its fragment Observer) to an abstract class or interface
                 if (e is SpotifyException || e is SpotifyAuthException) {
