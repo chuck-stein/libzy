@@ -1,5 +1,9 @@
 # Development To-Do
 
+- switch from regular dagger to hilt
+- after SelectGenres screen is revamped to be more than a big genre list, change the skeleton screen (ESPECIALLY for first time library scan)
+- make the loading library data screen descriptive, explaining which Spotify data I'm getting when, and how many of the total albums are processed
+  (maybe even mention the name of one currently being processed?) -- also mention that they can safely leave the app and we'll send a notification when complete
 - after incorporating Dagger 2, make SpotifyAuthManager a dependency instead of singleton
 - flesh out README
 - incorporate unit testing
@@ -8,6 +12,7 @@
 - remove legacy/compatibility stuff I don't need with my min SDK version
 - determine whether I should continue to use @ExperimentalTime and @ExperimentalStdlibApi
 - make "Connect Spotify" button on-brand
+- make Connect Spotify screen more descriptive ("welcome to Libzy, connect your Spotify account to get started")
 - decide on minimum and target SDK
 - determine whether SpotifyAuthManager as Fragment and Activity dependency is best practice
 - determine whether .arr modules should be added to git or .gitignore
@@ -180,13 +185,19 @@
 - fade placeholder album art into actual album art when it loads, instead of immediately replacing it with no animation
 - use JUnit 5 instead of JUnit 4?
 - don't always use largest album artowrk image if I run into performance issues
+- handle edge cases from Spotify's endpoints (e.g. 204 response from get recent tracking) -- check reference
+- read and apply adamint documentation for new builders/configuration
+- implement adamint custom token refresh logic
+- optimize Room implementation/schema/DAOs
+- see if I can implement a faster way of requesting all albums in a user's library (maybe using Dispatchers.IO could help...?)
+
 
 ## Priorities
 
-1. Address bugs from Google Keep list
-2. Address all in-code TODOs
-3. Add Dagger subcomponents and scopes
-4. Add Room caching and SpotifyRepository
+1. Create MVP 2.0 -- more than genre selection, algorithmic recommendations, single-genre at a time, better metadata-based categorization
+2. Address bugs from Google Keep list
+3. Address all in-code TODOs
+4. Add Dagger subcomponents and scopes
 5. Address all the above TODOs in this file
 6. Add thorough unit tests
 7. Document everything
