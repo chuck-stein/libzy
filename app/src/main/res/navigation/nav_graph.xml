@@ -27,16 +27,16 @@
         android:label="fragment_browse_results"
         tools:layout="@layout/fragment_browse_results">
         <argument
-            android:name="selectedGenres"
-            app:argType="string[]" />
-        <argument
-            android:name="numAlbumsPerSelectedGenre"
-            app:argType="integer[]" />
+            android:name="genre"
+            app:argType="string" />
         <action
             android:id="@+id/action_browseResultsFragment_to_connectSpotifyFragment"
             app:destination="@id/connectSpotifyFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <argument
+            android:name="numResults"
+            app:argType="integer" />
     </fragment>
     <fragment
         android:id="@+id/selectGenresFragment"

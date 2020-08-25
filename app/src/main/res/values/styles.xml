@@ -36,7 +36,7 @@
         <item name="android:textSize">@dimen/content_text_size</item>
     </style>
 
-    <style name="Chip" parent="Widget.MaterialComponents.Chip.Choice">
+    <style name="Chip" parent="Widget.MaterialComponents.Chip.Action">
         <item name="chipCornerRadius">@dimen/corner_radius</item>
         <item name="rippleColor">@color/accent</item>
         <item name="android:fontFamily">@font/varela_round</item>

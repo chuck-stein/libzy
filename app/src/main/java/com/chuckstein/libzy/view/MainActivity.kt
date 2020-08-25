@@ -29,7 +29,8 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     companion object {
         private const val SPOTIFY_AUTH_REQUEST_CODE = 1104
-        private val AUTH_SCOPES = arrayOf("user-library-read", "app-remote-control")
+        private val AUTH_SCOPES =
+            arrayOf("user-library-read", "app-remote-control", "user-read-recently-played", "user-top-read")
     }
 
     @Inject

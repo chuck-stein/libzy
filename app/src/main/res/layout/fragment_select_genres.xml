@@ -10,7 +10,8 @@
         android:id="@+id/greeting_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/standard_spacing"
+        android:layout_marginTop="@dimen/spacing_04"
+        android:paddingHorizontal="@dimen/spacing_03"
         android:text="@string/greeting_text"
         android:textSize="@dimen/heading_text_size"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,7 +22,8 @@
         android:id="@+id/instructions_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/standard_spacing"
+        android:layout_marginTop="@dimen/spacing_04"
+        android:paddingHorizontal="@dimen/spacing_03"
         android:text="@string/fetching_library_data_text"
         android:textSize="@dimen/subheading_text_size"
         app:layout_constraintEnd_toEndOf="parent"
@@ -32,8 +34,8 @@
         android:id="@+id/genre_options_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginVertical="@dimen/standard_spacing"
-        app:layout_constraintBottom_toTopOf="@+id/submit_genres_button"
+        android:layout_marginVertical="@dimen/spacing_04"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/instructions_text">
@@ -43,9 +45,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:paddingHorizontal="@dimen/standard_spacing"
-            app:chipSpacingHorizontal="@dimen/horizontal_chip_spacing"
-            app:chipSpacingVertical="@dimen/vertical_chip_spacing">
+            android:paddingHorizontal="@dimen/spacing_04"
+            app:chipSpacingHorizontal="@dimen/spacing_02"
+            app:chipSpacingVertical="@dimen/spacing_01">
 
 
             <!-- Uncomment these chips to see sample genre options that shouldn't actually be inflated -->
@@ -107,16 +109,5 @@
         </com.google.android.material.chip.ChipGroup>
 
     </ScrollView>
-
-    <Button
-        android:id="@+id/submit_genres_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/standard_spacing"
-        android:enabled="false"
-        android:text="@string/submit_genres_button_text"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

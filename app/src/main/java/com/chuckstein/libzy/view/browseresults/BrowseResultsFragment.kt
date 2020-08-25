@@ -13,19 +13,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
-import com.chuckstein.libzy.view.browseresults.adapter.GenresRecyclerAdapter
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.PublishSubject
+import com.chuckstein.libzy.common.capitalizeAsHeading
+import com.chuckstein.libzy.view.browseresults.adapter.AlbumsRecyclerAdapter
+import com.chuckstein.libzy.view.browseresults.data.AlbumResult
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlinx.android.synthetic.main.fragment_browse_results.genres_recycler as genresRecycler
+import kotlinx.android.synthetic.main.fragment_browse_results.albums_recycler as albumsRecycler
+import kotlinx.android.synthetic.main.fragment_browse_results.genre_name as genreName
 
+// TODO: rename everywhere I reference "results" to just "albums"?
 class BrowseResultsFragment : Fragment() {
 
     @Inject
@@ -49,16 +49,22 @@ class BrowseResultsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val genresRecyclerAdapter = createGenresRecyclerAdapter()
-        genresRecycler.adapter = genresRecyclerAdapter
-        genresRecyclerAdapter.genres =
-            model.createSkeletonScreenResults(navArgs.selectedGenres, navArgs.numAlbumsPerSelectedGenre)
+        genreName.text = navArgs.genre.capitalizeAsHeading()
+
+        val placeholderAlbumArt = resources.getDrawable(R.drawable.placeholder_album_art, requireContext().theme)
+        val albumsRecyclerAdapter = AlbumsRecyclerAdapter(Glide.with(this), placeholderAlbumArt, ::onAlbumClicked)
+        albumsRecyclerAdapter.albums = List(navArgs.numResults) {
+            AlbumResult("Fetching album data", "Please wait...", isPlaceholder = true)
+        }
+        albumsRecycler.adapter = albumsRecyclerAdapter
+        albumsRecycler.layoutManager = GridLayoutManager(requireContext(), 3) // TODO: either don't hardcode spanCount or change this screen's UI to browse by artist, category, audio features, etc
 
         lifecycleScope.launch {
-            model.getResults(navArgs.selectedGenres.toList()).observe(viewLifecycleOwner, Observer { genreResults ->
-                if (genreResults.isNotEmpty()) genresRecyclerAdapter.genres = genreResults
+            model.getResults(navArgs.genre).observe(viewLifecycleOwner, Observer { results ->
+                if (results.isNotEmpty()) albumsRecyclerAdapter.albums = results
             })
         }
+
         model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, Observer { if (it) onSpotifyNetworkError() }) // TODO: abstract this
     }
 
@@ -70,21 +76,6 @@ class BrowseResultsFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         model.disconnectSpotifyAppRemote()
-    }
-
-    private fun createGenresRecyclerAdapter(): GenresRecyclerAdapter {
-        // TODO: probably don't need this animation timer or the shimmer view anymore now that I'm loading almost immediately from db
-        val loadingAnimationTimer =
-            Observable.interval(1, TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.newThread()) // TODO: is this the most efficient Scheduler to subscribe on in this scenario?
-                .subscribeWith(PublishSubject.create())
-        // TODO: how do I unsubscribe the subject? Do I need to?
-
-        val placeholderAlbumArt =
-            resources.getDrawable(R.drawable.placeholder_album_art, requireContext().theme)
-
-        return GenresRecyclerAdapter(loadingAnimationTimer, Glide.with(this), placeholderAlbumArt, ::onAlbumClicked)
     }
 
     private fun onAlbumClicked(spotifyUri: String) {

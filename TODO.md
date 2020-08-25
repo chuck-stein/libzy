@@ -1,5 +1,8 @@
 # Development To-Do
 
+- organize imports, including star imports in `.idea/codeStyles/Project.xml`
+- make all screens (e.g. results screen) work in horizontal orientation
+- add genre properties related to audio features -- determine what generalizations can be made from genres to specific features (or combinations of features)
 - switch from regular dagger to hilt
 - after SelectGenres screen is revamped to be more than a big genre list, change the skeleton screen (ESPECIALLY for first time library scan)
 - make the loading library data screen descriptive, explaining which Spotify data I'm getting when, and how many of the total albums are processed

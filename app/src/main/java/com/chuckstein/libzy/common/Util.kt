@@ -12,9 +12,11 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.math.roundToInt
 
-// TODO: organize this file
+// TODO: break this file into specific utils, e.g. AndroidUtil, MathUtil
 
 fun currentTimeSeconds() = (System.currentTimeMillis() / 1000.0).roundToInt()
+
+fun percentageToFloat(percentage: Int) = percentage / 100F
 
 val ViewGroup.children: List<View>
     get() {

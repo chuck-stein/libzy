@@ -22,7 +22,6 @@
     <string name="greeting_text">Hey there!</string>
     <string name="fetching_library_data_text">Fetching your library data…</string>
     <string name="select_genres_instructions_text">Which genres are you in the mood for?</string>
-    <string name="submit_genres_button_text">Ready, show me some albums!</string>
 
     <!-- BrowseResultsFragment -->
     <string name="genre_name_placeholder">Genre</string>
@@ -30,7 +29,5 @@
     <string name="artist_name_placeholder">Album Artist</string>
     <string name="album_art_desc">album artwork</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
-
-    <!-- Uncategorized -->
 
 </resources>
