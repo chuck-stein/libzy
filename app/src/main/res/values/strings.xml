@@ -23,6 +23,28 @@
     <string name="fetching_library_data_text">Fetching your library data…</string>
     <string name="select_genres_instructions_text">Which genres are you in the mood for?</string>
 
+    <!-- QueryFragment -->
+    <string name="query_instructions_text">What are you in the mood to listen to?</string>
+    <string name="no_preference">No preference</string>
+    <string name="a_current_favorite">A current favorite</string>
+    <string name="an_underappreciated_gem">An underappreciated gem</string>
+    <string name="a_reliable_classic">A reliable classic</string>
+    <string name="recently_played">Recently played</string>
+    <string name="happy">Happy</string>
+    <string name="unhappy">Unhappy</string>
+    <string name="acoustic">Acoustic</string>
+    <string name="electronic">Electronic</string>
+    <string name="instrumental">Instrumental</string>
+    <string name="vocal">Vocal</string>
+    <string name="ambient">Ambient</string>
+    <string name="energetic">Energetic</string>
+    <string name="danceable">Danceable</string>
+    <string name="arhythmic">Arhythmic</string>
+    <string name="popular">Popular</string>
+    <string name="obscure">Obscure</string>
+    <string name="continue_button">Continue</string>
+    <string name="ready_button">Ready, show me some albums!</string>
+
     <!-- BrowseResultsFragment -->
     <string name="genre_name_placeholder">Genre</string>
     <string name="album_title_placeholder">Album Title</string>

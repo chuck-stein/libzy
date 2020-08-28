@@ -22,7 +22,7 @@ class LaunchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val navAction =
-            if (spotifyConnected()) LaunchFragmentDirections.actionLaunchFragmentToSelectGenresFragment()
+            if (spotifyConnected()) LaunchFragmentDirections.actionLaunchFragmentToQueryFragment()
             else LaunchFragmentDirections.actionLaunchFragmentToConnectSpotifyFragment()
         view.findNavController().navigate(navAction)
     }

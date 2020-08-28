@@ -1,5 +1,6 @@
 # Development To-Do
 
+- make unchecked chips transparent w outline
 - organize imports, including star imports in `.idea/codeStyles/Project.xml`
 - make all screens (e.g. results screen) work in horizontal orientation
 - add genre properties related to audio features -- determine what generalizations can be made from genres to specific features (or combinations of features)

@@ -20,6 +20,13 @@
             app:destination="@id/connectSpotifyFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_queryFragment"
+            app:destination="@id/queryFragment" >
+            <argument
+                android:name="initialQuestionIndex"
+                android:defaultValue="0" />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/browseResultsFragment"
@@ -66,5 +73,18 @@
             android:name="networkErrorReceived"
             android:defaultValue="false"
             app:argType="boolean" />
+        <action
+            android:id="@+id/action_connectSpotifyFragment_to_queryFragment"
+            app:destination="@id/queryFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/queryFragment"
+        android:name="com.chuckstein.libzy.view.query.QueryFragment"
+        android:label="fragment_query"
+        tools:layout="@layout/fragment_query" >
+        <argument
+            android:name="initialQuestionIndex"
+            app:argType="integer"
+            android:defaultValue="0" />
     </fragment>
 </navigation>
