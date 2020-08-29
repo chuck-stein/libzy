@@ -22,15 +22,15 @@ class SpotifyApiDelegator @Inject constructor(
 ) {
     companion object {
         // the lower of Spotify's limits for how many items are available from an endpoint
-        const val API_ITEM_LIMIT_LOW = 50
+        private const val API_ITEM_LIMIT_LOW = 50
 
         // the higher of Spotify's limits for how many items are available from an endpoint
-        const val API_ITEM_LIMIT_HIGH = 100
+        private const val API_ITEM_LIMIT_HIGH = 100
 
         // a limit to maximize the number of items available from Spotify's paging endpoints which use the lower max
         // limit -- this works by requesting the next page at the highest allowed offset
         // TODO: verify this works and is the best approach
-        const val API_ITEM_LIMIT_LOW_MAX_PAGING = API_ITEM_LIMIT_LOW - 1
+        private const val API_ITEM_LIMIT_LOW_MAX_PAGING = API_ITEM_LIMIT_LOW - 1
     }
 
     // do not access the delegate directly -- use getApiDelegate() which initializes it if null

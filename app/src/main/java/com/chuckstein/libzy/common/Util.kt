@@ -5,6 +5,8 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import java.util.concurrent.CountDownLatch
@@ -27,7 +29,17 @@ val ViewGroup.children: List<View>
         return children
     }
 
-// based on https://github.com/android/architecture-components-samples/blob/master/GithubBrowserSample/app/src/test-common/java/com/android/example/github/util/LiveDataTestUtil.kt
+// adapted from https://stackoverflow.com/a/54648758
+fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
+    observe(lifecycleOwner, object : Observer<T> {
+        override fun onChanged(t: T?) {
+            removeObserver(this)
+            if (lifecycleOwner.lifecycle.currentState != Lifecycle.State.DESTROYED) observer.onChanged(t)
+        }
+    })
+}
+
+// adapted from https://github.com/android/architecture-components-samples/blob/master/GithubBrowserSample/app/src/test-common/java/com/android/example/github/util/LiveDataTestUtil.kt
 fun <T> LiveData<T>.getOrAwaitValue(timeoutSeconds: Long = 2): T {
     var value: T? = null
     val latch = CountDownLatch(1)

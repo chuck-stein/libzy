@@ -1,5 +1,9 @@
 # Development To-Do
 
+- in each question of QueryFragment, display a list of the first few album results at the bottom (compose a ResultsFragment?), which live updates with each question answer change (including slider movement or chip selection)
+- add genres search bar with typeahead on genre question screen
+- during QueryFragment question transition animations, somehow make system back button unclickable, so no visual feedback happens?
+- add a loading screen for QueryFragment genre chip question, or find another way (i.e. faster algorithm or coroutine) to make it not lag on first time
 - make unchecked chips transparent w outline
 - organize imports, including star imports in `.idea/codeStyles/Project.xml`
 - make all screens (e.g. results screen) work in horizontal orientation

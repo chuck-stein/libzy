@@ -26,8 +26,7 @@ class UserLibraryRepository @Inject constructor(
 
     // TODO: should this initialization be done in a coroutine since it's using the db? why don't I get the warning that Room shouldn't be accessed from main thread?
     val libraryGenres = Transformations.map(database.genreDao.getAllLibraryGenres()) { genresWithMetadata ->
-        genresWithMetadata.map { it.name to it.numAssociatedAlbums }
-            .toMap() // TODO: make the value of the map a GenreMetadata type, which contains more stuff like "is favorite", "recently listened", etc.
+        genresWithMetadata.map { it.name to it.numAssociatedAlbums }.toMap() // TODO: make the value of the map a GenreMetadata type, which contains more stuff like "is favorite", "recently listened", etc.
     }
 
     suspend fun getAlbumsOfGenre(genre: String): LiveData<List<AlbumResult>> {

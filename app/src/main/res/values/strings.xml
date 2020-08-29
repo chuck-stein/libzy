@@ -44,6 +44,7 @@
     <string name="obscure">Obscure</string>
     <string name="continue_button">Continue</string>
     <string name="ready_button">Ready, show me some albums!</string>
+    <string name="back_button">back button</string>
 
     <!-- BrowseResultsFragment -->
     <string name="genre_name_placeholder">Genre</string>
