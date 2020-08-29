@@ -1,5 +1,6 @@
 # Development To-Do
 
+- support horizontal orientation in QueryFragment (and ResultsFragment)
 - in each question of QueryFragment, display a list of the first few album results at the bottom (compose a ResultsFragment?), which live updates with each question answer change (including slider movement or chip selection)
 - add genres search bar with typeahead on genre question screen
 - during QueryFragment question transition animations, somehow make system back button unclickable, so no visual feedback happens?
