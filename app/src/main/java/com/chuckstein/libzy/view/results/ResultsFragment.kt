@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
@@ -19,10 +19,10 @@ import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.model.AlbumResult
 import com.chuckstein.libzy.view.results.adapter.AlbumsRecyclerAdapter
-import kotlinx.android.synthetic.main.fragment_results.albums_recycler as albumsRecycler
-import kotlinx.android.synthetic.main.fragment_results.results_header as resultsHeader
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.android.synthetic.main.fragment_results.albums_recycler as albumsRecycler
+import kotlinx.android.synthetic.main.fragment_results.results_header as resultsHeader
 
 // TODO: add back button to this screen
 class ResultsFragment : Fragment() {
@@ -100,7 +100,7 @@ class ResultsFragment : Fragment() {
 
     // TODO: abstract this
     private fun onSpotifyNetworkError() {
-        requireView().findNavController().navigate(
+        findNavController().navigate(
             ResultsFragmentDirections.actionResultsFragmentToConnectSpotifyFragment()
         )
     }

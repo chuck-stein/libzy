@@ -17,13 +17,11 @@
     <string name="connect_spotify_button_text">Connect Spotify</string>
     <string name="toast_connecting_spotify_account_failed">Failed to authorize your Spotify account! Please try again.</string>
     <string name="toast_spotify_network_error">There was a problem connecting to Spotify! Please try again.</string>
-
-    <!-- SelectGenresFragment -->
-    <string name="greeting_text">Hey there!</string>
-    <string name="fetching_library_data_text">Fetching your library data…</string>
-    <string name="select_genres_instructions_text">Which genres are you in the mood for?</string>
+    <string name="scanning_library_heading">Scanning your Spotify library…</string>
+    <string name="scanning_library_subheading">This may take a few minutes, please do not close the app</string>
 
     <!-- QueryFragment -->
+    <string name="greeting_text">Hey there!</string>
     <string name="query_instructions_text">What are you in the mood to listen to?</string>
     <string name="no_preference">No preference</string>
     <string name="a_current_favorite">A current favorite</string>
@@ -45,12 +43,9 @@
     <string name="continue_button">Continue</string>
     <string name="ready_button">Ready, show me some albums!</string>
     <string name="back_button">back button</string>
-    
+
     <!-- ResultsFragment -->
     <string name="results_header">Here are some suggested albums from your library:</string>
-
-    <!-- BrowseResultsFragment -->
-    <string name="genre_name_placeholder">Genre</string>
     <string name="album_title_placeholder">Album Title</string>
     <string name="artist_name_placeholder">Album Artist</string>
     <string name="album_art_desc">album artwork</string>

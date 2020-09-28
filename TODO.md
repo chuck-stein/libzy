@@ -1,5 +1,7 @@
 # Development To-Do
 
+- implement a more advanced library scan progress bar (horizontal progress bar, with image and name of current album being scanned, along with # album out of total in library)
+- handle Spotify not being installed on device
 - add back button to ResultsFragment
 - make a better "no results" screen, with a button to go back and try another query
 - add the ability to save queries to easily repeat in the future, or view query history

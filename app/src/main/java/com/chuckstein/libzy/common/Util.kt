@@ -1,14 +1,17 @@
 package com.chuckstein.libzy.common
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import com.chuckstein.libzy.R
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -19,6 +22,10 @@ import kotlin.math.roundToInt
 fun currentTimeSeconds() = (System.currentTimeMillis() / 1000.0).roundToInt()
 
 fun percentageToFloat(percentage: Int) = percentage / 100F
+
+fun Fragment.spotifyConnected() =
+    requireContext().getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
+        .getBoolean(getString(R.string.spotify_connected_key), false)
 
 val ViewGroup.children: List<View>
     get() {

@@ -20,7 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.airbnb.paris.extensions.style
 import com.chuckstein.libzy.R
@@ -113,7 +113,7 @@ class QueryFragment : Fragment() {
 
     private fun advanceQuestion() {
         if (currQuestionIndex < LAST_QUESTION_INDEX) changeQuestion(currQuestionIndex + 1)
-        else requireView().findNavController().navigate(
+        else findNavController().navigate(
             QueryFragmentDirections.actionQueryFragmentToResultsFragment(model.query)
         )
     }
@@ -292,7 +292,7 @@ class QueryFragment : Fragment() {
 
     // TODO: abstract this
     private fun onSpotifyNetworkError() {
-        requireView().findNavController().navigate(
+        findNavController().navigate(
             QueryFragmentDirections.actionQueryFragmentToConnectSpotifyFragment()
         )
     }

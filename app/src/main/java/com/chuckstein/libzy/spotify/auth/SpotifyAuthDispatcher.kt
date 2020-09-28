@@ -34,23 +34,19 @@ class SpotifyAuthDispatcher @Inject constructor() {
 
     private val onAuthComplete = object : SpotifyAuthCallback {
         override fun onSuccess(accessToken: SpotifyAccessToken) {
-            for (pendingAuthCallback in pendingAuthCallbacks) {
-                pendingAuthCallback.onSuccess(accessToken)
-            }
+            for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onSuccess(accessToken)
             pendingAuthCallbacks.clear()
         }
 
         override fun onFailure(exception: SpotifyAuthException) {
-            for (pendingAuthCallback in pendingAuthCallbacks) {
-                pendingAuthCallback.onFailure(exception)
-            }
+            for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onFailure(exception)
             pendingAuthCallbacks.clear()
         }
 
     }
 
     suspend fun requestAuthorization(): SpotifyAccessToken = withContext(Dispatchers.IO) {
-        suspendCancellableCoroutine<SpotifyAccessToken> { continuation ->
+        suspendCancellableCoroutine { continuation ->
             CoroutineScope(Dispatchers.Main).launch { // TODO: is this the best way to ensure suspendCoroutine block runs on main thread?
 
                 // initialize an auth callback to unsuspend the coroutine upon completion with either a token or exception
