@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import com.chuckstein.libzy.database.entity.DbAlbum
+import com.chuckstein.libzy.database.tuple.LibraryAlbum
 import com.chuckstein.libzy.database.tuple.AudioFeaturesTuple
 
 @Dao
@@ -18,6 +19,9 @@ interface AlbumDao : BaseDao<DbAlbum> {
         deleteAll()
         insertAll(albums)
     }
+
+    @Query("SELECT * FROM album")
+    fun getAllAlbumsWithGenres(): LiveData<List<LibraryAlbum>>
 
     @Query(
         """

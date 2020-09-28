@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.browseresults
+package com.chuckstein.libzy.view.results
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -10,18 +10,22 @@ import com.chuckstein.libzy.repository.UserLibraryRepository
 import com.chuckstein.libzy.spotify.auth.SpotifyAuthException
 import com.chuckstein.libzy.spotify.remote.SpotifyAppRemoteService
 import com.chuckstein.libzy.model.AlbumResult
+import com.chuckstein.libzy.model.Query
+import com.chuckstein.libzy.recommendation.RecommendationService
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class BrowseResultsViewModel @Inject constructor(
+class ResultsViewModel @Inject constructor(
     private val userLibraryRepository: UserLibraryRepository,
+    private val recommendationService: RecommendationService,
     private val spotifyAppRemoteService: SpotifyAppRemoteService
 ) : ViewModel() {
 
     companion object {
-        private val TAG = BrowseResultsViewModel::class.java.simpleName
+        private val TAG = ResultsViewModel::class.java.simpleName
     }
 
+    // TODO: delete if unused
     val spotifyPlayerState = spotifyAppRemoteService.playerState
     val spotifyPlayerContext = spotifyAppRemoteService.playerContext
 
@@ -44,10 +48,9 @@ class BrowseResultsViewModel @Inject constructor(
         }
     }
 
-    // TODO: this should only be album data -- genre name is already taken care of in skeleton screen (when updating data set, think about weird cases where number of albums might be different from skeleton screen)
-    // TODO: repository result should not include view-specific stuff, but we should do a map transformation here into that format
-    suspend fun getResults(genre: String): LiveData<List<AlbumResult>> = userLibraryRepository.getAlbumsOfGenre(genre)
-
+    fun getResults(query: Query): LiveData<List<AlbumResult>> =
+        recommendationService.recommendAlbums(userLibraryRepository.libraryAlbums, query)
+    
     fun connectSpotifyAppRemote(onFailure: () -> Unit) {
         spotifyAppRemoteService.connect(onFailure)
     }
@@ -59,5 +62,4 @@ class BrowseResultsViewModel @Inject constructor(
     fun playAlbum(spotifyUri: String) {
         spotifyAppRemoteService.playAlbum(spotifyUri)
     }
-
 }

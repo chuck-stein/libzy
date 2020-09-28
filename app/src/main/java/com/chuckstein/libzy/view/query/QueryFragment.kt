@@ -6,6 +6,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,10 +22,12 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
+import com.airbnb.paris.extensions.style
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.common.children
 import com.chuckstein.libzy.common.observeOnce
+import com.chuckstein.libzy.model.Query
 import com.google.android.material.chip.Chip
 import kotlinx.android.synthetic.main.fragment_query.slider
 import javax.inject.Inject
@@ -51,9 +54,11 @@ import kotlinx.android.synthetic.main.fragment_query.vocal_button as vocalButton
 class QueryFragment : Fragment() {
 
     companion object {
+        private val TAG = QueryFragment::class.java.simpleName
+
         private const val LAST_QUESTION_INDEX = 6
         private const val DEFAULT_SLIDER_VAL = 0.5f
-        private const val FADE_ANIMATION_TIME = 200L // in milliseconds
+        private const val FADE_ANIMATION_TIME = 100L // in milliseconds
     }
 
     @Inject
@@ -63,7 +68,7 @@ class QueryFragment : Fragment() {
     private val navArgs: QueryFragmentArgs by navArgs()
 
     private lateinit var questionViews: List<Group>
-    private var currentQuestionIndex = 0
+    private var currQuestionIndex = 0
     private var changingQuestions = false
     private lateinit var prevQuestionOnBackCallback: OnBackPressedCallback
 
@@ -86,8 +91,8 @@ class QueryFragment : Fragment() {
             familiarityQuestion, instrumentalnessQuestion, acousticnessQuestion,
             valenceQuestion, energyQuestion, danceabilityQuestion, genreQuestion
         )
-        currentQuestionIndex = navArgs.initialQuestionIndex
-        questionViews[currentQuestionIndex].visibility = View.VISIBLE
+        currQuestionIndex = navArgs.initialQuestionIndex
+        questionViews[currQuestionIndex].visibility = View.VISIBLE
 
         prevQuestionOnBackCallback =
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { onBackPressed() }
@@ -95,63 +100,35 @@ class QueryFragment : Fragment() {
 
         backButton.setOnClickListener { onBackPressed() }
         noPreferenceButton.setOnClickListener { onClickNoPreferenceButton() }
-        continueButton.setOnClickListener { onClickContinueButton() }
+        continueButton.setOnClickListener { onClickContinueOrReadyButton() }
         currentFavoriteButton.setOnClickListener { onClickCurrentFavoriteButton() }
         reliableClassicButton.setOnClickListener { onClickReliableClassicButton() }
         underappreciatedGemButton.setOnClickListener { onClickUnderappreciatedGemButton() }
         instrumentalButton.setOnClickListener { onClickInstrumentalButton() }
         vocalButton.setOnClickListener { onClickVocalButton() }
-        readyButton.setOnClickListener { onClickReadyButton() }
+        readyButton.setOnClickListener { onClickContinueOrReadyButton() }
 
-        model.receivedSpotifyNetworkError.observe(
-            viewLifecycleOwner,
-            Observer { if (it) onSpotifyNetworkError() }) // TODO: abstract this
+        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, { if (it) onSpotifyNetworkError() }) // TODO: abstract this
     }
 
-    private fun changeQuestion(index: Int, noPreferenceForCurrQuestion: Boolean = false) {
+    private fun advanceQuestion() {
+        if (currQuestionIndex < LAST_QUESTION_INDEX) changeQuestion(currQuestionIndex + 1)
+        else requireView().findNavController().navigate(
+            QueryFragmentDirections.actionQueryFragmentToResultsFragment(model.query)
+        )
+    }
+
+    private fun changeQuestion(index: Int) {
         if (index < 0 || index > LAST_QUESTION_INDEX || changingQuestions) return
-
-        fun getSliderValue(flipValueDirection: Boolean = false) =
-            when {
-                noPreferenceForCurrQuestion -> null
-                flipValueDirection -> 1 - slider.value
-                else -> slider.value
-            }
-
-        fun setSliderValue(value: Float?, flipValueDirection: Boolean = false) {
-            slider.value = when {
-                value == null -> DEFAULT_SLIDER_VAL
-                flipValueDirection -> 1 - value
-                else -> value
-            }
-        }
-
-        when (questionViews[currentQuestionIndex]) {
-            acousticnessQuestion -> model.acousticness = getSliderValue(true)
-            valenceQuestion -> model.valence = getSliderValue()
-            energyQuestion -> model.energy = getSliderValue()
-            danceabilityQuestion -> model.danceability = getSliderValue()
-            genreQuestion -> model.genres =
-                if (noPreferenceForCurrQuestion) null
-                else getGenreOptions().filter { it.isChecked }.map { it.text.toString() }.toSet()
-        }
 
         changingQuestions = true
         backButton.isClickable = false
         noPreferenceButton.isClickable = false
-        fadeOutGroup(questionViews[currentQuestionIndex]) {
-            currentQuestionIndex = index
-
-            when (questionViews[currentQuestionIndex]) {
-                acousticnessQuestion -> setSliderValue(model.acousticness, true)
-                valenceQuestion -> setSliderValue(model.valence)
-                energyQuestion -> setSliderValue(model.energy)
-                danceabilityQuestion -> setSliderValue(model.danceability)
-                genreQuestion -> initGenreChips()
-            }
-
+        fadeOutGroup(questionViews[currQuestionIndex]) {
+            currQuestionIndex = index
+            loadAnswer()
             updateBackNavigation()
-            fadeInGroup(questionViews[currentQuestionIndex]) {
+            fadeInGroup(questionViews[currQuestionIndex]) {
                 changingQuestions = false
                 backButton.isClickable = true
                 noPreferenceButton.isClickable = true
@@ -202,12 +179,33 @@ class QueryFragment : Fragment() {
         }
     }
 
+    private fun loadAnswer() {
+        fun setSliderValue(value: Float?, flipValueDirection: Boolean = false) {
+            slider.value = when {
+                value == null -> DEFAULT_SLIDER_VAL
+                flipValueDirection -> 1 - value
+                else -> value
+            }
+        }
+
+        when (questionViews[currQuestionIndex]) {
+            acousticnessQuestion -> setSliderValue(model.query.acousticness, true)
+            valenceQuestion -> setSliderValue(model.query.valence)
+            energyQuestion -> setSliderValue(model.query.energy)
+            danceabilityQuestion -> setSliderValue(model.query.danceability)
+            genreQuestion -> fillGenreChips()
+        }
+    }
+
     // TODO: ensure I wrote this method in the most efficient way
     // TODO: fix lag on first call via loading screen + coroutine or faster function
-    private fun initGenreChips() {
+    private fun fillGenreChips() {
         model.getGenreSuggestions().observeOnce(viewLifecycleOwner, Observer { genreSuggestions ->
-            for (genre in genreSuggestions) {
-                genreChips.addView(Chip(requireContext()).apply { text = genre })
+            for (genre in genreSuggestions.take(50)) { // TODO: remove magic number
+                genreChips.addView(Chip(requireContext()).apply {
+                    style(R.style.Chip)
+                    text = genre
+                })
             }
 
             fun chipIsOffScreen(chipIndex: Int) =
@@ -222,7 +220,7 @@ class QueryFragment : Fragment() {
                 }
                 model.updateSelectedGenres(getGenreOptions().map { it.text.toString() })
                 for (chip in getGenreOptions()) {
-                    chip.isChecked = model.genres?.contains(chip.text) ?: false
+                    chip.isChecked = model.query.genres?.contains(chip.text) ?: false
                 }
             }
         })
@@ -231,62 +229,71 @@ class QueryFragment : Fragment() {
     private fun getGenreOptions() = genreChips.children.filterIsInstance<Chip>()
 
     private fun onBackPressed() {
-        if (currentQuestionIndex > 0) changeQuestion(currentQuestionIndex - 1)
+        if (currQuestionIndex > 0) changeQuestion(currQuestionIndex - 1)
     }
 
     private fun updateBackNavigation() {
-        val onFirstQuestion = currentQuestionIndex == 0
+        val onFirstQuestion = currQuestionIndex == 0
         backButton.visibility = if (onFirstQuestion) View.GONE else View.VISIBLE
         prevQuestionOnBackCallback.isEnabled = !onFirstQuestion
     }
 
     private fun onClickNoPreferenceButton() {
-        if (currentQuestionIndex == LAST_QUESTION_INDEX) {
-        } // TODO: call a generic function to set no preference on any question index, passing in LAST_QUESTION_INDEX (changeQuestion may also want to use said function), then navigate to ResultsFragment
-        else changeQuestion(currentQuestionIndex + 1, true)
+        when (questionViews[currQuestionIndex]) {
+            familiarityQuestion -> model.query.familiarity = null
+            instrumentalnessQuestion -> model.query.instrumental = null
+            acousticnessQuestion -> model.query.acousticness = null
+            valenceQuestion -> model.query.valence = null
+            energyQuestion -> model.query.energy = null
+            danceabilityQuestion -> model.query.danceability = null
+            genreQuestion -> model.query.genres = null
+        }
+        advanceQuestion()
     }
 
-    private fun onClickContinueButton() {
-        // TODO: tell ViewModel about current question answer
-        changeQuestion(currentQuestionIndex + 1)
+    private fun onClickContinueOrReadyButton() {
+        when (questionViews[currQuestionIndex]) {
+            familiarityQuestion, instrumentalnessQuestion ->
+                Log.w(TAG, "Can only save an answer to the current question via answer buttons")
+            acousticnessQuestion -> model.query.valence = 1 - slider.value
+            valenceQuestion -> model.query.valence = slider.value
+            energyQuestion -> model.query.energy = slider.value
+            danceabilityQuestion -> model.query.danceability = slider.value
+            genreQuestion -> model.query.genres =
+                getGenreOptions().filter { it.isChecked }.map { it.text.toString() }.toSet()
+        }
+        advanceQuestion()
     }
 
     private fun onClickCurrentFavoriteButton() {
-        model.familiarity = QueryViewModel.Familiarity.CURRENT_FAVORITE
-        changeQuestion(currentQuestionIndex + 1)
+        model.query.familiarity = Query.Familiarity.CURRENT_FAVORITE
+        advanceQuestion()
     }
 
     private fun onClickReliableClassicButton() {
-        model.familiarity = QueryViewModel.Familiarity.RELIABLE_CLASSIC
-        changeQuestion(currentQuestionIndex + 1)
+        model.query.familiarity = Query.Familiarity.RELIABLE_CLASSIC
+        advanceQuestion()
     }
 
     private fun onClickUnderappreciatedGemButton() {
-        model.familiarity = QueryViewModel.Familiarity.UNDERAPPRECIATED_GEM
-        changeQuestion(currentQuestionIndex + 1)
+        model.query.familiarity = Query.Familiarity.UNDERAPPRECIATED_GEM
+        advanceQuestion()
     }
 
     private fun onClickInstrumentalButton() {
-        model.instrumental = true
-        changeQuestion(currentQuestionIndex + 1)
+        model.query.instrumental = true
+        advanceQuestion()
     }
 
     private fun onClickVocalButton() {
-        model.instrumental = false
-        changeQuestion(currentQuestionIndex + 1)
-    }
-
-    private fun onClickReadyButton() {
-        // TODO: instead call a generic function that sets the value of the given question index, passing in LAST_QUESTION_INDEX (changeQuestion will probably also want to use said function)
-        model.genres =
-            genreChips.children.filterIsInstance<Chip>().filter { it.isChecked }.map { it.text.toString() }.toSet()
-        model.submitQuery()
+        model.query.instrumental = false
+        advanceQuestion()
     }
 
     // TODO: abstract this
     private fun onSpotifyNetworkError() {
-        val networkErrorNavAction = QueryFragmentDirections.actionQueryFragmentToConnectSpotifyFragment()
-        networkErrorNavAction.networkErrorReceived = true
-        requireView().findNavController().navigate(networkErrorNavAction)
+        requireView().findNavController().navigate(
+            QueryFragmentDirections.actionQueryFragmentToConnectSpotifyFragment()
+        )
     }
 }

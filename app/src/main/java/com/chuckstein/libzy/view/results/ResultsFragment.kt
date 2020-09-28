@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.browseresults
+package com.chuckstein.libzy.view.results
 
 import android.content.Context
 import android.os.Bundle
@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -16,22 +17,26 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
-import com.chuckstein.libzy.common.capitalizeAsHeading
-import com.chuckstein.libzy.view.results.adapter.AlbumsRecyclerAdapter
 import com.chuckstein.libzy.model.AlbumResult
+import com.chuckstein.libzy.view.results.adapter.AlbumsRecyclerAdapter
+import kotlinx.android.synthetic.main.fragment_results.albums_recycler as albumsRecycler
+import kotlinx.android.synthetic.main.fragment_results.results_header as resultsHeader
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlinx.android.synthetic.main.fragment_browse_results.albums_recycler as albumsRecycler
-import kotlinx.android.synthetic.main.fragment_browse_results.genre_name as genreName
 
-// TODO: rename everywhere I reference "results" to just "albums"?
-class BrowseResultsFragment : Fragment() {
+// TODO: add back button to this screen
+class ResultsFragment : Fragment() {
+
+    companion object {
+        // TODO: determine this based on screen size instead of hardcoding it
+        private const val NUM_PLACEHOLDER_RESULTS = 50
+    }
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val model by viewModels<BrowseResultsViewModel> { viewModelFactory }
+    private val model by viewModels<ResultsViewModel> { viewModelFactory }
 
-    private val navArgs: BrowseResultsFragmentArgs by navArgs()
+    private val navArgs: ResultsFragmentArgs by navArgs()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -42,29 +47,37 @@ class BrowseResultsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_browse_results, container, false)
+        return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        genreName.text = navArgs.genre.capitalizeAsHeading()
-
-        val placeholderAlbumArt = resources.getDrawable(R.drawable.placeholder_album_art, requireContext().theme)
+        // TODO: fix infinite placeholders if recommendation is empty
+        val placeholderAlbumArt =
+            ResourcesCompat.getDrawable(resources, R.drawable.placeholder_album_art, requireContext().theme)
         val albumsRecyclerAdapter = AlbumsRecyclerAdapter(Glide.with(this), placeholderAlbumArt, ::onAlbumClicked)
-        albumsRecyclerAdapter.albums = List(navArgs.numResults) {
+        albumsRecyclerAdapter.albums = List(NUM_PLACEHOLDER_RESULTS) {
             AlbumResult("Fetching album data", "Please wait...", isPlaceholder = true)
         }
         albumsRecycler.adapter = albumsRecyclerAdapter
-        albumsRecycler.layoutManager = GridLayoutManager(requireContext(), 3) // TODO: either don't hardcode spanCount or change this screen's UI to browse by artist, category, audio features, etc
+        albumsRecycler.layoutManager = GridLayoutManager(
+            requireContext(),
+            3
+        ) // TODO: either don't hardcode spanCount or change this screen's UI to browse by artist, category, audio features, etc
 
+        // TODO: remove unnecessary coroutine launching, if suspend functions are never used within here
         lifecycleScope.launch {
-            model.getResults(navArgs.genre).observe(viewLifecycleOwner, { results ->
-                if (results.isNotEmpty()) albumsRecyclerAdapter.albums = results
+            model.getResults(navArgs.query).observe(viewLifecycleOwner, { results ->
+                albumsRecyclerAdapter.albums = results
+                if (results.isEmpty()) resultsHeader.text = 
+                    "Sorry! No results were found for that query. Try saving more albums on Spotify or entering a different query." 
+                // TODO: implement a better no results screen (w/ "try another query" button)
             })
         }
 
-        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, { if (it) onSpotifyNetworkError() }) // TODO: abstract this
+        // TODO: abstract this
+        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, { if (it) onSpotifyNetworkError() })
     }
 
     override fun onStart() {
@@ -87,9 +100,9 @@ class BrowseResultsFragment : Fragment() {
 
     // TODO: abstract this
     private fun onSpotifyNetworkError() {
-        val networkErrorNavAction =
-            BrowseResultsFragmentDirections.actionBrowseResultsFragmentToConnectSpotifyFragment()
-        networkErrorNavAction.networkErrorReceived = true
-        requireView().findNavController().navigate(networkErrorNavAction)
+        requireView().findNavController().navigate(
+            ResultsFragmentDirections.actionResultsFragmentToConnectSpotifyFragment()
+        )
     }
+
 }

@@ -45,6 +45,9 @@
     <string name="continue_button">Continue</string>
     <string name="ready_button">Ready, show me some albums!</string>
     <string name="back_button">back button</string>
+    
+    <!-- ResultsFragment -->
+    <string name="results_header">Here are some suggested albums from your library:</string>
 
     <!-- BrowseResultsFragment -->
     <string name="genre_name_placeholder">Genre</string>

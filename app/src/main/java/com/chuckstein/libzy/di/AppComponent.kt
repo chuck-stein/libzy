@@ -6,6 +6,7 @@ import com.chuckstein.libzy.view.MainActivity
 import com.chuckstein.libzy.view.browseresults.BrowseResultsFragment
 import com.chuckstein.libzy.view.connectspotify.ConnectSpotifyFragment
 import com.chuckstein.libzy.view.query.QueryFragment
+import com.chuckstein.libzy.view.results.ResultsFragment
 import com.chuckstein.libzy.view.selectgenres.SelectGenresFragment
 import dagger.BindsInstance
 import dagger.Component
@@ -31,5 +32,6 @@ interface AppComponent {
     fun inject(selectGenresFragment: SelectGenresFragment)
     fun inject(browseResultsFragment: BrowseResultsFragment)
     fun inject(queryFragment: QueryFragment)
+    fun inject(resultsFragment: ResultsFragment)
 
 }

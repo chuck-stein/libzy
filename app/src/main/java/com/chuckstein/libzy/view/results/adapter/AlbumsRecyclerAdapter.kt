@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.browseresults.adapter
+package com.chuckstein.libzy.view.results.adapter
 
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
@@ -9,14 +9,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.chuckstein.libzy.R
-import com.chuckstein.libzy.view.browseresults.data.AlbumResult
+import com.chuckstein.libzy.model.AlbumResult
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_art as albumArt
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_artist as albumArtist
 import kotlinx.android.synthetic.main.list_item_album_result.view.album_title as albumTitle
 
 class AlbumsRecyclerAdapter(
     private val glide: RequestManager,
-    private val albumArtPlaceholder: Drawable,
+    private val albumArtPlaceholder: Drawable?,
     private val onAlbumClick: (spotifyUri: String) -> Unit
 ) :
     RecyclerView.Adapter<AlbumsRecyclerAdapter.ViewHolder>() {
@@ -42,7 +42,7 @@ class AlbumsRecyclerAdapter(
         with(holder) {
             // TODO: look into Glide usage, error handling, null handling, other builder functions (e.g. centerCrop), etc.
             if (album.artworkUrl != null) glide.load(album.artworkUrl).placeholder(albumArtPlaceholder).into(albumArt)
-            else albumArt.setImageDrawable(albumArtPlaceholder)
+            else if (albumArtPlaceholder != null) albumArt.setImageDrawable(albumArtPlaceholder)
             albumTitle.text = album.title
             albumArtist.text = album.artists
 
@@ -52,7 +52,7 @@ class AlbumsRecyclerAdapter(
         }
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val albumArt: ImageView = itemView.albumArt
         val albumTitle: TextView = itemView.albumTitle
         val albumArtist: TextView = itemView.albumArtist

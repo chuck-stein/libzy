@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/results_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_04"
+        android:text="@string/results_header"
+        android:textAlignment="center"
+        android:textSize="@dimen/subheading_text_size" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/albums_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="@dimen/spacing_03"
+        android:paddingBottom="@dimen/spacing_03" />
+
+</LinearLayout>

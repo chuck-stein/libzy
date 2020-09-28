@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.chuckstein.libzy.view.browseresults.BrowseResultsViewModel
 import com.chuckstein.libzy.view.query.QueryViewModel
+import com.chuckstein.libzy.view.results.ResultsViewModel
 import com.chuckstein.libzy.view.selectgenres.SelectGenresViewModel
 import dagger.Binds
 import dagger.Module
@@ -19,6 +20,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(QueryViewModel::class)
     abstract fun bindQueryViewModel(viewModel: QueryViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ResultsViewModel::class)
+    abstract fun bindResultsViewModel(viewModel: ResultsViewModel): ViewModel
 
     @Binds
     @IntoMap

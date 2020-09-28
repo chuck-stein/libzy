@@ -1,5 +1,5 @@
 # Libzy
-An app to narrow down a large Spotify library into suggested albums, based on the genre/familiarity preferences of your current mood.
+An app to narrow down a large Spotify library into suggested albums, based on your current mood.
 
 ## Planned Features
 - ability to hide recently played genres or top genres, to try something new

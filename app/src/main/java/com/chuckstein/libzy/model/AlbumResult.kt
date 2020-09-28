@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.browseresults.data
+package com.chuckstein.libzy.model
 
 data class AlbumResult(
     val title: String,

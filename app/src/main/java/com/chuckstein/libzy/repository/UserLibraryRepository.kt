@@ -11,8 +11,9 @@ import com.chuckstein.libzy.database.entity.DbAlbum
 import com.chuckstein.libzy.database.entity.DbGenre
 import com.chuckstein.libzy.database.entity.junction.AlbumGenreJunction
 import com.chuckstein.libzy.database.tuple.AudioFeaturesTuple
+import com.chuckstein.libzy.database.tuple.FamiliarityTuple
 import com.chuckstein.libzy.spotify.api.SpotifyApiDelegator
-import com.chuckstein.libzy.view.browseresults.data.AlbumResult
+import com.chuckstein.libzy.model.AlbumResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -28,12 +29,19 @@ class UserLibraryRepository @Inject constructor(
     val libraryGenres = Transformations.map(database.genreDao.getAllLibraryGenres()) { genresWithMetadata ->
         genresWithMetadata.map { it.name to it.numAssociatedAlbums }.toMap() // TODO: make the value of the map a GenreMetadata type, which contains more stuff like "is favorite", "recently listened", etc.
     }
+    
+    val libraryAlbums = database.albumDao.getAllAlbumsWithGenres()
 
     suspend fun getAlbumsOfGenre(genre: String): LiveData<List<AlbumResult>> {
         return withContext(Dispatchers.IO) {
             Transformations.map(database.albumDao.getAlbumsOfGenre(genre)) { albums ->
                 albums.map {
-                    AlbumResult(it.title, it.artists, it.artworkUrl, it.spotifyUri)
+                    AlbumResult(
+                        it.title,
+                        it.artists,
+                        it.artworkUrl,
+                        it.spotifyUri
+                    )
                 }
             }
         }
@@ -158,10 +166,12 @@ class UserLibraryRepository @Inject constructor(
             spotifyAlbum.releaseDate.year,
             percentageToFloat(spotifyAlbum.popularity),
             getAlbumAudioFeatures(spotifyAlbum),
-            albumTracksAreInList(spotifyAlbum, recentlyPlayedTrackIds),
-            albumTracksAreInList(spotifyAlbum, topTrackIdsShortTerm),
-            albumTracksAreInList(spotifyAlbum, topTrackIdsMediumTerm),
-            albumTracksAreInList(spotifyAlbum, topTrackIdsLongTerm)
+            FamiliarityTuple(
+                albumTracksAreInList(spotifyAlbum, recentlyPlayedTrackIds),
+                albumTracksAreInList(spotifyAlbum, topTrackIdsShortTerm),
+                albumTracksAreInList(spotifyAlbum, topTrackIdsMediumTerm),
+                albumTracksAreInList(spotifyAlbum, topTrackIdsLongTerm)
+            )
         )
     }
 

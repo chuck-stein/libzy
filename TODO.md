@@ -1,5 +1,9 @@
 # Development To-Do
 
+- add back button to ResultsFragment
+- make a better "no results" screen, with a button to go back and try another query
+- add the ability to save queries to easily repeat in the future, or view query history
+- restructure `database.tuple` package and `model` package (there's some overlap)
 - support horizontal orientation in QueryFragment (and ResultsFragment)
 - in each question of QueryFragment, display a list of the first few album results at the bottom (compose a ResultsFragment?), which live updates with each question answer change (including slider movement or chip selection)
 - add genres search bar with typeahead on genre question screen
