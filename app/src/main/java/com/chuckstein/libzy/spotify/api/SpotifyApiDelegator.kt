@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import com.adamratzman.spotify.*
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
 import com.adamratzman.spotify.models.*
-import com.adamratzman.spotify.utils.getCurrentTimeMs
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.currentTimeSeconds
 import com.chuckstein.libzy.spotify.auth.SpotifyAuthDispatcher
@@ -95,8 +94,8 @@ class SpotifyApiDelegator @Inject constructor(
             val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
             getApiDelegate().updateToken {
                 accessToken = newAccessToken.token
-                expiresIn = newAccessToken.expiresIn                                // duration of validity in seconds
-                expiresAt = newAccessToken.expiresIn * 1000 + getCurrentTimeMs()    // timestamp of expiry in ms
+                expiresIn = newAccessToken.expiresIn // duration of validity in seconds
+                expiresAt = newAccessToken.expiresIn * 1000 + System.currentTimeMillis() // timestamp of expiry in ms
             }
             return apiCall()
         }
