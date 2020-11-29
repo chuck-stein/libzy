@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
@@ -67,6 +66,7 @@ class ResultsFragment : Fragment() {
         ) // TODO: either don't hardcode spanCount or change this screen's UI to browse by artist, category, audio features, etc
 
         // TODO: remove unnecessary coroutine launching, if suspend functions are never used within here
+        // TODO: move observer lambda to its own function
         lifecycleScope.launch {
             model.getResults(navArgs.query).observe(viewLifecycleOwner, { results ->
                 albumsRecyclerAdapter.albums = results
@@ -75,9 +75,6 @@ class ResultsFragment : Fragment() {
                 // TODO: implement a better no results screen (w/ "try another query" button)
             })
         }
-
-        // TODO: abstract this
-        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, { if (it) onSpotifyNetworkError() })
     }
 
     override fun onStart() {
@@ -96,13 +93,6 @@ class ResultsFragment : Fragment() {
         } catch (e: Exception) {
             Toast.makeText(requireContext(), R.string.toast_spotify_remote_failed, Toast.LENGTH_LONG).show()
         }
-    }
-
-    // TODO: abstract this
-    private fun onSpotifyNetworkError() {
-        findNavController().navigate(
-            ResultsFragmentDirections.actionResultsFragmentToConnectSpotifyFragment()
-        )
     }
 
 }

@@ -18,7 +18,6 @@ import androidx.constraintlayout.widget.Group
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -107,8 +106,6 @@ class QueryFragment : Fragment() {
         instrumentalButton.setOnClickListener { onClickInstrumentalButton() }
         vocalButton.setOnClickListener { onClickVocalButton() }
         readyButton.setOnClickListener { onClickContinueOrReadyButton() }
-
-        model.receivedSpotifyNetworkError.observe(viewLifecycleOwner, { if (it) onSpotifyNetworkError() }) // TODO: abstract this
     }
 
     private fun advanceQuestion() {
@@ -200,7 +197,7 @@ class QueryFragment : Fragment() {
     // TODO: ensure I wrote this method in the most efficient way
     // TODO: fix lag on first call via loading screen + coroutine or faster function
     private fun fillGenreChips() {
-        model.getGenreSuggestions().observeOnce(viewLifecycleOwner, Observer { genreSuggestions ->
+        model.getGenreSuggestions().observeOnce(viewLifecycleOwner, { genreSuggestions ->
             for (genre in genreSuggestions.take(50)) { // TODO: remove magic number
                 genreChips.addView(Chip(requireContext()).apply {
                     style(R.style.Chip)
@@ -288,12 +285,5 @@ class QueryFragment : Fragment() {
     private fun onClickVocalButton() {
         model.query.instrumental = false
         advanceQuestion()
-    }
-
-    // TODO: abstract this
-    private fun onSpotifyNetworkError() {
-        findNavController().navigate(
-            QueryFragmentDirections.actionQueryFragmentToConnectSpotifyFragment()
-        )
     }
 }

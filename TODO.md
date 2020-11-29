@@ -1,5 +1,16 @@
 # Development To-Do
 
+- if library refresh job fails due to auth while app is backgrounded, retry immediately next time app is foregrounded
+- manual rescan library button
+- add a button to cancel initial library scan, on both ConnectSpotifyFragment and "scanning library" ongoing notification
+- check what happens when you try to connect spotify without Spotify installed or logged in
+- create a way for the initial library scan to be able to run more than once, for instance if disconnecting a spotify account is ever possible, and then the user wishes to reconnect or connect another account (right now this might not work because the initial scan work observer will immediately report that a work exists and already succeeded, from the first time the initial scan ran)
+- figure out why it looks like spotify auth happens twice in a row for initial library scan
+- fix bug where initial library scan completes without sending notification
+- switch from Dagger to Hilt or Koin
+- come up with a better system for handling spotify errors than returning to connect spotify screen, then clean up nav graph and ConnectSpotifyFragment accordingly
+- when refreshing library data, stream updates to the db/view as they come in, rather than all at once (for the initial scan, this can be used to enhance ConnectSpotifyFragment's scan UI and notification UI, the latter of which should use notification's setProgressS() method and some text for num albums scanned out of total)
+- look into using a shared ViewModel for QueryFragment/ResultsFragment
 - implement a more advanced library scan progress bar (horizontal progress bar, with image and name of current album being scanned, along with # album out of total in library)
 - handle Spotify not being installed on device
 - add back button to ResultsFragment
@@ -205,14 +216,21 @@
 - implement adamint custom token refresh logic
 - optimize Room implementation/schema/DAOs
 - see if I can implement a faster way of requesting all albums in a user's library (maybe using Dispatchers.IO could help...?)
+- ability to remove saved albums from library directly from Libzy
+- ability to visit the Spotify page for an album without playing it
+- separate page for individual albums, showing genre data (with options to browse those genres or add them to your selected categories?) & other info available from API like audio analysis of tracks
+- support for searching by individual tracks instead of only albums
 
 
 ## Priorities
 
+### Complete
 1. Create MVP 2.0 -- more than genre selection, algorithmic recommendations, single-genre at a time, better metadata-based categorization
+
+### To-Do
 2. Address bugs from Google Keep list
 3. Address all in-code TODOs
-4. Add Dagger subcomponents and scopes
+4. Switch from Dagger to Hilt (add subcomponents and scopes if still applicable)
 5. Address all the above TODOs in this file
 6. Add thorough unit tests
 7. Document everything
@@ -221,3 +239,11 @@
 10. Familiarity filters feature
 11. Get feedback and more testers from r/androiddev
 12. Work on other features
+
+## Before Play Store Distribution
+- decide on minimum and target SDK, refactor accordingly
+- check for any content (such as placeholder album art) that may be under a license preventing distribution
+- test on many screen sizes
+- unit test
+- beta test
+- look up other android app before-distribution checklists

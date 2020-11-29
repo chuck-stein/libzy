@@ -1,17 +1,18 @@
 package com.chuckstein.libzy.common
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import androidx.lifecycle.*
+import androidx.navigation.NavDeepLinkBuilder
 import com.chuckstein.libzy.R
+import com.chuckstein.libzy.view.MainActivity
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -19,6 +20,7 @@ import kotlin.math.roundToInt
 
 // TODO: break this file into specific utils, e.g. AndroidUtil, MathUtil
 
+// NOTE: after January 18th, 2038, this function will need to change because it will only return Int.MAX_VALUE
 fun currentTimeSeconds() = (System.currentTimeMillis() / 1000.0).roundToInt()
 
 fun percentageToFloat(percentage: Int) = percentage / 100F
@@ -26,6 +28,15 @@ fun percentageToFloat(percentage: Int) = percentage / 100F
 fun Fragment.spotifyConnected() =
     requireContext().getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
         .getBoolean(getString(R.string.spotify_connected_key), false)
+
+fun appInForeground() = ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+
+fun Context.createNotificationTapAction(@IdRes destinationResId: Int): PendingIntent =
+    NavDeepLinkBuilder(this)
+        .setComponentName(MainActivity::class.java)
+        .setGraph(R.navigation.nav_graph)
+        .setDestination(destinationResId)
+        .createPendingIntent()
 
 val ViewGroup.children: List<View>
     get() {

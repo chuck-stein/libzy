@@ -13,6 +13,9 @@ TODO:
     - look at actual request dispatchers like Spring MVC's for design advice
     - read up on coroutines to do this in the best way
     - unit test this
+    - test what happens when MainActivity registers as authClientProxy, then activity is destroyed,
+      but WorkManager continues running library refresh job which requires auth but this dispatcher no longer has a proxy (should timeout... but does the refresh job continue next time app opens?)
+
  */
 @Singleton
 class SpotifyAuthDispatcher @Inject constructor() {
@@ -25,8 +28,12 @@ class SpotifyAuthDispatcher @Inject constructor() {
     var authClientProxy: SpotifyAuthClientProxy? = null
         set(proxy) {
             field = proxy
-            if (proxy == null) requestsWaitingForProxy = true
-            else if (requestsWaitingForProxy) proxy.initiateAuthRequest(onAuthComplete)
+            if (proxy == null && pendingAuthCallbacks.isNotEmpty()) {
+                requestsWaitingForProxy = true
+            } else if (proxy != null && requestsWaitingForProxy) {
+                requestsWaitingForProxy = false
+                proxy.initiateAuthRequest(onAuthComplete)
+            }
         }
 
     private var requestsWaitingForProxy = false

@@ -12,13 +12,30 @@
     <string name="spotify_connected_key">spotify.connected</string>
     <string name="spotify_access_token_key">"spotify.accesstoken"</string>
     <string name="spotify_token_expiry_key">spotify.accesstoken.expiry</string>
+    <string name="spotify_initial_scan_in_progress_key">spotify.scanning</string>
+
+    <!-- Notification Channels -->
+    <string name="library_scan_progress_notification_channel_id">channel_library_scan_progress</string>
+    <string name="library_scan_progress_notification_channel_name">Library Scan Progress</string>
+    <string name="library_scan_progress_notification_channel_description">Displays the progress while scanning your Spotify library</string>
+    <string name="library_scan_update_notification_channel_id">channel_library_scan_update</string>
+    <string name="library_scan_update_notification_channel_name">Library Scan Update</string>
+    <string name="library_scan_update_notification_channel_description">Notifies you when a scan of your Spotify library succeeds or fails</string>
+
+    <!-- Notifications -->
+    <string name="initial_library_scan_notification_title">Scanning your Spotify library…</string>
+    <string name="initial_library_scan_succeeded_notification_title">Finished scanning your Spotify library!</string>
+    <string name="initial_library_scan_succeeded_notification_text">Ready to find something to listen to?</string>
+    <string name="initial_library_scan_failed_notification_title">There was a problem scanning your Spotify library!</string>
+    <string name="initial_library_scan_failed_notification_text">Please try again.</string>
 
     <!-- ConnectSpotifyFragment -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
     <string name="toast_connecting_spotify_account_failed">Failed to authorize your Spotify account! Please try again.</string>
-    <string name="toast_spotify_network_error">There was a problem connecting to Spotify! Please try again.</string>
+    <string name="toast_spotify_generic_network_error">There was a problem connecting to Spotify! Please try again.</string>
+    <string name="toast_library_scan_failed">There was a problem scanning your Spotify library! Please try again.</string>
     <string name="scanning_library_heading">Scanning your Spotify library…</string>
-    <string name="scanning_library_subheading">This may take a few minutes, please do not close the app</string>
+    <string name="scanning_library_subheading">This may take a few minutes, so feel free to come back later</string>
 
     <!-- QueryFragment -->
     <string name="greeting_text">Hey there!</string>
