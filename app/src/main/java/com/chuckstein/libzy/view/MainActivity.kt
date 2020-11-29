@@ -111,4 +111,8 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
             .setScopes(AUTH_SCOPES)
             .build()
 
+    override fun onDestroy() {
+        super.onDestroy()
+        spotifyAuthDispatcher.authClientProxy = null
+    }
 }

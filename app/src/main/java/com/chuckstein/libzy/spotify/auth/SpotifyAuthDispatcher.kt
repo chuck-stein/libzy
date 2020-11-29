@@ -25,7 +25,8 @@ class SpotifyAuthDispatcher @Inject constructor() {
     var authClientProxy: SpotifyAuthClientProxy? = null
         set(proxy) {
             field = proxy
-            if (proxy != null && requestsWaitingForProxy) proxy.initiateAuthRequest(onAuthComplete)
+            if (proxy == null) requestsWaitingForProxy = true
+            else if (requestsWaitingForProxy) proxy.initiateAuthRequest(onAuthComplete)
         }
 
     private var requestsWaitingForProxy = false
@@ -42,7 +43,6 @@ class SpotifyAuthDispatcher @Inject constructor() {
             for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onFailure(exception)
             pendingAuthCallbacks.clear()
         }
-
     }
 
     suspend fun requestAuthorization(): SpotifyAccessToken = withContext(Dispatchers.IO) {
