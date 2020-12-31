@@ -2,10 +2,11 @@
 <resources>
 
     <!-- Spacing -->
-    <dimen name="standard_spacing">24dp</dimen>
-    <dimen name="light_spacing">12dp</dimen>
-    <dimen name="horizontal_chip_spacing">10dp</dimen>
-    <dimen name="vertical_chip_spacing">5dp</dimen>
+    <dimen name="spacing_01">4dp</dimen>
+    <dimen name="spacing_02">8dp</dimen>
+    <dimen name="spacing_03">12dp</dimen>
+    <dimen name="spacing_04">24dp</dimen>
+    <dimen name="spacing_05">36dp</dimen>
 
     <!-- Text size -->
     <dimen name="heading_text_size">36sp</dimen>
@@ -13,11 +14,9 @@
     <dimen name="content_text_size">14sp</dimen>
 
     <!-- Image size -->
-    <dimen name="album_art_size">130dp</dimen>
+    <dimen name="album_art_size">110dp</dimen>
 
     <!-- Misc -->
     <dimen name="corner_radius">18dp</dimen>
-
-    <!-- Uncategorized -->
 
 </resources>

@@ -13,6 +13,9 @@ TODO:
     - look at actual request dispatchers like Spring MVC's for design advice
     - read up on coroutines to do this in the best way
     - unit test this
+    - test what happens when MainActivity registers as authClientProxy, then activity is destroyed,
+      but WorkManager continues running library refresh job which requires auth but this dispatcher no longer has a proxy (should timeout... but does the refresh job continue next time app opens?)
+
  */
 @Singleton
 class SpotifyAuthDispatcher @Inject constructor() {
@@ -25,7 +28,12 @@ class SpotifyAuthDispatcher @Inject constructor() {
     var authClientProxy: SpotifyAuthClientProxy? = null
         set(proxy) {
             field = proxy
-            if (proxy != null && requestsWaitingForProxy) proxy.initiateAuthRequest(onAuthComplete)
+            if (proxy == null && pendingAuthCallbacks.isNotEmpty()) {
+                requestsWaitingForProxy = true
+            } else if (proxy != null && requestsWaitingForProxy) {
+                requestsWaitingForProxy = false
+                proxy.initiateAuthRequest(onAuthComplete)
+            }
         }
 
     private var requestsWaitingForProxy = false
@@ -34,23 +42,18 @@ class SpotifyAuthDispatcher @Inject constructor() {
 
     private val onAuthComplete = object : SpotifyAuthCallback {
         override fun onSuccess(accessToken: SpotifyAccessToken) {
-            for (pendingAuthCallback in pendingAuthCallbacks) {
-                pendingAuthCallback.onSuccess(accessToken)
-            }
+            for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onSuccess(accessToken)
             pendingAuthCallbacks.clear()
         }
 
         override fun onFailure(exception: SpotifyAuthException) {
-            for (pendingAuthCallback in pendingAuthCallbacks) {
-                pendingAuthCallback.onFailure(exception)
-            }
+            for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onFailure(exception)
             pendingAuthCallbacks.clear()
         }
-
     }
 
     suspend fun requestAuthorization(): SpotifyAccessToken = withContext(Dispatchers.IO) {
-        suspendCancellableCoroutine<SpotifyAccessToken> { continuation ->
+        suspendCancellableCoroutine { continuation ->
             CoroutineScope(Dispatchers.Main).launch { // TODO: is this the best way to ensure suspendCoroutine block runs on main thread?
 
                 // initialize an auth callback to unsuspend the coroutine upon completion with either a token or exception

@@ -12,25 +12,60 @@
     <string name="spotify_connected_key">spotify.connected</string>
     <string name="spotify_access_token_key">"spotify.accesstoken"</string>
     <string name="spotify_token_expiry_key">spotify.accesstoken.expiry</string>
+    <string name="spotify_initial_scan_in_progress_key">spotify.scanning</string>
+
+    <!-- Notification Channels -->
+    <string name="library_scan_progress_notification_channel_id">channel_library_scan_progress</string>
+    <string name="library_scan_progress_notification_channel_name">Library Scan Progress</string>
+    <string name="library_scan_progress_notification_channel_description">Displays the progress while scanning your Spotify library</string>
+    <string name="library_scan_update_notification_channel_id">channel_library_scan_update</string>
+    <string name="library_scan_update_notification_channel_name">Library Scan Update</string>
+    <string name="library_scan_update_notification_channel_description">Notifies you when a scan of your Spotify library succeeds or fails</string>
+
+    <!-- Notifications -->
+    <string name="initial_library_scan_notification_title">Scanning your Spotify library…</string>
+    <string name="initial_library_scan_succeeded_notification_title">Finished scanning your Spotify library!</string>
+    <string name="initial_library_scan_succeeded_notification_text">Ready to find something to listen to?</string>
+    <string name="initial_library_scan_failed_notification_title">There was a problem scanning your Spotify library!</string>
+    <string name="initial_library_scan_failed_notification_text">Please try again.</string>
 
     <!-- ConnectSpotifyFragment -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
     <string name="toast_connecting_spotify_account_failed">Failed to authorize your Spotify account! Please try again.</string>
-    <string name="toast_spotify_network_error">There was a problem connecting to Spotify! Please try again.</string>
+    <string name="toast_spotify_generic_network_error">There was a problem connecting to Spotify! Please try again.</string>
+    <string name="toast_library_scan_failed">There was a problem scanning your Spotify library! Please try again.</string>
+    <string name="scanning_library_heading">Scanning your Spotify library…</string>
+    <string name="scanning_library_subheading">This may take a few minutes, so feel free to come back later</string>
 
-    <!-- SelectGenresFragment -->
+    <!-- QueryFragment -->
     <string name="greeting_text">Hey there!</string>
-    <string name="fetching_library_data_text">Fetching your library data…</string>
-    <string name="select_genres_instructions_text">Which genres are you in the mood for?</string>
-    <string name="submit_genres_button_text">Ready, show me some albums!</string>
+    <string name="query_instructions_text">What are you in the mood to listen to?</string>
+    <string name="no_preference">No preference</string>
+    <string name="a_current_favorite">A current favorite</string>
+    <string name="an_underappreciated_gem">An underappreciated gem</string>
+    <string name="a_reliable_classic">A reliable classic</string>
+    <string name="recently_played">Recently played</string>
+    <string name="happy">Happy</string>
+    <string name="unhappy">Unhappy</string>
+    <string name="acoustic">Acoustic</string>
+    <string name="electronic">Electronic</string>
+    <string name="instrumental">Instrumental</string>
+    <string name="vocal">Vocal</string>
+    <string name="ambient">Ambient</string>
+    <string name="energetic">Energetic</string>
+    <string name="danceable">Danceable</string>
+    <string name="arhythmic">Arhythmic</string>
+    <string name="popular">Popular</string>
+    <string name="obscure">Obscure</string>
+    <string name="continue_button">Continue</string>
+    <string name="ready_button">Ready, show me some albums!</string>
+    <string name="back_button">back button</string>
 
-    <!-- BrowseResultsFragment -->
-    <string name="genre_name_placeholder">Genre</string>
+    <!-- ResultsFragment -->
+    <string name="results_header">Here are some suggested albums from your library:</string>
     <string name="album_title_placeholder">Album Title</string>
     <string name="artist_name_placeholder">Album Artist</string>
     <string name="album_art_desc">album artwork</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
-
-    <!-- Uncategorized -->
 
 </resources>

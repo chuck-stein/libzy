@@ -11,60 +11,72 @@
         android:label="fragment_launch"
         tools:layout="@layout/fragment_launch">
         <action
-            android:id="@+id/action_launchFragment_to_selectGenresFragment"
-            app:destination="@id/selectGenresFragment"
-            app:popUpTo="@id/nav_graph"
-            app:popUpToInclusive="true" />
-        <action
             android:id="@+id/action_launchFragment_to_connectSpotifyFragment"
             app:destination="@id/connectSpotifyFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
-    </fragment>
-    <fragment
-        android:id="@+id/browseResultsFragment"
-        android:name="com.chuckstein.libzy.view.browseresults.BrowseResultsFragment"
-        android:label="fragment_browse_results"
-        tools:layout="@layout/fragment_browse_results">
-        <argument
-            android:name="selectedGenres"
-            app:argType="string[]" />
-        <argument
-            android:name="numAlbumsPerSelectedGenre"
-            app:argType="integer[]" />
         <action
-            android:id="@+id/action_browseResultsFragment_to_connectSpotifyFragment"
-            app:destination="@id/connectSpotifyFragment"
+            android:id="@+id/action_launchFragment_to_queryFragment"
+            app:destination="@id/queryFragment"
             app:popUpTo="@id/nav_graph"
-            app:popUpToInclusive="true" />
-    </fragment>
-    <fragment
-        android:id="@+id/selectGenresFragment"
-        android:name="com.chuckstein.libzy.view.selectgenres.SelectGenresFragment"
-        android:label="fragment_select_genres"
-        tools:layout="@layout/fragment_select_genres">
-        <action
-            android:id="@+id/action_selectGenresFragment_to_browseResultsFragment"
-            app:destination="@id/browseResultsFragment" />
-        <action
-            android:id="@+id/action_selectGenresFragment_to_connectSpotifyFragment"
-            app:destination="@id/connectSpotifyFragment"
-            app:popUpTo="@id/nav_graph"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true">
+            <argument
+                android:name="initialQuestionIndex"
+                android:defaultValue="0" />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/connectSpotifyFragment"
-        android:name="com.chuckstein.libzy.view.connectspotify.ConnectSpotifyFragment"
+        android:name="com.chuckstein.libzy.view.connect.ConnectSpotifyFragment"
         android:label="fragment_connect_spotify"
         tools:layout="@layout/fragment_connect_spotify">
-        <action
-            android:id="@+id/action_connectSpotifyFragment_to_selectGenresFragment"
-            app:destination="@id/selectGenresFragment"
-            app:popUpTo="@id/nav_graph"
-            app:popUpToInclusive="true" />
         <argument
             android:name="networkErrorReceived"
             android:defaultValue="false"
             app:argType="boolean" />
+        <action
+            android:id="@+id/action_connectSpotifyFragment_to_queryFragment"
+            app:destination="@id/queryFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/queryFragment"
+        android:name="com.chuckstein.libzy.view.query.QueryFragment"
+        android:label="fragment_query"
+        tools:layout="@layout/fragment_query" >
+        <argument
+            android:name="initialQuestionIndex"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <action
+            android:id="@+id/action_queryFragment_to_connectSpotifyFragment"
+            app:destination="@id/connectSpotifyFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" >
+            <argument
+                android:name="networkErrorReceived"
+                android:defaultValue="true" />
+        </action>
+        <action
+            android:id="@+id/action_queryFragment_to_resultsFragment"
+            app:destination="@id/resultsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/resultsFragment"
+        android:name="com.chuckstein.libzy.view.results.ResultsFragment"
+        android:label="ResultsFragment" >
+        <action
+            android:id="@+id/action_resultsFragment_to_connectSpotifyFragment"
+            app:destination="@id/connectSpotifyFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" >
+            <argument
+                android:name="networkErrorReceived"
+                android:defaultValue="true" />
+        </action>
+        <argument
+            android:name="query"
+            app:argType="com.chuckstein.libzy.model.Query" />
     </fragment>
 </navigation>

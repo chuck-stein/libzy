@@ -2,8 +2,9 @@ package com.chuckstein.libzy.di.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.chuckstein.libzy.view.browseresults.BrowseResultsViewModel
-import com.chuckstein.libzy.view.selectgenres.SelectGenresViewModel
+import com.chuckstein.libzy.view.connect.ConnectSpotifyViewModel
+import com.chuckstein.libzy.view.query.QueryViewModel
+import com.chuckstein.libzy.view.results.ResultsViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -16,12 +17,17 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(SelectGenresViewModel::class)
-    abstract fun bindSelectGenresViewModel(viewModel: SelectGenresViewModel): ViewModel
+    @ViewModelKey(ConnectSpotifyViewModel::class)
+    abstract fun bindConnectSpotifyViewModel(viewModel: ConnectSpotifyViewModel): ViewModel
 
     @Binds
     @IntoMap
-    @ViewModelKey(BrowseResultsViewModel::class)
-    abstract fun bindBrowseResultsViewModel(viewModel: BrowseResultsViewModel): ViewModel
+    @ViewModelKey(QueryViewModel::class)
+    abstract fun bindQueryViewModel(viewModel: QueryViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ResultsViewModel::class)
+    abstract fun bindResultsViewModel(viewModel: ResultsViewModel): ViewModel
 
 }

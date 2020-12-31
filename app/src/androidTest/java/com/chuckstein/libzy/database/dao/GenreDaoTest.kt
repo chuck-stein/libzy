@@ -9,6 +9,8 @@ import com.chuckstein.libzy.database.UserLibraryDatabase
 import com.chuckstein.libzy.database.entity.DbAlbum
 import com.chuckstein.libzy.database.entity.DbGenre
 import com.chuckstein.libzy.database.entity.junction.AlbumGenreJunction
+import com.chuckstein.libzy.database.tuple.AudioFeaturesTuple
+import com.chuckstein.libzy.database.tuple.FamiliarityTuple
 import com.chuckstein.libzy.database.tuple.GenreWithAlbumsTuple
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -23,11 +25,44 @@ class GenreDaoTest {
 
     private lateinit var db: UserLibraryDatabase
 
-    private val metalAlbum = DbAlbum("1", "Lateralus", "Tool", "lateralus-artwork.com", "lateralus-uri")
-    private val rockAndMetalAlbum =
-        DbAlbum("2", "Blast Tyrant", "Clutch", "blast-tyrant-artwork.com", "blast-tyrant-uri")
-    private val rockAlbum = DbAlbum("3", "Houses of the Holy", "Led Zeppelin", "hoth-artwork.com", "hoth-uri")
-    private val rapAlbum = DbAlbum("4", "Yeezus", "Kanye West", "yeezus-artwork.com", "yeezus-uri")
+    private val testAudioFeatures = AudioFeaturesTuple(0.3f, 0.7f, 0.1f, 0.2f, 0.5f, 0.9f)
+    private val metalAlbum = DbAlbum(
+        "1", "Lateralus", "Tool", "lateralus-artwork.com", "lateralus-uri", 2001, 0.6f, testAudioFeatures,
+        FamiliarityTuple(
+            recentlyPlayed = false,
+            shortTermFavorite = false,
+            mediumTermFavorite = false,
+            longTermFavorite = true
+        )
+
+    )
+    private val rockAndMetalAlbum = DbAlbum(
+        "2", "Blast Tyrant", "Clutch", "blast-tyrant-artwork.com", "blast-tyrant-uri", 2004, 0.4f, testAudioFeatures,
+        FamiliarityTuple(
+            recentlyPlayed = false,
+            shortTermFavorite = false,
+            mediumTermFavorite = false,
+            longTermFavorite = true
+        )
+    )
+    private val rockAlbum = DbAlbum(
+        "3", "Houses of the Holy", "Led Zeppelin", "hoth-artwork.com", "hoth-uri", 1973, 0.8f, testAudioFeatures,
+        FamiliarityTuple(
+            recentlyPlayed = false,
+            shortTermFavorite = false,
+            mediumTermFavorite = false,
+            longTermFavorite = true
+        )
+    )
+    private val rapAlbum = DbAlbum(
+        "4", "Yeezus", "Kanye West", "yeezus-artwork.com", "yeezus-uri", 2013, 0.9f, testAudioFeatures,
+        FamiliarityTuple(
+            recentlyPlayed = false,
+            shortTermFavorite = false,
+            mediumTermFavorite = false,
+            longTermFavorite = true
+        )
+    )
 
     @Before
     fun createDb() {
