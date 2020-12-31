@@ -29,6 +29,7 @@ import com.chuckstein.libzy.common.observeOnce
 import com.chuckstein.libzy.model.Query
 import com.google.android.material.chip.Chip
 import kotlinx.android.synthetic.main.fragment_query.slider
+import java.time.LocalTime
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_query.acousticness_question as acousticnessQuestion
 import kotlinx.android.synthetic.main.fragment_query.back_button as backButton
@@ -40,6 +41,7 @@ import kotlinx.android.synthetic.main.fragment_query.familiarity_question as fam
 import kotlinx.android.synthetic.main.fragment_query.genre_chips as genreChips
 import kotlinx.android.synthetic.main.fragment_query.genre_chips_scroll_view as genreChipsScrollView
 import kotlinx.android.synthetic.main.fragment_query.genre_question as genreQuestion
+import kotlinx.android.synthetic.main.fragment_query.greeting_text as greetingText
 import kotlinx.android.synthetic.main.fragment_query.instrumental_button as instrumentalButton
 import kotlinx.android.synthetic.main.fragment_query.instrumentalness_question as instrumentalnessQuestion
 import kotlinx.android.synthetic.main.fragment_query.no_preference_button as noPreferenceButton
@@ -85,18 +87,34 @@ class QueryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setGreetingText()
+        initializeQuestions()
+        setOnClickListeners()
+        prevQuestionOnBackCallback =
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { onBackPressed() }
+        updateBackNavigation()
+    }
 
+    private fun setGreetingText() {
+        greetingText.text = getString(
+            when (LocalTime.now().hour) {
+                in 4..11 -> R.string.morning_greeting_text
+                in 12..16 -> R.string.afternoon_greeting_text
+                else -> R.string.evening_greeting_text
+            }
+        )
+    }
+
+    private fun initializeQuestions() {
         questionViews = listOf(
             familiarityQuestion, instrumentalnessQuestion, acousticnessQuestion,
             valenceQuestion, energyQuestion, danceabilityQuestion, genreQuestion
         )
         currQuestionIndex = navArgs.initialQuestionIndex
         questionViews[currQuestionIndex].visibility = View.VISIBLE
+    }
 
-        prevQuestionOnBackCallback =
-            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { onBackPressed() }
-        updateBackNavigation()
-
+    private fun setOnClickListeners() {
         backButton.setOnClickListener { onBackPressed() }
         noPreferenceButton.setOnClickListener { onClickNoPreferenceButton() }
         continueButton.setOnClickListener { onClickContinueOrReadyButton() }

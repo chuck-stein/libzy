@@ -1,5 +1,7 @@
 # Development To-Do
 
+- update QueryFragment greeting text not just when view is created, but also if it turns from afternoon -> evening, for example, while the view is inflated
+- verify that library refresh job runs, repeatedly, after initial scan
 - if library refresh job fails due to auth while app is backgrounded, retry immediately next time app is foregrounded
 - manual rescan library button
 - add a button to cancel initial library scan, on both ConnectSpotifyFragment and "scanning library" ongoing notification

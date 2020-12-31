@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_04"
         android:layout_marginTop="@dimen/spacing_04"
-        android:text="@string/greeting_text"
+        android:text="@string/default_greeting_text"
         android:textSize="@dimen/heading_text_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

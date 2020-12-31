@@ -38,7 +38,10 @@
     <string name="scanning_library_subheading">This may take a few minutes, so feel free to come back later</string>
 
     <!-- QueryFragment -->
-    <string name="greeting_text">Hey there!</string>
+    <string name="default_greeting_text">Hey there!</string>
+    <string name="morning_greeting_text">Good morning!</string>
+    <string name="afternoon_greeting_text">Good afternoon!</string>
+    <string name="evening_greeting_text">Good evening!</string>
     <string name="query_instructions_text">What are you in the mood to listen to?</string>
     <string name="no_preference">No preference</string>
     <string name="a_current_favorite">A current favorite</string>
