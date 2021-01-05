@@ -16,7 +16,7 @@ import javax.inject.Singleton
 // TODO: handle the case where getApiDelegate() is called, starts initializing the client, then is called again from elsewhere -- don't want to start initializing again
 @Singleton
 class SpotifyApiDelegator @Inject constructor(
-    context: Context,
+    private val context: Context,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) {
     companion object {
@@ -36,6 +36,13 @@ class SpotifyApiDelegator @Inject constructor(
     private var _apiDelegate: SpotifyClientApi? = null
 
     init {
+        createApiDelegateIfTokenAvailable()
+    }
+
+    private suspend fun getApiDelegate() =
+        _apiDelegate ?: createApiDelegateIfTokenAvailable() ?: createApiDelegateWithNewToken()
+
+    private fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
         val spotifyPrefs: SharedPreferences = context.getSharedPreferences(
             context.getString(R.string.spotify_prefs_name),
             Context.MODE_PRIVATE
@@ -47,11 +54,10 @@ class SpotifyApiDelegator @Inject constructor(
         if (savedAccessToken != null && currentTimeSeconds() < savedTokenExpiry) {
             _apiDelegate = createApiDelegate(savedAccessToken)
         }
+        return _apiDelegate
     }
 
-    private suspend fun getApiDelegate() = _apiDelegate ?: initApiDelegateWithNewToken()
-
-    private suspend fun initApiDelegateWithNewToken(): SpotifyClientApi {
+    private suspend fun createApiDelegateWithNewToken(): SpotifyClientApi {
         val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
         val delegate = createApiDelegate(newAccessToken.token)
         _apiDelegate = delegate
@@ -95,7 +101,6 @@ class SpotifyApiDelegator @Inject constructor(
             getApiDelegate().updateToken {
                 accessToken = newAccessToken.token
                 expiresIn = newAccessToken.expiresIn // duration of validity in seconds
-                expiresAt = newAccessToken.expiresIn * 1000 + System.currentTimeMillis() // timestamp of expiry in ms
             }
             return apiCall()
         }
