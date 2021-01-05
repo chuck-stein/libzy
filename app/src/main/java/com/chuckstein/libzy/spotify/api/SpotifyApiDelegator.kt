@@ -2,9 +2,11 @@ package com.chuckstein.libzy.spotify.api
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.adamratzman.spotify.*
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
 import com.adamratzman.spotify.models.*
+import com.chuckstein.libzy.BuildConfig
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.currentTimeSeconds
 import com.chuckstein.libzy.spotify.auth.SpotifyAuthDispatcher
@@ -20,6 +22,8 @@ class SpotifyApiDelegator @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) {
     companion object {
+        private val TAG = SpotifyApiDelegator::class.java.simpleName
+
         // the lower of Spotify's limits for how many items are available from an endpoint
         private const val API_ITEM_LIMIT_LOW = 50
 
