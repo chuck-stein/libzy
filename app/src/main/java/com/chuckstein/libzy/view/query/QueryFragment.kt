@@ -252,12 +252,16 @@ class QueryFragment : Fragment() {
         when (questionViews[currQuestionIndex]) {
             familiarityQuestion, instrumentalnessQuestion ->
                 Log.w(TAG, "Can only save an answer to the current question via answer buttons")
-            acousticnessQuestion -> model.query.valence = 1 - slider.value
+            acousticnessQuestion -> model.query.acousticness = 1 - slider.value
             valenceQuestion -> model.query.valence = slider.value
             energyQuestion -> model.query.energy = slider.value
             danceabilityQuestion -> model.query.danceability = slider.value
-            genreQuestion -> model.query.genres =
-                getGenreOptions().filter { it.isChecked }.map { it.text.toString() }.toSet()
+            genreQuestion -> {
+                val checkedGenreChips = getGenreOptions().filter { it.isChecked }
+                model.query.genres =
+                    if (checkedGenreChips.isEmpty()) null
+                    else checkedGenreChips.map { it.text.toString() }.toSet()
+            }
         }
         advanceQuestion()
     }
