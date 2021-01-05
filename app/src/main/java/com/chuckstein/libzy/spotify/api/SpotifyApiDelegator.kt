@@ -116,7 +116,24 @@ class SpotifyApiDelegator @Inject constructor(
                 retryCallWithNewToken()
             } catch (e: SpotifyException.BadRequestException) {
                 if (e.statusCode == 401) retryCallWithNewToken()
-                else throw e
+                else e.statusCode.let { errorCode ->
+                    if (errorCode != null && errorCode >= 500 && errorCode < 600) {
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "API call failed due to server error $errorCode, trying one more time...")
+                        }
+                        apiCall()
+                    }
+                    else throw e
+                }
+            } catch (e: SpotifyException.ParseException) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
+                }
+                // TODO: resolve this temporary workaround for Spotify sometimes sending 503 during library refresh
+                apiCall()
+            } catch (e: SpotifyException.TimeoutException) {
+                if (BuildConfig.DEBUG) Log.d(TAG, "API call failed due to timing out, trying one more time...")
+                apiCall()
             }
         }
     }
