@@ -51,7 +51,7 @@
         app:layout_constraintBottom_toTopOf="@+id/reliable_classic_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/instructions_text"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <Button
@@ -75,7 +75,7 @@
         android:layout_marginHorizontal="@dimen/spacing_04"
         android:layout_marginVertical="@dimen/spacing_02"
         android:text="@string/an_underappreciated_gem"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/no_preference_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/reliable_classic_button" />
@@ -101,7 +101,7 @@
         app:layout_constraintBottom_toTopOf="@+id/vocal_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/instructions_text"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <Button
@@ -112,7 +112,7 @@
         android:layout_marginHorizontal="@dimen/spacing_04"
         android:layout_marginVertical="@dimen/spacing_02"
         android:text="@string/vocal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/no_preference_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/instrumental_button" />
@@ -129,7 +129,7 @@
 
     <TextView
         android:id="@+id/acoustic_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_04"
         android:layout_marginEnd="@dimen/spacing_02"
@@ -142,7 +142,7 @@
 
     <TextView
         android:id="@+id/electronic_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_02"
         android:layout_marginEnd="@dimen/spacing_04"
@@ -161,15 +161,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="unhappy_label,happy_label,slider,continue_button" />
+        app:constraint_referenced_ids="negative_emotion_label,positive_emotion_label,slider,continue_button" />
 
     <TextView
-        android:id="@+id/unhappy_label"
-        android:layout_width="wrap_content"
+        android:id="@+id/negative_emotion_label"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_04"
         android:layout_marginEnd="@dimen/spacing_02"
-        android:text="@string/unhappy"
+        android:text="@string/negative_emotion"
         android:textSize="@dimen/content_text_size"
         app:layout_constraintBottom_toBottomOf="@id/slider"
         app:layout_constraintEnd_toStartOf="@id/slider"
@@ -177,12 +177,12 @@
         app:layout_constraintTop_toTopOf="@id/slider" />
 
     <TextView
-        android:id="@+id/happy_label"
-        android:layout_width="wrap_content"
+        android:id="@+id/positive_emotion_label"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_02"
         android:layout_marginEnd="@dimen/spacing_04"
-        android:text="@string/happy"
+        android:text="@string/positive_emotion"
         android:textSize="@dimen/content_text_size"
         app:layout_constraintBottom_toBottomOf="@id/slider"
         app:layout_constraintEnd_toEndOf="parent"
@@ -201,7 +201,7 @@
 
     <TextView
         android:id="@+id/ambient_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_04"
         android:layout_marginEnd="@dimen/spacing_02"
@@ -214,7 +214,7 @@
 
     <TextView
         android:id="@+id/energetic_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/spacing_03"
         android:layout_marginStart="@dimen/spacing_02"
@@ -231,14 +231,14 @@
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/danceability_question"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:constraint_referenced_ids="arhythmic_label,danceable_label,slider,continue_button" />
 
     <TextView
         android:id="@+id/arhythmic_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_04"
         android:layout_marginEnd="@dimen/spacing_02"
@@ -376,7 +376,7 @@
         app:layout_constraintBottom_toTopOf="@id/continue_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/instructions_text"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <Button
@@ -386,7 +386,7 @@
         android:layout_gravity="center"
         android:layout_margin="@dimen/spacing_04"
         android:text="@string/continue_button"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/no_preference_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/slider" />
