@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
 import androidx.work.*
 import com.adamratzman.spotify.SpotifyException
+import com.chuckstein.libzy.BuildConfig
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.appInForeground
 import com.chuckstein.libzy.common.createNotificationTapAction
@@ -32,6 +33,9 @@ class RefreshLibraryWorker(
     }
 
     override suspend fun doWork(): Result {
+
+        if (BuildConfig.DEBUG) Log.d(TAG, "Initiating Spotify library data sync...")
+
         val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
 
         // load shared preferences if this is the initial scan, otherwise we won't need it
