@@ -98,7 +98,8 @@ class SpotifyApiDelegator @Inject constructor(
     suspend fun getAudioFeaturesOfTracks(ids: Collection<String>): List<AudioFeatures?> =
         getBatchedItems(ids, getApiDelegate().tracks::getAudioFeatures, API_ITEM_LIMIT_HIGH)
 
-    private suspend fun <T> doSafeApiCall(apiCall: suspend () -> T): T {
+    // TODO: remove num503s param when the source of the issue is fixed
+    private suspend fun <T> doSafeApiCall(num503s: Int = 0, apiCall: suspend () -> T): T {
 
         suspend fun retryCallWithNewToken(): T {
             val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
@@ -130,7 +131,8 @@ class SpotifyApiDelegator @Inject constructor(
                     Log.d(TAG, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
                 }
                 // TODO: resolve this temporary workaround for Spotify sometimes sending 503 during library refresh
-                apiCall()
+                if (num503s < 10) doSafeApiCall(num503s + 1, apiCall)
+                else throw e
             } catch (e: SpotifyException.TimeoutException) {
                 if (BuildConfig.DEBUG) Log.d(TAG, "API call failed due to timing out, trying one more time...")
                 apiCall()
