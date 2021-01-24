@@ -1,7 +1,5 @@
 package com.chuckstein.libzy.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
 import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.AudioFeatures
@@ -13,7 +11,6 @@ import com.chuckstein.libzy.database.entity.junction.AlbumGenreJunction
 import com.chuckstein.libzy.database.tuple.AudioFeaturesTuple
 import com.chuckstein.libzy.database.tuple.FamiliarityTuple
 import com.chuckstein.libzy.spotify.api.SpotifyApiDelegator
-import com.chuckstein.libzy.model.AlbumResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -26,26 +23,7 @@ class UserLibraryRepository @Inject constructor(
 ) {
 
     // TODO: should this initialization be done in a coroutine since it's using the db? why don't I get the warning that Room shouldn't be accessed from main thread?
-    val libraryGenres = Transformations.map(database.genreDao.getAllLibraryGenres()) { genresWithMetadata ->
-        genresWithMetadata.map { it.name to it.numAssociatedAlbums }.toMap() // TODO: make the value of the map a GenreMetadata type, which contains more stuff like "is favorite", "recently listened", etc.
-    }
-    
-    val libraryAlbums = database.albumDao.getAllAlbumsWithGenres()
-
-    suspend fun getAlbumsOfGenre(genre: String): LiveData<List<AlbumResult>> {
-        return withContext(Dispatchers.IO) {
-            Transformations.map(database.albumDao.getAlbumsOfGenre(genre)) { albums ->
-                albums.map {
-                    AlbumResult(
-                        it.title,
-                        it.artists,
-                        it.artworkUrl,
-                        it.spotifyUri
-                    )
-                }
-            }
-        }
-    }
+    val libraryAlbums = database.albumDao.getAllAlbums()
 
     // TODO: ensure this task can run in background (ANSWER: not consistently, so probably has to be a @Service) -- and if it takes more than ~10 seconds make that obvious from UI (first library load probably needs a redesign if it takes a very long time)
     // TODO: for each request made here, think about how often I should be making it
@@ -155,7 +133,8 @@ class UserLibraryRepository @Inject constructor(
     ): DbAlbum {
 
         // TODO: determine whether an album counts as recent/favorite if ANY of its tracks are recent/favorite or AT LEAST HALF are recent/favorite
-        fun albumTracksAreInList(album: Album, trackIds: List<String>) = album.tracks.items.any { trackIds.contains(it.id) }
+        fun albumTracksAreInList(album: Album, trackIds: List<String>) =
+            album.tracks.items.any { trackIds.contains(it.id) }
 
         return DbAlbum(
             spotifyAlbum.id,
@@ -174,5 +153,7 @@ class UserLibraryRepository @Inject constructor(
             )
         )
     }
+
+     suspend fun getAlbumFromUri(spotifyUri: String) = database.albumDao.getAlbumFromUri(spotifyUri)
 
 }

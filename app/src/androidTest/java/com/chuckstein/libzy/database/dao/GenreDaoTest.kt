@@ -4,16 +4,13 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.chuckstein.libzy.common.getOrAwaitValue
 import com.chuckstein.libzy.database.UserLibraryDatabase
 import com.chuckstein.libzy.database.entity.DbAlbum
 import com.chuckstein.libzy.database.entity.DbGenre
 import com.chuckstein.libzy.database.entity.junction.AlbumGenreJunction
 import com.chuckstein.libzy.database.tuple.AudioFeaturesTuple
 import com.chuckstein.libzy.database.tuple.FamiliarityTuple
-import com.chuckstein.libzy.database.tuple.GenreWithAlbumsTuple
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,14 +86,8 @@ class GenreDaoTest {
     }
 
     @Test
-    fun testGetGenresWithAlbums() {
-        val rockAndMetalAlbums = db.genreDao.getGenresWithAlbums(listOf("rock", "metal"))
-        val expectedRockAndMetalAlbums =
-            listOf(
-                GenreWithAlbumsTuple("metal", listOf(metalAlbum, rockAndMetalAlbum)),
-                GenreWithAlbumsTuple("rock", listOf(rockAndMetalAlbum, rockAlbum))
-            )
-        assertEquals(expectedRockAndMetalAlbums, rockAndMetalAlbums.getOrAwaitValue())
+    fun testSomething() {
+        // TODO
     }
 
 }

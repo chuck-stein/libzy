@@ -5,8 +5,8 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import com.chuckstein.libzy.database.entity.DbAlbum
-import com.chuckstein.libzy.database.tuple.LibraryAlbum
 import com.chuckstein.libzy.database.tuple.AudioFeaturesTuple
+import com.chuckstein.libzy.database.tuple.LibraryAlbum
 
 @Dao
 interface AlbumDao : BaseDao<DbAlbum> {
@@ -21,7 +21,10 @@ interface AlbumDao : BaseDao<DbAlbum> {
     }
 
     @Query("SELECT * FROM album")
-    fun getAllAlbumsWithGenres(): LiveData<List<LibraryAlbum>>
+    fun getAllAlbums(): LiveData<List<LibraryAlbum>>
+
+    @Query("SELECT * FROM album WHERE spotify_uri = :uri")
+    suspend fun getAlbumFromUri(uri: String): LibraryAlbum
 
     @Query(
         """
@@ -31,16 +34,5 @@ interface AlbumDao : BaseDao<DbAlbum> {
         """
     )
     fun getAudioFeatures(albumId: String): AudioFeaturesTuple?
-
-    @Query(
-        """
-            SELECT *
-            FROM album a
-            JOIN album_has_genre ag
-            ON a.id = ag.album_id
-            WHERE ag.genre_id = :genre
-        """
-    )
-    fun getAlbumsOfGenre(genre: String): LiveData<List<DbAlbum>>
 
 }

@@ -18,4 +18,6 @@ data class FamiliarityTuple(
     // TODO: is this how I want to store the data? how will I present it? A floating point "familiarity" value is another option
     @ColumnInfo(name = "long_term_favorite")
     val longTermFavorite: Boolean
-)
+) {
+    fun isLowFamiliarity() = !recentlyPlayed && !shortTermFavorite && !mediumTermFavorite && !longTermFavorite
+}

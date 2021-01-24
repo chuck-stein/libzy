@@ -1,24 +1,27 @@
 package com.chuckstein.libzy.view.query
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import com.chuckstein.libzy.model.Query
 import com.chuckstein.libzy.recommendation.RecommendationService
 import com.chuckstein.libzy.repository.UserLibraryRepository
 import javax.inject.Inject
 
 class QueryViewModel @Inject constructor(
-    private val userLibraryRepository: UserLibraryRepository,
-    private val recommendationService: RecommendationService
+    private val userLibraryRepository: UserLibraryRepository, // TODO: don't store this as a value after switching over to computed value for recommendationService
+    private val recommendationService: RecommendationService // TODO: don't store this as a value after switching over to computed value for recommendationService (as long as the Transformations.map caches it somehow -- look into this)
 ) : ViewModel() {
 
     val query = Query()
 
-    // TODO: replace this placeholder implementation with a call to a getGenreSuggestions() function in a RecommendationService,
-    //       that takes in userLibraryRepository.libraryGenres as input and gives a list of genres applicable to results of
-    //       questions answered so far, sorted by number of such results for each genre)
-    //       (think about how to handle the libraryGenres is null case -- when would it be null?
-    //        maybe show a loading screen if it will be not null soon, or just skip the genres question)
-    fun getGenreSuggestions() = recommendationService.recommendGenres(userLibraryRepository.libraryAlbums, query)
+    // TODO: switch over to computed property, and remove getGenreSuggestions()
+//    val recommendedGenres = userLibraryRepository.libraryAlbums.map {
+//        recommendationService.recommendGenres(it, query)
+//    }
+
+    fun getGenreSuggestions() = userLibraryRepository.libraryAlbums.map {
+        recommendationService.recommendGenres(it, query)
+    }
 
     fun updateSelectedGenres(genreOptions: List<String>) {
         query.genres.let { previousGenres ->
