@@ -56,7 +56,7 @@ class RefreshLibraryWorker(
         } catch (e: SpotifyException.BadRequestException) {
             e.statusCode.let { statusCode ->
                 // TODO: find a better way to always catch all server errors (may have to forgo the Spotify API wrapper library)
-                return if (!isInitialScan && statusCode != null && statusCode >= 500 && statusCode < 600) {
+                return if (!isInitialScan && isServerError(statusCode)) {
                     Log.e(TAG, "Failed to refresh Spotify library data due to a server error. Retrying...", e)
                     Result.retry()
                 } else fail(e, isInitialScan, sharedPrefs)
@@ -79,6 +79,8 @@ class RefreshLibraryWorker(
         }
         return Result.success()
     }
+
+    private fun isServerError(statusCode: Int?) = statusCode != null && statusCode >= 500 && statusCode < 600
 
     private fun fail(exception: Exception, isInitialScan: Boolean, sharedPrefs: SharedPreferences?): Result {
         Log.e(TAG, "Failed to refresh Spotify library data", exception)
