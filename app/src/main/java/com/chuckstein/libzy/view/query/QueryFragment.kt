@@ -17,7 +17,7 @@ import androidx.activity.addCallback
 import androidx.constraintlayout.widget.Group
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -25,7 +25,6 @@ import com.airbnb.paris.extensions.style
 import com.chuckstein.libzy.R
 import com.chuckstein.libzy.common.LibzyApplication
 import com.chuckstein.libzy.common.children
-import com.chuckstein.libzy.common.observeOnce
 import com.chuckstein.libzy.model.Query
 import com.google.android.material.chip.Chip
 import kotlinx.android.synthetic.main.fragment_query.slider
@@ -64,7 +63,7 @@ class QueryFragment : Fragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val model by viewModels<QueryViewModel> { viewModelFactory }
+    private val model by activityViewModels<QueryResultsViewModel> { viewModelFactory }
 
     private val navArgs: QueryFragmentArgs by navArgs()
 
@@ -93,6 +92,7 @@ class QueryFragment : Fragment() {
         prevQuestionOnBackCallback =
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { onBackPressed() }
         updateBackNavigation()
+        model.recommendedGenres.observe(viewLifecycleOwner) { fillGenreChips(it) }
     }
 
     private fun setGreetingText() {
@@ -129,7 +129,7 @@ class QueryFragment : Fragment() {
     private fun advanceQuestion() {
         if (currQuestionIndex < LAST_QUESTION_INDEX) changeQuestion(currQuestionIndex + 1)
         else findNavController().navigate(
-            QueryFragmentDirections.actionQueryFragmentToResultsFragment(model.query)
+            QueryFragmentDirections.actionQueryFragmentToResultsFragment()
         )
     }
 
@@ -204,41 +204,38 @@ class QueryFragment : Fragment() {
         }
 
         when (questionViews[currQuestionIndex]) {
-            acousticnessQuestion -> setSliderValue(model.query.acousticness, true)
-            valenceQuestion -> setSliderValue(model.query.valence)
-            energyQuestion -> setSliderValue(model.query.energy)
-            danceabilityQuestion -> setSliderValue(model.query.danceability)
-            genreQuestion -> fillGenreChips()
+            acousticnessQuestion -> setSliderValue(model.acousticness, true)
+            valenceQuestion -> setSliderValue(model.valence)
+            energyQuestion -> setSliderValue(model.energy)
+            danceabilityQuestion -> setSliderValue(model.danceability)
         }
     }
 
     // TODO: ensure I wrote this method in the most efficient way
     // TODO: fix lag on first call via loading screen + coroutine or faster function
-    private fun fillGenreChips() {
-        model.getGenreSuggestions().observeOnce(viewLifecycleOwner, { genreSuggestions ->
-            for (genre in genreSuggestions.take(50)) { // TODO: remove magic number
-                genreChips.addView(Chip(requireContext()).apply {
-                    style(R.style.Chip)
-                    text = genre
-                })
-            }
+    private fun fillGenreChips(genreSuggestions: List<String>) {
+        for (genre in genreSuggestions.take(50)) { // TODO: remove magic number
+            genreChips.addView(Chip(requireContext()).apply {
+                style(R.style.Chip)
+                text = genre
+            })
+        }
 
-            fun chipIsOffScreen(chipIndex: Int) =
-                chipIndex > 0 && genreChips.getChildAt(chipIndex).bottom > genreChipsScrollView.height
+        fun chipIsOffScreen(chipIndex: Int) =
+            chipIndex > 0 && genreChips.getChildAt(chipIndex).bottom > genreChipsScrollView.height
 
-            genreChipsScrollView.doOnLayout {
-                // remove any chips beyond the bottom of the scroll view window, so they fill up the whole space but no more
-                var chipIndex = genreChips.childCount - 1
-                while (chipIsOffScreen(chipIndex)) {
-                    genreChips.removeViewAt(chipIndex)
-                    chipIndex--
-                }
-                model.updateSelectedGenres(getGenreOptions().map { it.text.toString() })
-                for (chip in getGenreOptions()) {
-                    chip.isChecked = model.query.genres?.contains(chip.text) ?: false
-                }
+        genreChipsScrollView.doOnLayout {
+            // remove any chips beyond the bottom of the scroll view window, so they fill up the whole space but no more
+            var chipIndex = genreChips.childCount - 1
+            while (chipIsOffScreen(chipIndex)) {
+                genreChips.removeViewAt(chipIndex)
+                chipIndex--
             }
-        })
+            model.updateSelectedGenres(getGenreOptions().map { it.text.toString() })
+            for (chip in getGenreOptions()) {
+                chip.isChecked = model.genres?.contains(chip.text) ?: false
+            }
+        }
     }
 
     private fun getGenreOptions() = genreChips.children.filterIsInstance<Chip>()
@@ -255,13 +252,13 @@ class QueryFragment : Fragment() {
 
     private fun onClickNoPreferenceButton() {
         when (questionViews[currQuestionIndex]) {
-            familiarityQuestion -> model.query.familiarity = null
-            instrumentalnessQuestion -> model.query.instrumental = null
-            acousticnessQuestion -> model.query.acousticness = null
-            valenceQuestion -> model.query.valence = null
-            energyQuestion -> model.query.energy = null
-            danceabilityQuestion -> model.query.danceability = null
-            genreQuestion -> model.query.genres = null
+            familiarityQuestion -> model.familiarity = null
+            instrumentalnessQuestion -> model.instrumental = null
+            acousticnessQuestion -> model.acousticness = null
+            valenceQuestion -> model.valence = null
+            energyQuestion -> model.energy = null
+            danceabilityQuestion -> model.danceability = null
+            genreQuestion -> model.genres = null
         }
         advanceQuestion()
     }
@@ -270,13 +267,13 @@ class QueryFragment : Fragment() {
         when (questionViews[currQuestionIndex]) {
             familiarityQuestion, instrumentalnessQuestion ->
                 Log.w(TAG, "Can only save an answer to the current question via answer buttons")
-            acousticnessQuestion -> model.query.acousticness = 1 - slider.value
-            valenceQuestion -> model.query.valence = slider.value
-            energyQuestion -> model.query.energy = slider.value
-            danceabilityQuestion -> model.query.danceability = slider.value
+            acousticnessQuestion -> model.acousticness = 1 - slider.value
+            valenceQuestion -> model.valence = slider.value
+            energyQuestion -> model.energy = slider.value
+            danceabilityQuestion -> model.danceability = slider.value
             genreQuestion -> {
                 val checkedGenreChips = getGenreOptions().filter { it.isChecked }
-                model.query.genres =
+                model.genres =
                     if (checkedGenreChips.isEmpty()) null
                     else checkedGenreChips.map { it.text.toString() }.toSet()
             }
@@ -285,27 +282,27 @@ class QueryFragment : Fragment() {
     }
 
     private fun onClickCurrentFavoriteButton() {
-        model.query.familiarity = Query.Familiarity.CURRENT_FAVORITE
+        model.familiarity = Query.Familiarity.CURRENT_FAVORITE
         advanceQuestion()
     }
 
     private fun onClickReliableClassicButton() {
-        model.query.familiarity = Query.Familiarity.RELIABLE_CLASSIC
+        model.familiarity = Query.Familiarity.RELIABLE_CLASSIC
         advanceQuestion()
     }
 
     private fun onClickUnderappreciatedGemButton() {
-        model.query.familiarity = Query.Familiarity.UNDERAPPRECIATED_GEM
+        model.familiarity = Query.Familiarity.UNDERAPPRECIATED_GEM
         advanceQuestion()
     }
 
     private fun onClickInstrumentalButton() {
-        model.query.instrumental = true
+        model.instrumental = true
         advanceQuestion()
     }
 
     private fun onClickVocalButton() {
-        model.query.instrumental = false
+        model.instrumental = false
         advanceQuestion()
     }
 }

@@ -64,7 +64,7 @@
     </fragment>
     <fragment
         android:id="@+id/resultsFragment"
-        android:name="com.chuckstein.libzy.view.results.ResultsFragment"
+        android:name="com.chuckstein.libzy.view.query.ResultsFragment"
         android:label="ResultsFragment" >
         <action
             android:id="@+id/action_resultsFragment_to_connectSpotifyFragment"
@@ -75,8 +75,5 @@
                 android:name="networkErrorReceived"
                 android:defaultValue="true" />
         </action>
-        <argument
-            android:name="query"
-            app:argType="com.chuckstein.libzy.model.Query" />
     </fragment>
 </navigation>

@@ -19,7 +19,7 @@ class RecommendationService @Inject constructor() {
     // TODO: check this algorithm
     // TODO: don't get libraryAlbums from param, but from userLibraryRepository directly
     // TODO: make this a computed value rather than function
-    fun recommendGenres(libraryAlbums: List<LibraryAlbum>, query: Query): List<String> {
+    fun recommendGenres(query: Query, libraryAlbums: List<LibraryAlbum>): List<String> {
         val genresToRelevance = mutableMapOf<String, Float>()
         val albumsToRelevance = calculateRelevanceOfAlbums(libraryAlbums, query)
         val relevantAlbums = libraryAlbums.filter { albumIsRelevant(it, albumsToRelevance) }
@@ -39,7 +39,7 @@ class RecommendationService @Inject constructor() {
     }
 
     // TODO: improve output by presenting a mix of albums that best satisfy different parts of the query
-    fun recommendAlbums(libraryAlbums: List<LibraryAlbum>, query: Query): List<AlbumResult> {
+    fun recommendAlbums(query: Query, libraryAlbums: List<LibraryAlbum>): List<AlbumResult> {
         // TODO: ensure DbAlbum is hashable as map key because it's a data class
         val albumsToRelevance = calculateRelevanceOfAlbums(libraryAlbums, query)
         return libraryAlbums

@@ -6,7 +6,7 @@ import com.chuckstein.libzy.di.viewmodel.ViewModelModule
 import com.chuckstein.libzy.view.MainActivity
 import com.chuckstein.libzy.view.connect.ConnectSpotifyFragment
 import com.chuckstein.libzy.view.query.QueryFragment
-import com.chuckstein.libzy.view.results.ResultsFragment
+import com.chuckstein.libzy.view.query.ResultsFragment
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton

@@ -3,8 +3,7 @@ package com.chuckstein.libzy.di.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.chuckstein.libzy.view.connect.ConnectSpotifyViewModel
-import com.chuckstein.libzy.view.query.QueryViewModel
-import com.chuckstein.libzy.view.results.ResultsViewModel
+import com.chuckstein.libzy.view.query.QueryResultsViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -22,12 +21,7 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(QueryViewModel::class)
-    abstract fun bindQueryViewModel(viewModel: QueryViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(ResultsViewModel::class)
-    abstract fun bindResultsViewModel(viewModel: ResultsViewModel): ViewModel
+    @ViewModelKey(QueryResultsViewModel::class)
+    abstract fun bindQueryResultsViewModel(viewModel: QueryResultsViewModel): ViewModel
 
 }

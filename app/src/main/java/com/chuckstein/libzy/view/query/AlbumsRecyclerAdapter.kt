@@ -1,4 +1,4 @@
-package com.chuckstein.libzy.view.results.adapter
+package com.chuckstein.libzy.view.query
 
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
