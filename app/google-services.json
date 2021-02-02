@@ -1,41 +1,41 @@
 {
   "project_info": {
-    "project_number": "943718252069",
-    "project_id": "libzy-feb1d",
-    "storage_bucket": "libzy-feb1d.appspot.com"
+    "project_number": "503809925546",
+    "project_id": "libzy-cfgs",
+    "storage_bucket": "libzy-cfgs.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:943718252069:android:2d0f1042e40c71cd3c89cc",
+        "mobilesdk_app_id": "1:503809925546:android:c93dedfb4f135e278e8bd3",
         "android_client_info": {
-          "package_name": "com.chuckstein.libzy"
+          "package_name": "io.libzy"
         }
       },
       "oauth_client": [
         {
-          "client_id": "943718252069-kj28r2qlb9v0mge86ed5ugeg7navn1m5.apps.googleusercontent.com",
+          "client_id": "503809925546-oqvf6t9kbpa353nalsgb9ovk642aqq0l.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.chuckstein.libzy",
+            "package_name": "io.libzy",
             "certificate_hash": "3c8d3b2949af19242f9d84516405396cab0ce76b"
           }
         },
         {
-          "client_id": "943718252069-8pa0o9opq7nc7e0oojrurc6aebr484ep.apps.googleusercontent.com",
+          "client_id": "503809925546-tk5ha8o8m5n51vvj5hqljjjr7fbh55qf.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBPaHepMZhDbv3ME97JVOe-QAJFl-ZowpY"
+          "current_key": "AIzaSyD17_pQF2bXTAoDdqiyljwUUyi0KiR2s68"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "943718252069-8pa0o9opq7nc7e0oojrurc6aebr484ep.apps.googleusercontent.com",
+              "client_id": "503809925546-tk5ha8o8m5n51vvj5hqljjjr7fbh55qf.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

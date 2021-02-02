@@ -11,7 +11,7 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        applicationId "com.chuckstein.libzy"
+        applicationId "io.libzy"
         minSdkVersion 29
         targetSdkVersion 30
         versionCode 1
@@ -95,14 +95,14 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
     // Navigation
-    def navigation_version = "2.3.2"
+    def navigation_version = "2.3.3"
     implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
     implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$navigation_version"
     androidTestImplementation "androidx.navigation:navigation-testing:$navigation_version"
 
     // WorkManager
-    def work_version = "2.4.0"
+    def work_version = "2.5.0"
     implementation "androidx.work:work-runtime-ktx:$work_version"
     androidTestImplementation "androidx.work:work-testing:$work_version"
 

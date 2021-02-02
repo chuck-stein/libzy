@@ -6,7 +6,7 @@
 
     <!-- Spotify SDK -->
     <string name="spotify_client_id">058c796e8b3740d190136f2ebc4d64ab</string>
-    <string name="spotify_auth_redirect_uri">com.chuckstein.libzy://spotify-auth</string>
+    <string name="spotify_auth_redirect_uri">io.libzy://spotify-auth</string>
 
     <!-- SharedPreferences keys -->
     <string name="spotify_connected_key">spotify.connected</string>
