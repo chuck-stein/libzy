@@ -11,6 +11,7 @@
     <!-- Text size -->
     <dimen name="heading_text_size">36sp</dimen>
     <dimen name="subheading_text_size">20sp</dimen>
+    <dimen name="small_subheading_text_size">16sp</dimen>
     <dimen name="content_text_size">14sp</dimen>
 
     <!-- Image size -->

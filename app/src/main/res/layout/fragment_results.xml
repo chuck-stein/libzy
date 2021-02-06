@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -11,13 +12,46 @@
         android:layout_margin="@dimen/spacing_04"
         android:text="@string/results_header"
         android:textAlignment="center"
-        android:textSize="@dimen/subheading_text_size" />
+        android:textSize="@dimen/subheading_text_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/albums_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingHorizontal="@dimen/spacing_03"
-        android:paddingBottom="@dimen/spacing_03" />
+        android:layout_height="0dp"
+        android:padding="@dimen/spacing_04"
+        app:layout_constraintBottom_toTopOf="@id/rating_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/results_header"
+        app:layout_constraintVertical_bias="0" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/rating_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_04"
+        android:layout_marginBottom="@dimen/spacing_03"
+        android:text="@string/results_rating_text"
+        android:textAlignment="center"
+        android:textSize="@dimen/small_subheading_text_size"
+        app:layout_constraintBottom_toTopOf="@id/rating_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <RatingBar
+        android:id="@+id/rating_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_04"
+        android:isIndicator="false"
+        android:numStars="5"
+        android:saveEnabled="true"
+        android:stepSize="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
