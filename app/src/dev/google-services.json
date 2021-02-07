@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "333882872413",
+    "project_id": "libzy-dev",
+    "storage_bucket": "libzy-dev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:333882872413:android:4582d3ebb51f2ad27ab3b4",
+        "android_client_info": {
+          "package_name": "io.libzy.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "333882872413-u71fd6ju929oehp41s8d198fgljc2am8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.libzy.dev",
+            "certificate_hash": "3c8d3b2949af19242f9d84516405396cab0ce76b"
+          }
+        },
+        {
+          "client_id": "333882872413-1scfhsbo3l9lfpud6skhkin978gqrvh8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2I2whYmebn1yv6VMsGs4wQVpB7kEf5bs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "333882872413-1scfhsbo3l9lfpud6skhkin978gqrvh8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

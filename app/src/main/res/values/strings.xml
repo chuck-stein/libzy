@@ -1,7 +1,6 @@
 <resources>
 
     <!-- Application properties -->
-    <string name="app_name">Libzy</string>
     <string name="spotify_prefs_name">spotify_preferences</string>
 
     <!-- Spotify SDK -->
