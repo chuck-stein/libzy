@@ -11,6 +11,7 @@ import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import androidx.navigation.NavDeepLinkBuilder
+import com.google.firebase.analytics.ktx.ParametersBuilder
 import io.libzy.R
 import io.libzy.view.MainActivity
 import java.util.concurrent.CountDownLatch
@@ -101,4 +102,13 @@ fun String.capitalizeAsHeading(): String = toLowerCase().split(" ").joinToString
             else -> wordPart.capitalize()
         }
     }
+}
+
+fun ParametersBuilder.param(key: String, value: Boolean) {
+    val valueAsLong: Long = if (value) 1 else 0
+    param(key, valueAsLong)
+}
+
+fun ParametersBuilder.param(key: String, value: Int) {
+    param(key, value.toLong())
 }

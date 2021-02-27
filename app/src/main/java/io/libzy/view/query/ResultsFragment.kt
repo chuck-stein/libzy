@@ -7,17 +7,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
-import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.ktx.Firebase
 import io.libzy.R
-import io.libzy.analytics.LibzyAnalytics
+import io.libzy.analytics.LibzyAnalytics.Event.RATE_ALBUM_RESULTS
+import io.libzy.analytics.LibzyAnalytics.Param.ALBUM_RESULTS_RATING
 import io.libzy.common.LibzyApplication
 import io.libzy.model.AlbumResult
-import io.libzy.view.BaseFragment
 import javax.inject.Inject
 import kotlin.math.roundToLong
 import kotlinx.android.synthetic.main.fragment_results.albums_recycler as albumsRecycler
@@ -25,7 +27,7 @@ import kotlinx.android.synthetic.main.fragment_results.rating_bar as ratingBar
 import kotlinx.android.synthetic.main.fragment_results.results_header as resultsHeader
 
 // TODO: add back button to this screen
-class ResultsFragment : BaseFragment() {
+class ResultsFragment : Fragment() {
 
     companion object {
         // TODO: determine this based on screen size instead of hardcoding it
@@ -106,8 +108,8 @@ class ResultsFragment : BaseFragment() {
 
     private fun sendResultsRating() {
         if (resultsRatingPendingSubmission) {
-            firebaseAnalytics.logEvent(LibzyAnalytics.Event.RATE_ALBUM_RESULTS) {
-                param(FirebaseAnalytics.Param.VALUE, ratingBar.rating.roundToLong())
+            Firebase.analytics.logEvent(RATE_ALBUM_RESULTS) {
+                param(ALBUM_RESULTS_RATING, ratingBar.rating.roundToLong())
             }
             resultsRatingPendingSubmission = false
         }

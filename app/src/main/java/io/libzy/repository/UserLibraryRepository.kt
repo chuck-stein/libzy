@@ -31,9 +31,13 @@ class UserLibraryRepository @Inject constructor(
     // TODO: save top artist data in either an artist entity or a "familiarity" DbAlbum field or a "<duration>_term_fav_artist" DbAlbum field
     //      - or maybe artists shouldn't be considered as factoring into favorite albums, because they could be listening to a different album by that artist
     // TODO: think about how I want to store/present data for recency and familiarity
-    suspend fun refreshLibraryData() {
-
-        withContext(Dispatchers.IO) {
+    /**
+     * Run a Spotify library sync by requesting the user's latest library data from the Spotify API,
+     * converting that data to Libzy's schema, and caching it in the local database.
+     *
+     * @return the number of albums synced from the user's Spotify library
+     */
+    suspend fun refreshLibraryData(): Int = withContext(Dispatchers.IO) {
 
             val recentlyPlayedTracks = spotifyApi.getPlayHistory().map { it.track } // TODO: add an "after" time stamp so if they last played Spotify over a week ago it doesn't count as recently played?
             val topTracksShortTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.SHORT_TERM)
@@ -65,8 +69,8 @@ class UserLibraryRepository @Inject constructor(
                 database.genreDao.replaceAll(dbGenres)
                 database.albumGenreJunctionDao.replaceAll(albumGenreJunctions)
             }
+            return@withContext albums.size
         }
-    }
 
     private suspend fun getAlbumAudioFeatures(album: Album): AudioFeaturesTuple {
         val cachedAudioFeatures = withContext(Dispatchers.IO) { database.albumDao.getAudioFeatures(album.id) }
