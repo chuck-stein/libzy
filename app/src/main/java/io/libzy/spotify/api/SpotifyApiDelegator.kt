@@ -2,16 +2,15 @@ package io.libzy.spotify.api
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import com.adamratzman.spotify.*
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
 import com.adamratzman.spotify.models.*
-import io.libzy.BuildConfig
 import io.libzy.R
 import io.libzy.common.currentTimeSeconds
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,8 +21,6 @@ class SpotifyApiDelegator @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) {
     companion object {
-        private val TAG = SpotifyApiDelegator::class.java.simpleName
-
         // the lower of Spotify's limits for how many items are available from an endpoint
         private const val API_ITEM_LIMIT_LOW = 50
 
@@ -119,22 +116,18 @@ class SpotifyApiDelegator @Inject constructor(
                 if (e.statusCode == 401) retryCallWithNewToken()
                 else e.statusCode.let { errorCode ->
                     if (errorCode != null && errorCode >= 500 && errorCode < 600) {
-                        if (BuildConfig.DEBUG) {
-                            Log.d(TAG, "API call failed due to server error $errorCode, trying one more time...")
-                        }
+                        Timber.w(e, "API call failed due to server error $errorCode, trying one more time...")
                         apiCall()
                     }
                     else throw e
                 }
             } catch (e: SpotifyException.ParseException) {
-                if (BuildConfig.DEBUG) {
-                    Log.d(TAG, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
-                }
+                Timber.w(e, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
                 // TODO: resolve this temporary workaround for Spotify sometimes sending 503 during library refresh
                 if (num503s < 10) doSafeApiCall(num503s + 1, apiCall)
                 else throw e
             } catch (e: SpotifyException.TimeoutException) {
-                if (BuildConfig.DEBUG) Log.d(TAG, "API call failed due to timing out, trying one more time...")
+                Timber.w(e, "API call failed due to timing out, trying one more time...")
                 apiCall()
             }
         }

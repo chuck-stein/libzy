@@ -3,7 +3,6 @@ package io.libzy.work
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
 import androidx.work.*
@@ -11,9 +10,7 @@ import com.adamratzman.spotify.SpotifyException
 import com.google.firebase.analytics.FirebaseAnalytics.Param.SUCCESS
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
-import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
-import io.libzy.BuildConfig
 import io.libzy.R
 import io.libzy.analytics.LibzyAnalytics
 import io.libzy.analytics.LibzyAnalytics.Event.RETRY_LIBRARY_SYNC
@@ -26,6 +23,7 @@ import io.libzy.common.currentTimeSeconds
 import io.libzy.common.param
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.auth.SpotifyAuthException
+import timber.log.Timber
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
@@ -37,7 +35,6 @@ class RefreshLibraryWorker(
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
-        private val TAG = RefreshLibraryWorker::class.java.simpleName
         const val WORK_NAME = "io.libzy.work.RefreshLibraryWorker"
 
         // the parameter key for this worker's input data, representing whether this is the first-time library scan,
@@ -53,7 +50,6 @@ class RefreshLibraryWorker(
         )
     }
 
-    // TODO: cleanup this function, use helpers, only put in the try block what's necessary
     override suspend fun doWork(): Result {
         beforeLibrarySync()
 
@@ -65,11 +61,10 @@ class RefreshLibraryWorker(
             e.statusCode.let { statusCode ->
                 // TODO: find a better way to always catch all server errors (may have to forgo the Spotify API wrapper library)
                 return if (!isInitialScan && isServerError(statusCode)) {
-                    Log.e(TAG, "Failed to refresh Spotify library data due to a server error. Retrying...", e)
+                    Timber.e(e, "Failed to refresh Spotify library data due to a server error. Retrying...")
                     Firebase.analytics.logEvent(RETRY_LIBRARY_SYNC) {
                         param(LibzyAnalytics.Param.IS_INITIAL_SYNC, isInitialScan)
                     }
-                    Firebase.crashlytics.recordException(e)
                     Result.retry()
                 } else fail(e)
             }
@@ -84,7 +79,7 @@ class RefreshLibraryWorker(
     }
 
     private suspend fun beforeLibrarySync() {
-        if (BuildConfig.DEBUG) Log.d(TAG, "Initiating Spotify library data sync...")
+        Timber.i("Initiating Spotify library data sync...")
 
         if (isInitialScan) {
             setForeground(createInitialScanForegroundInfo())
@@ -106,7 +101,7 @@ class RefreshLibraryWorker(
                 tapDestinationResId = R.id.queryFragment
             )
         }
-        if (BuildConfig.DEBUG) Log.d(TAG, "Successfully refreshed Spotify library data")
+        Timber.i("Successfully synced Spotify library data")
 
         Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
             param(SUCCESS, true)
@@ -119,12 +114,11 @@ class RefreshLibraryWorker(
     private fun isServerError(statusCode: Int?) = statusCode != null && statusCode >= 500 && statusCode < 600
 
     private fun fail(exception: Exception): Result {
-        Log.e(TAG, "Failed to refresh Spotify library data", exception)
+        Timber.e(exception, "Failed to refresh Spotify library data")
         Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
             param(SUCCESS, false)
             param(LibzyAnalytics.Param.IS_INITIAL_SYNC, isInitialScan)
         }
-        Firebase.crashlytics.recordException(exception)
         if (isInitialScan) {
             sharedPrefs.edit {
                 putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)

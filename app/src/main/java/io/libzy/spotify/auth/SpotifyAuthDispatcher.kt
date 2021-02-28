@@ -1,8 +1,8 @@
 package io.libzy.spotify.auth
 
 import android.os.Handler
-import android.util.Log
 import kotlinx.coroutines.*
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
@@ -22,7 +22,6 @@ class SpotifyAuthDispatcher @Inject constructor() {
 
     companion object {
         private const val AUTH_TIMEOUT_MILLIS = 10_000L
-        private val TAG = SpotifyAuthDispatcher::class.java.simpleName
     }
 
     var authClientProxy: SpotifyAuthClientProxy? = null
@@ -75,9 +74,9 @@ class SpotifyAuthDispatcher @Inject constructor() {
                 Handler().postDelayed({ // TODO: use withTimeout() instead? can at least probably run that outside of suspendCancellableCoroutine to encapsulate the whole thing (and then maybe I don't need to assert Dispatchers.Main?)
                     if (continuation.isActive) {
                         pendingAuthCallbacks.remove(spotifyAuthCallback)
-                        val errorMessage = "Timed out while waiting for Spotify auth callback"
-                        Log.e(TAG, errorMessage)
-                        continuation.resumeWithException(SpotifyAuthException(errorMessage))
+                        val timeoutException = SpotifyAuthException("Timed out while waiting for Spotify auth callback")
+                        Timber.e(timeoutException)
+                        continuation.resumeWithException(timeoutException)
                     }
                 }, AUTH_TIMEOUT_MILLIS)
 

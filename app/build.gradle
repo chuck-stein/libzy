@@ -158,6 +158,9 @@ dependencies {
     implementation "com.google.dagger:dagger:$dagger_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
+    // Logging
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    
     // Firebase
     implementation platform('com.google.firebase:firebase-bom:26.4.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'

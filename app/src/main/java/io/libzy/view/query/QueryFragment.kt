@@ -6,7 +6,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +27,7 @@ import io.libzy.common.LibzyApplication
 import io.libzy.common.children
 import io.libzy.model.Query
 import kotlinx.android.synthetic.main.fragment_query.slider
+import timber.log.Timber
 import java.time.LocalTime
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_query.acousticness_question as acousticnessQuestion
@@ -54,8 +54,6 @@ import kotlinx.android.synthetic.main.fragment_query.vocal_button as vocalButton
 class QueryFragment : Fragment() {
 
     companion object {
-        private val TAG = QueryFragment::class.java.simpleName
-
         private const val LAST_QUESTION_INDEX = 6
         private const val DEFAULT_SLIDER_VAL = 0.5f
         private const val FADE_ANIMATION_TIME = 100L // in milliseconds
@@ -264,9 +262,13 @@ class QueryFragment : Fragment() {
     }
 
     private fun onClickContinueOrReadyButton() {
+        
+        fun createUnexpectedClickWarning(questionName: String) =
+            "Continue or Ready button was clicked on the $questionName question, where it should not be visible"
+        
         when (questionViews[currQuestionIndex]) {
-            familiarityQuestion, instrumentalnessQuestion ->
-                Log.w(TAG, "Can only save an answer to the current question via answer buttons")
+            familiarityQuestion -> Timber.w(createUnexpectedClickWarning("familiarity"))
+            instrumentalnessQuestion -> Timber.w(createUnexpectedClickWarning("instrumentalness"))
             acousticnessQuestion -> model.acousticness = 1 - slider.value
             valenceQuestion -> model.valence = slider.value
             energyQuestion -> model.energy = slider.value

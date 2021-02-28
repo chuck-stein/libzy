@@ -1,6 +1,5 @@
 package io.libzy.view.query
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
@@ -12,6 +11,7 @@ import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findParameterByName
@@ -21,10 +21,6 @@ class QueryResultsViewModel @Inject constructor(
     private val recommendationService: RecommendationService,
     private val spotifyAppRemoteService: SpotifyAppRemoteService
 ) : ViewModel() {
-
-    companion object {
-        private val TAG = QueryResultsViewModel::class.java.simpleName
-    }
 
     private val defaultQuery = Query()
 
@@ -135,20 +131,22 @@ class QueryResultsViewModel @Inject constructor(
     private fun logAlbumDetails(spotifyUri: String) {
         GlobalScope.launch {
             val album = userLibraryRepository.getAlbumFromUri(spotifyUri)
-            Log.d(
-                TAG, "title: ${album.title}\ngenres: ${album.genres}\n" +
-                        "acousticness: ${album.audioFeatures.acousticness}\n" +
-                        "danceability: ${album.audioFeatures.danceability}\n" +
-                        "energy: ${album.audioFeatures.energy}\n" +
-                        "instrumentalness: ${album.audioFeatures.instrumentalness}\n" +
-                        "valence: ${album.audioFeatures.valence}\n" +
-                        "longTermFavorite: ${album.familiarity.longTermFavorite}\n" +
-                        "mediumTermFavorite: ${album.familiarity.mediumTermFavorite}\n" +
-                        "shortTermFavorite: ${album.familiarity.shortTermFavorite}\n" +
-                        "recentlyPlayed: ${album.familiarity.recentlyPlayed}\n" +
-                        "lowFamiliarity: ${album.familiarity.isLowFamiliarity()}\n"
-            )
+            val albumDetails =
+                """
+                title: ${album.title}
+                genres: ${album.genres}
+                acousticness: ${album.audioFeatures.acousticness}
+                danceability: ${album.audioFeatures.danceability}
+                energy: ${album.audioFeatures.energy}
+                instrumentalness: ${album.audioFeatures.instrumentalness}
+                valence: ${album.audioFeatures.valence}
+                longTermFavorite: ${album.familiarity.longTermFavorite}
+                mediumTermFavorite: ${album.familiarity.mediumTermFavorite}
+                shortTermFavorite: ${album.familiarity.shortTermFavorite}
+                recentlyPlayed: ${album.familiarity.recentlyPlayed}
+                lowFamiliarity: ${album.familiarity.isLowFamiliarity()}
+                """
+            Timber.d(albumDetails.trimIndent())
         }
     }
-
 }

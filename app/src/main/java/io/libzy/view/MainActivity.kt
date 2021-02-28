@@ -13,6 +13,7 @@ import io.libzy.R
 import io.libzy.common.LibzyApplication
 import io.libzy.common.currentTimeSeconds
 import io.libzy.spotify.auth.*
+import timber.log.Timber
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.nav_host_fragment as navHost
 
@@ -94,6 +95,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     private fun onSpotifyAuthFailure(reason: String) {
         val exception = SpotifyAuthException("Error performing Spotify authorization: $reason")
+        Timber.e(exception)
         spotifyAuthCallback?.onFailure(exception)
     }
 

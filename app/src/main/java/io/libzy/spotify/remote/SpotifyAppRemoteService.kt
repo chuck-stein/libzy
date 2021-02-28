@@ -1,7 +1,6 @@
 package io.libzy.spotify.remote
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.spotify.android.appremote.api.ConnectionParams
@@ -10,14 +9,11 @@ import com.spotify.android.appremote.api.SpotifyAppRemote
 import com.spotify.protocol.types.PlayerContext
 import com.spotify.protocol.types.PlayerState
 import io.libzy.R
+import timber.log.Timber
 import javax.inject.Inject
 
 // TODO: test how I can play music when Spotify app is closed (when it gets closed both before and after SpotifyAppRemoteService's instantiation)
 class SpotifyAppRemoteService @Inject constructor(private val context: Context) {
-
-    companion object {
-        private val TAG = SpotifyAppRemoteService::class.java.simpleName
-    }
 
     private val _playerState = MutableLiveData<PlayerState>()
     val playerState: LiveData<PlayerState>
@@ -48,17 +44,17 @@ class SpotifyAppRemoteService @Inject constructor(private val context: Context) 
                     // TODO: handle subscription errors/lifecycle in fragment
                     remote.playerApi.subscribeToPlayerState().setEventCallback {
                         _playerState.value = it
-                        Log.d(TAG, "Spotify switched player state: $it")
+                        Timber.d("Spotify switched player state: $it")
                     }
                     remote.playerApi.subscribeToPlayerContext().setEventCallback {
                         _playerContext.value = it
-                        Log.d(TAG, "Spotify switched player context: $it")
+                        Timber.d("Spotify switched player context: $it")
                     }
                 }
             }
 
             override fun onFailure(exception: Throwable) {
-                Log.e(TAG, "Failed to connect Spotify app remote!", exception)
+                Timber.e(exception, "Failed to connect Spotify app remote!")
                 onFailure()
             }
 

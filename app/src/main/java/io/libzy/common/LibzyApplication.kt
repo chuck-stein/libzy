@@ -8,12 +8,18 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.util.Log
 import androidx.work.*
+import io.libzy.BuildConfig
 import io.libzy.R
+import io.libzy.analytics.CrashlyticsTree
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.RefreshLibraryWorker
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import timber.log.Timber.DebugTree
 import java.time.Duration
 import javax.inject.Inject
 
@@ -39,6 +45,11 @@ class LibzyApplication : Application(), Configuration.Provider {
         appComponent.inject(this)
         createNotificationChannels()
         scheduleLibraryRefresh()
+        if (BuildConfig.DEBUG) {
+            Timber.plant(DebugTree())
+        } else {
+            Timber.plant(CrashlyticsTree())
+        }
     }
 
     /**
@@ -123,7 +134,7 @@ class LibzyApplication : Application(), Configuration.Provider {
         workerFactory.addFactory(RefreshLibraryWorker.Factory(userLibraryRepository))
 
         return Configuration.Builder()
-            .setMinimumLoggingLevel(Log.INFO)
+            .setMinimumLoggingLevel(Log.DEBUG)
             .setWorkerFactory(workerFactory)
             .build()
     }
