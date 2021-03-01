@@ -38,7 +38,7 @@ class UserLibraryRepository @Inject constructor(
      *
      * @return the number of albums synced from the user's Spotify library
      */
-    suspend fun refreshLibraryData(): Int = withContext(Dispatchers.IO) {
+    suspend fun syncLibraryData(): Int = withContext(Dispatchers.IO) {
         Timber.d("Fetching recently played tracks")
         val recentlyPlayedTracks = spotifyApi.getPlayHistory().map { it.track } // TODO: add an "after" time stamp so if they last played Spotify over a week ago it doesn't count as recently played?
         Timber.d("Fetching top tracks -- short term")

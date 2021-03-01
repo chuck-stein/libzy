@@ -27,15 +27,14 @@ import timber.log.Timber
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
-// TODO: rename to LibrarySyncWorker
-class RefreshLibraryWorker(
+class LibrarySyncWorker(
     appContext: Context,
     params: WorkerParameters,
     private val userLibraryRepository: UserLibraryRepository
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
-        const val WORK_NAME = "io.libzy.work.RefreshLibraryWorker"
+        const val WORK_NAME = "io.libzy.work.LibrarySyncWorker"
 
         // the parameter key for this worker's input data, representing whether this is the first-time library scan,
         // which is initiated when the user first connects their spotify account
@@ -55,15 +54,15 @@ class RefreshLibraryWorker(
 
         val numAlbumsSynced = try {
             measureTimedValue {
-                userLibraryRepository.refreshLibraryData()
+                userLibraryRepository.syncLibraryData()
             }
         } catch (e: SpotifyException.BadRequestException) {
             e.statusCode.let { statusCode ->
                 // TODO: find a better way to always catch all server errors (may have to forgo the Spotify API wrapper library)
                 return if (!isInitialScan && isServerError(statusCode)) {
-                    Timber.e(e, "Failed to refresh Spotify library data due to a server error. Retrying...")
+                    Timber.e(e, "Failed to sync Spotify library data due to a server error. Retrying...")
                     Firebase.analytics.logEvent(RETRY_LIBRARY_SYNC) {
-                        param(LibzyAnalytics.Param.IS_INITIAL_SYNC, isInitialScan)
+                        param(LibzyAnalytics.Param.IS_INITIAL_SCAN, isInitialScan)
                     }
                     Result.retry()
                 } else fail(e)
@@ -105,7 +104,7 @@ class RefreshLibraryWorker(
 
         Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
             param(SUCCESS, true)
-            param(LibzyAnalytics.Param.IS_INITIAL_SYNC, isInitialScan)
+            param(LibzyAnalytics.Param.IS_INITIAL_SCAN, isInitialScan)
             param(NUM_ALBUMS_SYNCED, numAlbumsSynced.value)
             param(LIBRARY_SYNC_TIME, numAlbumsSynced.duration.inSeconds)
         }
@@ -114,10 +113,10 @@ class RefreshLibraryWorker(
     private fun isServerError(statusCode: Int?) = statusCode != null && statusCode >= 500 && statusCode < 600
 
     private fun fail(exception: Exception): Result {
-        Timber.e(exception, "Failed to refresh Spotify library data")
+        Timber.e(exception, "Failed to sync Spotify library data")
         Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
             param(SUCCESS, false)
-            param(LibzyAnalytics.Param.IS_INITIAL_SYNC, isInitialScan)
+            param(LibzyAnalytics.Param.IS_INITIAL_SCAN, isInitialScan)
         }
         if (isInitialScan) {
             sharedPrefs.edit {
@@ -186,8 +185,8 @@ class RefreshLibraryWorker(
         ): ListenableWorker? {
 
             return when (workerClassName) {
-                RefreshLibraryWorker::class.java.name ->
-                    RefreshLibraryWorker(appContext, workerParameters, userLibraryRepository)
+                LibrarySyncWorker::class.java.name ->
+                    LibrarySyncWorker(appContext, workerParameters, userLibraryRepository)
                 else -> null
             }
         }

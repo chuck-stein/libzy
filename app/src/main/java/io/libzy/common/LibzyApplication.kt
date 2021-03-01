@@ -14,7 +14,7 @@ import io.libzy.analytics.CrashlyticsTree
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
 import io.libzy.repository.UserLibraryRepository
-import io.libzy.work.RefreshLibraryWorker
+import io.libzy.work.LibrarySyncWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class LibzyApplication : Application(), Configuration.Provider {
 
     companion object {
-        private val LIBRARY_REFRESH_PERIOD = Duration.ofMinutes(15L) // time to wait between Spotify library syncs
+        private val LIBRARY_SYNC_INTERVAL = Duration.ofMinutes(15L) // time to wait between Spotify library syncs
     }
 
     val appComponent: AppComponent by lazy {
@@ -44,7 +44,7 @@ class LibzyApplication : Application(), Configuration.Provider {
         super.onCreate()
         appComponent.inject(this)
         createNotificationChannels()
-        scheduleLibraryRefresh()
+        scheduleLibrarySync()
         if (BuildConfig.DEBUG) {
             Timber.plant(DebugTree())
         } else {
@@ -88,18 +88,18 @@ class LibzyApplication : Application(), Configuration.Provider {
     }
 
     /**
-     * Setup a WorkManager background job to refresh Spotify library data every 15 minutes.
+     * Setup a WorkManager background job to sync Spotify library data every 15 minutes.
      *
      * If there is no Spotify account connected to Libzy, set a callback to start the job upon connection.
      */
-    private fun scheduleLibraryRefresh() {
+    private fun scheduleLibrarySync() {
 
         fun enqueueWorkRequest() {
             applicationScope.launch {
-                val workRequest = PeriodicWorkRequestBuilder<RefreshLibraryWorker>(LIBRARY_REFRESH_PERIOD).build()
+                val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
 
                 WorkManager.getInstance(this@LibzyApplication).enqueueUniquePeriodicWork(
-                    RefreshLibraryWorker.WORK_NAME,
+                    LibrarySyncWorker.WORK_NAME,
                     ExistingPeriodicWorkPolicy.KEEP,
                     workRequest
                 )
@@ -131,7 +131,7 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     override fun getWorkManagerConfiguration(): Configuration {
         val workerFactory = DelegatingWorkerFactory()
-        workerFactory.addFactory(RefreshLibraryWorker.Factory(userLibraryRepository))
+        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository))
 
         return Configuration.Builder()
             .setMinimumLoggingLevel(Log.DEBUG)

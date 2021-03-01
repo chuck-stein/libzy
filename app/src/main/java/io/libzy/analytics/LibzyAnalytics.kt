@@ -1,6 +1,6 @@
 package io.libzy.analytics
 
-import io.libzy.work.RefreshLibraryWorker
+import io.libzy.work.LibrarySyncWorker
 
 object LibzyAnalytics {
 
@@ -8,10 +8,10 @@ object LibzyAnalytics {
         /** When the user rates how accurate the given album results are to their query */
         const val RATE_ALBUM_RESULTS = "rate_album_results"
 
-        /** When a [RefreshLibraryWorker] either fails or succeeds */
+        /** When a [LibrarySyncWorker] either fails or succeeds */
         const val SYNC_LIBRARY_DATA = "sync_library_data"
 
-        /** When a [RefreshLibraryWorker] retries */
+        /** When a [LibrarySyncWorker] retries */
         const val RETRY_LIBRARY_SYNC = "retry_library_sync"
     }
 
@@ -21,9 +21,9 @@ object LibzyAnalytics {
 
         /**
          * A [Boolean] param representing whether or not [Event.SYNC_LIBRARY_DATA] or [Event.RETRY_LIBRARY_SYNC]
-         * occurred during a user's initial library sync upon first connecting Spotify.
+         * occurred during a user's initial library scan upon first connecting Spotify.
          */
-        const val IS_INITIAL_SYNC = "is_initial_sync"
+        const val IS_INITIAL_SCAN = "is_initial_scan"
 
         /** An [Int] param representing how many albums were synced in a successful [Event.SYNC_LIBRARY_DATA] */
         const val NUM_ALBUMS_SYNCED = "num_albums_synced"

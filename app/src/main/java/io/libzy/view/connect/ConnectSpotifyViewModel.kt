@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.*
 import io.libzy.R
-import io.libzy.work.RefreshLibraryWorker
+import io.libzy.work.LibrarySyncWorker
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,13 +27,13 @@ class ConnectSpotifyViewModel @Inject constructor(private val appContext: Contex
         if (alreadyScanning) return
 
         viewModelScope.launch {
-            val workRequest = OneTimeWorkRequestBuilder<RefreshLibraryWorker>()
-                .setInputData(workDataOf(RefreshLibraryWorker.IS_INITIAL_SCAN to true))
+            val workRequest = OneTimeWorkRequestBuilder<LibrarySyncWorker>()
+                .setInputData(workDataOf(LibrarySyncWorker.IS_INITIAL_SCAN to true))
                 .addTag(LIBRARY_SCAN_WORK_TAG)
                 .build()
 
             workManager.enqueueUniqueWork(
-                RefreshLibraryWorker.WORK_NAME,
+                LibrarySyncWorker.WORK_NAME,
                 ExistingWorkPolicy.REPLACE,
                 workRequest
             )
