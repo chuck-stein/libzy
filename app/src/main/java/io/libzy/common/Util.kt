@@ -112,3 +112,7 @@ fun ParametersBuilder.param(key: String, value: Boolean) {
 fun ParametersBuilder.param(key: String, value: Int) {
     param(key, value.toLong())
 }
+
+fun ParametersBuilder.param(key: String, value: Float) {
+    param(key, value.toDouble())
+}

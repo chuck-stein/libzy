@@ -125,10 +125,13 @@ class QueryFragment : Fragment() {
     }
 
     private fun advanceQuestion() {
-        if (currQuestionIndex < LAST_QUESTION_INDEX) changeQuestion(currQuestionIndex + 1)
-        else findNavController().navigate(
-            QueryFragmentDirections.actionQueryFragmentToResultsFragment()
-        )
+        if (currQuestionIndex < LAST_QUESTION_INDEX) {
+            changeQuestion(currQuestionIndex + 1)
+        }
+        else {
+            model.sendSubmitQueryEvent()
+            findNavController().navigate(QueryFragmentDirections.actionQueryFragmentToResultsFragment())
+        }
     }
 
     private fun changeQuestion(index: Int) {
