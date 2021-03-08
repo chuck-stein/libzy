@@ -14,6 +14,7 @@ import android.view.animation.DecelerateInterpolator
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.constraintlayout.widget.Group
+import androidx.core.view.children
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -25,7 +26,6 @@ import com.google.android.material.chip.Chip
 import io.libzy.LibzyApplication
 import io.libzy.R
 import io.libzy.model.Query
-import io.libzy.util.children
 import kotlinx.android.synthetic.main.fragment_query.slider
 import timber.log.Timber
 import java.time.LocalTime
@@ -239,7 +239,7 @@ class QueryFragment : Fragment() {
         }
     }
 
-    private fun getGenreOptions() = genreChips.children.filterIsInstance<Chip>()
+    private fun getGenreOptions() = genreChips.children.filterIsInstance<Chip>().toList()
 
     private fun onBackPressed() {
         if (currQuestionIndex > 0) changeQuestion(currQuestionIndex - 1)
@@ -279,8 +279,11 @@ class QueryFragment : Fragment() {
             genreQuestion -> {
                 val checkedGenreChips = getGenreOptions().filter { it.isChecked }
                 model.genres =
-                    if (checkedGenreChips.isEmpty()) null
-                    else checkedGenreChips.map { it.text.toString() }.toSet()
+                    if (checkedGenreChips.isNotEmpty()) {
+                        checkedGenreChips.map { it.text.toString() }.toSet()
+                    } else {
+                        null
+                    }
             }
         }
         advanceQuestion()
