@@ -1,23 +1,30 @@
 <resources>
 
     <!-- Application properties -->
-    <string name="spotify_prefs_name">spotify_preferences</string>
+    <string name="spotify_prefs_name" translatable="false">spotify_preferences</string>
 
     <!-- Spotify SDK -->
-    <string name="spotify_client_id">058c796e8b3740d190136f2ebc4d64ab</string>
-    <string name="spotify_auth_redirect_uri">io.libzy://spotify-auth</string>
+    <string name="spotify_client_id" translatable="false">058c796e8b3740d190136f2ebc4d64ab</string>
+    <string name="spotify_auth_redirect_uri" translatable="false">io.libzy://spotify-auth</string>
+    
+    <!-- Amplitude SDK -->
+    <string name="amplitude_api_key_dev" translatable="false">f1201f6fa3f87ba14fca4e448f3d40b9</string>
+    <string name="amplitude_api_key_prod" translatable="false">5257667ce56af0dcc0d10101d455d4d3</string>
 
     <!-- SharedPreferences keys -->
-    <string name="spotify_connected_key">spotify.connected</string>
-    <string name="spotify_access_token_key">"spotify.accesstoken"</string>
-    <string name="spotify_token_expiry_key">spotify.accesstoken.expiry</string>
-    <string name="spotify_initial_scan_in_progress_key">spotify.scanning</string>
+    <string name="spotify_connected_key" translatable="false">spotify.connected</string>
+    <string name="spotify_access_token_key" translatable="false">"spotify.accesstoken"</string>
+    <string name="spotify_token_expiry_key" translatable="false">spotify.accesstoken.expiry</string>
+    <string name="spotify_initial_scan_in_progress_key" translatable="false">spotify.scanning</string>
 
+    <!-- Room DB -->
+    <string name="database_file_name" translatable="false">spotify_library</string>
+    
     <!-- Notification Channels -->
-    <string name="library_scan_progress_notification_channel_id">channel_library_scan_progress</string>
+    <string name="library_scan_progress_notification_channel_id" translatable="false">channel_library_scan_progress</string>
     <string name="library_scan_progress_notification_channel_name">Library Scan Progress</string>
     <string name="library_scan_progress_notification_channel_description">Displays the progress while scanning your Spotify library</string>
-    <string name="library_scan_update_notification_channel_id">channel_library_scan_update</string>
+    <string name="library_scan_update_notification_channel_id" translatable="false">channel_library_scan_update</string>
     <string name="library_scan_update_notification_channel_name">Library Scan Update</string>
     <string name="library_scan_update_notification_channel_description">Notifies you when a scan of your Spotify library succeeds or fails</string>
 
@@ -56,7 +63,7 @@
     <string name="ambient">Ambient</string>
     <string name="energetic">Energetic</string>
     <string name="danceable">Danceable</string>
-    <string name="arhythmic">Arhythmic</string>
+    <string name="arrhythmic">Arrhythmic</string>
     <string name="popular">Popular</string>
     <string name="obscure">Obscure</string>
     <string name="continue_button">Continue</string>

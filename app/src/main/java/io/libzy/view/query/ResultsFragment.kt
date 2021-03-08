@@ -7,23 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.analytics.ktx.logEvent
-import com.google.firebase.ktx.Firebase
 import io.libzy.R
-import io.libzy.analytics.LibzyAnalytics.Event.RATE_ALBUM_RESULTS
-import io.libzy.analytics.LibzyAnalytics.Param.ALBUM_RESULTS_RATING
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.common.LibzyApplication
 import io.libzy.model.AlbumResult
 import javax.inject.Inject
-import kotlin.math.roundToLong
+import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.fragment_results.albums_recycler as albumsRecycler
 import kotlinx.android.synthetic.main.fragment_results.rating_bar as ratingBar
+import kotlinx.android.synthetic.main.fragment_results.rating_section as ratingSection
 import kotlinx.android.synthetic.main.fragment_results.results_header as resultsHeader
 
 // TODO: add back button to this screen
@@ -38,6 +36,9 @@ class ResultsFragment : Fragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val model by activityViewModels<QueryResultsViewModel> { viewModelFactory }
 
+    @Inject
+    lateinit var analyticsDispatcher: AnalyticsDispatcher
+    
     private lateinit var albumsRecyclerAdapter: AlbumsRecyclerAdapter
 
     /**
@@ -67,6 +68,7 @@ class ResultsFragment : Fragment() {
         // TODO: move observer lambda to its own function
         model.recommendedAlbums.observe(viewLifecycleOwner, { albums ->
             albumsRecyclerAdapter.albums = albums
+            ratingSection.isVisible = albums.isNotEmpty()
             if (albums.isEmpty()) resultsHeader.text =
                 "Sorry! No results were found for that query. Try saving more albums on Spotify or entering a different query."
             // TODO: implement a better no results screen (w/ "try another query" button)
@@ -108,9 +110,7 @@ class ResultsFragment : Fragment() {
 
     private fun sendResultsRating() {
         if (resultsRatingPendingSubmission) {
-            Firebase.analytics.logEvent(RATE_ALBUM_RESULTS) {
-                param(ALBUM_RESULTS_RATING, ratingBar.rating.roundToLong())
-            }
+            analyticsDispatcher.sendRateAlbumResultsEvent(ratingBar.rating.roundToInt())
             resultsRatingPendingSubmission = false
         }
     }

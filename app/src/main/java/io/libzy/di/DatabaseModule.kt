@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import dagger.Module
 import dagger.Provides
+import io.libzy.R
 import io.libzy.database.UserLibraryDatabase
 import javax.inject.Singleton
 
@@ -16,7 +17,7 @@ class DatabaseModule {
         Room.databaseBuilder(
             applicationContext,
             UserLibraryDatabase::class.java,
-            "spotify_library"
+            applicationContext.getString(R.string.database_file_name)
         )
             .fallbackToDestructiveMigration() // TODO: create an actual migration strategy
             .build()

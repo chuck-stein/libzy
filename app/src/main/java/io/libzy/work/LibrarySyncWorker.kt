@@ -12,11 +12,11 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.ktx.Firebase
 import io.libzy.R
-import io.libzy.analytics.LibzyAnalytics
-import io.libzy.analytics.LibzyAnalytics.Event.RETRY_LIBRARY_SYNC
-import io.libzy.analytics.LibzyAnalytics.Event.SYNC_LIBRARY_DATA
-import io.libzy.analytics.LibzyAnalytics.Param.LIBRARY_SYNC_TIME
-import io.libzy.analytics.LibzyAnalytics.Param.NUM_ALBUMS_SYNCED
+import io.libzy.analytics.Analytics
+import io.libzy.analytics.Analytics.EventProperties.LIBRARY_SYNC_TIME
+import io.libzy.analytics.Analytics.EventProperties.NUM_ALBUMS_SYNCED
+import io.libzy.analytics.Analytics.Events.RETRY_LIBRARY_SYNC
+import io.libzy.analytics.Analytics.Events.SYNC_LIBRARY_DATA
 import io.libzy.common.appInForeground
 import io.libzy.common.createNotificationTapAction
 import io.libzy.common.currentTimeSeconds
@@ -62,7 +62,7 @@ class LibrarySyncWorker(
                 return if (!isInitialScan && isServerError(statusCode)) {
                     Timber.e(e, "Failed to sync Spotify library data due to a server error. Retrying...")
                     Firebase.analytics.logEvent(RETRY_LIBRARY_SYNC) {
-                        param(LibzyAnalytics.Param.IS_INITIAL_SCAN, isInitialScan)
+                        param(Analytics.EventProperties.IS_INITIAL_SCAN, isInitialScan)
                     }
                     Result.retry()
                 } else fail(e)
@@ -104,7 +104,7 @@ class LibrarySyncWorker(
 
         Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
             param(SUCCESS, true)
-            param(LibzyAnalytics.Param.IS_INITIAL_SCAN, isInitialScan)
+            param(Analytics.EventProperties.IS_INITIAL_SCAN, isInitialScan)
             param(NUM_ALBUMS_SYNCED, numAlbumsSynced.value)
             param(LIBRARY_SYNC_TIME, numAlbumsSynced.duration.inSeconds)
         }
@@ -116,7 +116,7 @@ class LibrarySyncWorker(
         Timber.e(exception, "Failed to sync Spotify library data")
         Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
             param(SUCCESS, false)
-            param(LibzyAnalytics.Param.IS_INITIAL_SCAN, isInitialScan)
+            param(Analytics.EventProperties.IS_INITIAL_SCAN, isInitialScan)
         }
         if (isInitialScan) {
             sharedPrefs.edit {

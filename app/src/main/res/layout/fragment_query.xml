@@ -234,15 +234,15 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="arhythmic_label,danceable_label,slider,continue_button" />
+        app:constraint_referenced_ids="arrhythmic_label,danceable_label,slider,continue_button" />
 
     <TextView
-        android:id="@+id/arhythmic_label"
+        android:id="@+id/arrhythmic_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_04"
         android:layout_marginEnd="@dimen/spacing_02"
-        android:text="@string/arhythmic"
+        android:text="@string/arrhythmic"
         android:textSize="@dimen/content_text_size"
         app:layout_constraintBottom_toBottomOf="@id/slider"
         app:layout_constraintEnd_toStartOf="@id/slider"

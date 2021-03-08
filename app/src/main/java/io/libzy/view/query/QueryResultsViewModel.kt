@@ -3,24 +3,10 @@ package io.libzy.view.query
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.analytics.ktx.logEvent
-import com.google.firebase.ktx.Firebase
 import io.libzy.BuildConfig
-import io.libzy.analytics.LibzyAnalytics.Event.SUBMIT_QUERY
-import io.libzy.analytics.LibzyAnalytics.Param.ALBUM_RESULTS
-import io.libzy.analytics.LibzyAnalytics.Param.NUM_ALBUMS_QUERIED
-import io.libzy.analytics.LibzyAnalytics.Param.NUM_ALBUM_RESULTS
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_ACOUSTICNESS
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_DANCEABILITY
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_ENERGY
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_FAMILIARITY
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_GENRES
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_INSTRUMENTAL
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_NUM_GENRES
-import io.libzy.analytics.LibzyAnalytics.Param.QUERIED_VALENCE
+import io.libzy.analytics.Analytics.Events.SUBMIT_QUERY
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.common.CombinedLiveData
-import io.libzy.common.param
 import io.libzy.model.Query
 import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
@@ -35,7 +21,8 @@ import kotlin.reflect.full.findParameterByName
 class QueryResultsViewModel @Inject constructor(
     private val userLibraryRepository: UserLibraryRepository,
     private val recommendationService: RecommendationService,
-    private val spotifyAppRemoteService: SpotifyAppRemoteService
+    private val spotifyAppRemoteService: SpotifyAppRemoteService,
+    private val analyticsDispatcher: AnalyticsDispatcher
 ) : ViewModel() {
 
     private val defaultQuery = Query()
@@ -121,24 +108,8 @@ class QueryResultsViewModel @Inject constructor(
     private val recommendationInput = CombinedLiveData(queryLiveData, userLibraryRepository.libraryAlbums)
 
     val recommendedAlbums = recommendationInput.map { (query, libraryAlbums) ->
-        recommendationService.recommendAlbums(query, libraryAlbums).also { recommendedAlbums ->
-            sendSubmitQueryEvent = {
-                Firebase.analytics.logEvent(SUBMIT_QUERY) {
-                    if (query.familiarity != null) param(QUERIED_FAMILIARITY, query.familiarity.name)
-                    if (query.instrumental != null) param(QUERIED_INSTRUMENTAL, query.instrumental)
-                    if (query.acousticness != null) param(QUERIED_ACOUSTICNESS, query.acousticness)
-                    if (query.valence != null) param(QUERIED_VALENCE, query.valence)
-                    if (query.energy != null) param(QUERIED_ENERGY, query.energy)
-                    if (query.danceability != null) param(QUERIED_DANCEABILITY, query.danceability)
-                    if (query.genres != null) {
-                        param(QUERIED_GENRES, query.genres.joinToString())
-                        param(QUERIED_NUM_GENRES, query.genres.size)
-                    }
-                    param(NUM_ALBUMS_QUERIED, libraryAlbums.size)
-                    param(NUM_ALBUM_RESULTS, recommendedAlbums.size)
-                    param(ALBUM_RESULTS, recommendedAlbums.joinToString { "${it.artists} - ${it.title} (${it.spotifyUri})" })
-                }
-            }
+        recommendationService.recommendAlbums(query, libraryAlbums).also { results ->
+            sendSubmitQueryEvent = { analyticsDispatcher.sendSubmitQueryEvent(query, results) }
         }
     }
 

@@ -28,6 +28,12 @@
         app:layout_constraintTop_toBottomOf="@id/results_header"
         app:layout_constraintVertical_bias="0" />
 
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/rating_section"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="rating_text, rating_bar" />
+    
     <TextView
         android:id="@+id/rating_text"
         android:layout_width="match_parent"

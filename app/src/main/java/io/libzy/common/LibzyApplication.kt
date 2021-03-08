@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.util.Log
 import androidx.work.*
+import com.amplitude.api.Amplitude
 import io.libzy.BuildConfig
 import io.libzy.R
 import io.libzy.analytics.CrashlyticsTree
@@ -35,6 +36,9 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var userLibraryRepository: UserLibraryRepository
+    
+    @Inject
+    lateinit var apiKeys: ApiKeys
 
     private var sharedPrefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
@@ -45,11 +49,18 @@ class LibzyApplication : Application(), Configuration.Provider {
         appComponent.inject(this)
         createNotificationChannels()
         scheduleLibrarySync()
-        if (BuildConfig.DEBUG) {
-            Timber.plant(DebugTree())
-        } else {
-            Timber.plant(CrashlyticsTree())
-        }
+        initLogging()
+        initAnalytics()
+    }
+
+    override fun getWorkManagerConfiguration(): Configuration {
+        val workerFactory = DelegatingWorkerFactory()
+        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository))
+
+        return Configuration.Builder()
+            .setMinimumLoggingLevel(Log.DEBUG)
+            .setWorkerFactory(workerFactory)
+            .build()
     }
 
     /**
@@ -128,14 +139,18 @@ class LibzyApplication : Application(), Configuration.Provider {
             sharedPrefs.registerOnSharedPreferenceChangeListener(sharedPrefsListener)
         }
     }
-
-    override fun getWorkManagerConfiguration(): Configuration {
-        val workerFactory = DelegatingWorkerFactory()
-        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository))
-
-        return Configuration.Builder()
-            .setMinimumLoggingLevel(Log.DEBUG)
-            .setWorkerFactory(workerFactory)
-            .build()
+    
+    private fun initLogging() {
+        if (BuildConfig.DEBUG) {
+            Timber.plant(DebugTree())
+        } else {
+            Timber.plant(CrashlyticsTree())
+        }
+    }
+    
+    private fun initAnalytics() {
+        Amplitude.getInstance()
+            .initialize(this, apiKeys.amplitudeApiKey)
+            .enableForegroundTracking(this)
     }
 }
