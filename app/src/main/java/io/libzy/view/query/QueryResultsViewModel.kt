@@ -6,11 +6,11 @@ import androidx.lifecycle.map
 import io.libzy.BuildConfig
 import io.libzy.analytics.Analytics.Events.SUBMIT_QUERY
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.common.CombinedLiveData
 import io.libzy.model.Query
 import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
+import io.libzy.util.CombinedLiveData
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber

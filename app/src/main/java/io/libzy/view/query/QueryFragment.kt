@@ -24,8 +24,8 @@ import com.airbnb.paris.extensions.style
 import com.google.android.material.chip.Chip
 import io.libzy.LibzyApplication
 import io.libzy.R
-import io.libzy.common.children
 import io.libzy.model.Query
+import io.libzy.util.children
 import kotlinx.android.synthetic.main.fragment_query.slider
 import timber.log.Timber
 import java.time.LocalTime

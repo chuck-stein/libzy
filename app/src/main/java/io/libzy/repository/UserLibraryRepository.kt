@@ -3,7 +3,6 @@ package io.libzy.repository
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
 import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.AudioFeatures
-import io.libzy.common.percentageToFloat
 import io.libzy.database.UserLibraryDatabase
 import io.libzy.database.entity.DbAlbum
 import io.libzy.database.entity.DbGenre
@@ -11,6 +10,7 @@ import io.libzy.database.entity.junction.AlbumGenreJunction
 import io.libzy.database.tuple.AudioFeaturesTuple
 import io.libzy.database.tuple.FamiliarityTuple
 import io.libzy.spotify.api.SpotifyApiDelegator
+import io.libzy.util.percentageToFloat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

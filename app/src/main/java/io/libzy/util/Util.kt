@@ -1,4 +1,4 @@
-package io.libzy.common
+package io.libzy.util
 
 import android.app.PendingIntent
 import android.content.Context

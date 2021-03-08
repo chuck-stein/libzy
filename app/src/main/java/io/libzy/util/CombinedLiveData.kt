@@ -1,4 +1,4 @@
-package io.libzy.common
+package io.libzy.util
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData

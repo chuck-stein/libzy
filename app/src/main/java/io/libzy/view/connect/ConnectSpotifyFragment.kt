@@ -15,9 +15,9 @@ import androidx.navigation.fragment.navArgs
 import androidx.work.WorkInfo
 import io.libzy.LibzyApplication
 import io.libzy.R
-import io.libzy.common.spotifyConnected
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
+import io.libzy.util.spotifyConnected
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_connect_spotify.connect_spotify_button as connectSpotifyButton

@@ -11,8 +11,8 @@ import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.LibzyApplication
 import io.libzy.R
-import io.libzy.common.currentTimeSeconds
 import io.libzy.spotify.auth.*
+import io.libzy.util.currentTimeSeconds
 import timber.log.Timber
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.nav_host_fragment as navHost

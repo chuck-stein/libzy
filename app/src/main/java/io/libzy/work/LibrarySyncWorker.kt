@@ -17,12 +17,12 @@ import io.libzy.analytics.Analytics.EventProperties.LIBRARY_SYNC_TIME
 import io.libzy.analytics.Analytics.EventProperties.NUM_ALBUMS_SYNCED
 import io.libzy.analytics.Analytics.Events.RETRY_LIBRARY_SYNC
 import io.libzy.analytics.Analytics.Events.SYNC_LIBRARY_DATA
-import io.libzy.common.appInForeground
-import io.libzy.common.createNotificationTapAction
-import io.libzy.common.currentTimeSeconds
-import io.libzy.common.param
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.auth.SpotifyAuthException
+import io.libzy.util.appInForeground
+import io.libzy.util.createNotificationTapAction
+import io.libzy.util.currentTimeSeconds
+import io.libzy.util.param
 import timber.log.Timber
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue

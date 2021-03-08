@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import io.libzy.R
-import io.libzy.common.spotifyConnected
+import io.libzy.util.spotifyConnected
 
 class LaunchFragment : Fragment() {
 
