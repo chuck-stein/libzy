@@ -1,4 +1,4 @@
-package io.libzy.common
+package io.libzy.config
 
 import android.content.Context
 import io.libzy.R

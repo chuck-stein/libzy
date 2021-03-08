@@ -3,8 +3,8 @@ package io.libzy.di
 import android.content.Context
 import dagger.Module
 import dagger.Provides
-import io.libzy.common.ApiKeys
-import io.libzy.common.DevApiKeys
+import io.libzy.config.ApiKeys
+import io.libzy.config.DevApiKeys
 import javax.inject.Singleton
 
 @Module
