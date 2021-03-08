@@ -13,8 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.work.WorkInfo
+import io.libzy.LibzyApplication
 import io.libzy.R
-import io.libzy.common.LibzyApplication
 import io.libzy.common.spotifyConnected
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException

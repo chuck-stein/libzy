@@ -13,9 +13,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
+import io.libzy.LibzyApplication
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.common.LibzyApplication
 import io.libzy.model.AlbumResult
 import javax.inject.Inject
 import kotlin.math.roundToInt

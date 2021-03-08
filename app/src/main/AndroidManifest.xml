@@ -8,7 +8,7 @@
 
     <!-- TODO: set android:allowBackup="true" before release versions -->
     <application
-        android:name=".common.LibzyApplication"
+        android:name=".LibzyApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

@@ -3,7 +3,7 @@ package io.libzy.di
 import android.content.Context
 import dagger.BindsInstance
 import dagger.Component
-import io.libzy.common.LibzyApplication
+import io.libzy.LibzyApplication
 import io.libzy.di.viewmodel.ViewModelModule
 import io.libzy.view.MainActivity
 import io.libzy.view.connect.ConnectSpotifyFragment

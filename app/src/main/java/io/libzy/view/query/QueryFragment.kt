@@ -22,8 +22,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.airbnb.paris.extensions.style
 import com.google.android.material.chip.Chip
+import io.libzy.LibzyApplication
 import io.libzy.R
-import io.libzy.common.LibzyApplication
 import io.libzy.common.children
 import io.libzy.model.Query
 import kotlinx.android.synthetic.main.fragment_query.slider

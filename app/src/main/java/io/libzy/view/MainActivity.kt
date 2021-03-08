@@ -9,8 +9,8 @@ import androidx.core.content.edit
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
+import io.libzy.LibzyApplication
 import io.libzy.R
-import io.libzy.common.LibzyApplication
 import io.libzy.common.currentTimeSeconds
 import io.libzy.spotify.auth.*
 import timber.log.Timber

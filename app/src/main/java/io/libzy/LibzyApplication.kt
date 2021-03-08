@@ -1,4 +1,4 @@
-package io.libzy.common
+package io.libzy
 
 import android.app.Application
 import android.app.NotificationChannel
@@ -9,8 +9,6 @@ import android.os.Handler
 import android.util.Log
 import androidx.work.*
 import com.amplitude.api.Amplitude
-import io.libzy.BuildConfig
-import io.libzy.R
 import io.libzy.analytics.CrashlyticsTree
 import io.libzy.config.ApiKeys
 import io.libzy.di.AppComponent
