@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.navigation.NavDeepLinkBuilder
-import com.google.firebase.analytics.ktx.ParametersBuilder
 import io.libzy.R
 import io.libzy.view.MainActivity
 import kotlin.math.roundToInt
@@ -42,16 +41,3 @@ val ViewGroup.children: List<View>
         }
         return children
     }
-
-fun ParametersBuilder.param(key: String, value: Boolean) {
-    val valueAsLong: Long = if (value) 1 else 0
-    param(key, valueAsLong)
-}
-
-fun ParametersBuilder.param(key: String, value: Int) {
-    param(key, value.toLong())
-}
-
-fun ParametersBuilder.param(key: String, value: Float) {
-    param(key, value.toDouble())
-}

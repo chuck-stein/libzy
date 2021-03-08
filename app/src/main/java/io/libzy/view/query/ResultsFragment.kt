@@ -43,7 +43,7 @@ class ResultsFragment : Fragment() {
 
     /**
      * Whether the user has interacted with the results rating bar,
-     * but their rating has not yet been submitted to Firebase Analytics
+     * but their rating has not yet been submitted as an analytics event.
      */
     private var resultsRatingPendingSubmission = false
 

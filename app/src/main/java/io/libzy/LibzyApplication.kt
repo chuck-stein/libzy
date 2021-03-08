@@ -9,6 +9,7 @@ import android.os.Handler
 import android.util.Log
 import androidx.work.*
 import com.amplitude.api.Amplitude
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.CrashlyticsTree
 import io.libzy.config.ApiKeys
 import io.libzy.di.AppComponent
@@ -35,6 +36,9 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var userLibraryRepository: UserLibraryRepository
+
+    @Inject
+    lateinit var analyticsDispatcher: AnalyticsDispatcher
     
     @Inject
     lateinit var apiKeys: ApiKeys
@@ -54,7 +58,7 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     override fun getWorkManagerConfiguration(): Configuration {
         val workerFactory = DelegatingWorkerFactory()
-        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository))
+        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository, analyticsDispatcher))
 
         return Configuration.Builder()
             .setMinimumLoggingLevel(Log.DEBUG)

@@ -12,11 +12,8 @@ object Analytics {
         /** When the user rates how accurate the given album results are to their query */
         const val RATE_ALBUM_RESULTS = "rate album results"
 
-        /** When a [LibrarySyncWorker] either fails or succeeds */
+        /** When a [LibrarySyncWorker] either fails, succeeds, or retries */
         const val SYNC_LIBRARY_DATA = "sync library data"
-
-        /** When a [LibrarySyncWorker] retries */
-        const val RETRY_LIBRARY_SYNC = "retry library sync"
 
         /** When the user submits a query representing what they are currently in the mood to listen to. */
         const val SUBMIT_QUERY = "submit query"
@@ -30,18 +27,28 @@ object Analytics {
         const val RATING = "rating"
 
         /**
-         * A [Boolean] property representing whether or not [Events.SYNC_LIBRARY_DATA] or [Events.RETRY_LIBRARY_SYNC]
+         * A [Boolean] property representing whether or not [Events.SYNC_LIBRARY_DATA]
          * occurred during a user's initial library scan upon first connecting Spotify.
          */
         const val IS_INITIAL_SCAN = "is initial scan"
 
-        /** An [Int] property representing how many albums were synced in a successful [Events.SYNC_LIBRARY_DATA] */
+        /**
+         * An [Int] property representing how many albums were synced in a successful [Events.SYNC_LIBRARY_DATA].
+         * Null if the sync was not successful.
+         */
         const val NUM_ALBUMS_SYNCED = "num albums synced"
 
         /**
-         * A [Double] property representing the number of seconds it took for a successful [Events.SYNC_LIBRARY_DATA]
+         * A [Double] property representing the number of seconds it took for a successful [Events.SYNC_LIBRARY_DATA].
+         * Null if the sync was not successful.
          */
         const val LIBRARY_SYNC_TIME = "library sync time"
+
+        /**
+         * A [String] property representing the result of [Events.SYNC_LIBRARY_DATA].
+         * Should be a value from [LibrarySyncResult].
+         */
+        const val RESULT = "result"
 
         /**
          * A [String] property representing the user's selection of familiarity for [Events.SUBMIT_QUERY].

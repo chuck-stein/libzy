@@ -14,7 +14,9 @@ data class Query(
     val danceability: Float? = null,
     val genres: Set<String>? = null
 ) {
-    enum class Familiarity {
-        CURRENT_FAVORITE, RELIABLE_CLASSIC, UNDERAPPRECIATED_GEM
+    enum class Familiarity(val value: String) {
+        CURRENT_FAVORITE("current favorite"),
+        RELIABLE_CLASSIC("reliable classic"),
+        UNDERAPPRECIATED_GEM("underappreciated gem")
     }
 }

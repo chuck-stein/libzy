@@ -7,22 +7,14 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
 import androidx.work.*
 import com.adamratzman.spotify.SpotifyException
-import com.google.firebase.analytics.FirebaseAnalytics.Param.SUCCESS
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.analytics.ktx.logEvent
-import com.google.firebase.ktx.Firebase
 import io.libzy.R
-import io.libzy.analytics.Analytics
-import io.libzy.analytics.Analytics.EventProperties.LIBRARY_SYNC_TIME
-import io.libzy.analytics.Analytics.EventProperties.NUM_ALBUMS_SYNCED
-import io.libzy.analytics.Analytics.Events.RETRY_LIBRARY_SYNC
-import io.libzy.analytics.Analytics.Events.SYNC_LIBRARY_DATA
+import io.libzy.analytics.AnalyticsDispatcher
+import io.libzy.analytics.LibrarySyncResult
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.util.appInForeground
 import io.libzy.util.createNotificationTapAction
 import io.libzy.util.currentTimeSeconds
-import io.libzy.util.param
 import timber.log.Timber
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
@@ -30,7 +22,8 @@ import kotlin.time.measureTimedValue
 class LibrarySyncWorker(
     appContext: Context,
     params: WorkerParameters,
-    private val userLibraryRepository: UserLibraryRepository
+    private val userLibraryRepository: UserLibraryRepository,
+    private val analyticsDispatcher: AnalyticsDispatcher
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
@@ -41,7 +34,7 @@ class LibrarySyncWorker(
         const val IS_INITIAL_SCAN = "is_initial_scan"
     }
 
-    private val isInitialScan by lazy { inputData.getBoolean(IS_INITIAL_SCAN, false) }
+    private val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
     private val sharedPrefs by lazy {
         applicationContext.getSharedPreferences(
             applicationContext.getString(R.string.spotify_prefs_name),
@@ -61,9 +54,7 @@ class LibrarySyncWorker(
                 // TODO: find a better way to always catch all server errors (may have to forgo the Spotify API wrapper library)
                 return if (!isInitialScan && isServerError(statusCode)) {
                     Timber.e(e, "Failed to sync Spotify library data due to a server error. Retrying...")
-                    Firebase.analytics.logEvent(RETRY_LIBRARY_SYNC) {
-                        param(Analytics.EventProperties.IS_INITIAL_SCAN, isInitialScan)
-                    }
+                    analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.RETRY, isInitialScan)
                     Result.retry()
                 } else fail(e)
             }
@@ -101,23 +92,19 @@ class LibrarySyncWorker(
             )
         }
         Timber.i("Successfully synced Spotify library data")
-
-        Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
-            param(SUCCESS, true)
-            param(Analytics.EventProperties.IS_INITIAL_SCAN, isInitialScan)
-            param(NUM_ALBUMS_SYNCED, numAlbumsSynced.value)
-            param(LIBRARY_SYNC_TIME, numAlbumsSynced.duration.inSeconds)
-        }
+        analyticsDispatcher.sendSyncLibraryDataEvent(
+            LibrarySyncResult.SUCCESS,
+            isInitialScan,
+            numAlbumsSynced.value,
+            numAlbumsSynced.duration.inSeconds
+        )
     }
 
     private fun isServerError(statusCode: Int?) = statusCode != null && statusCode >= 500 && statusCode < 600
 
     private fun fail(exception: Exception): Result {
         Timber.e(exception, "Failed to sync Spotify library data")
-        Firebase.analytics.logEvent(SYNC_LIBRARY_DATA) {
-            param(SUCCESS, false)
-            param(Analytics.EventProperties.IS_INITIAL_SCAN, isInitialScan)
-        }
+        analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialScan)
         if (isInitialScan) {
             sharedPrefs.edit {
                 putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
@@ -176,7 +163,10 @@ class LibrarySyncWorker(
         notificationManager.notify(notificationId, notification)
     }
 
-    class Factory(private val userLibraryRepository: UserLibraryRepository) : WorkerFactory() {
+    class Factory(
+        private val userLibraryRepository: UserLibraryRepository,
+        private val analyticsDispatcher: AnalyticsDispatcher
+    ) : WorkerFactory() {
 
         override fun createWorker(
             appContext: Context,
@@ -186,7 +176,7 @@ class LibrarySyncWorker(
 
             return when (workerClassName) {
                 LibrarySyncWorker::class.java.name ->
-                    LibrarySyncWorker(appContext, workerParameters, userLibraryRepository)
+                    LibrarySyncWorker(appContext, workerParameters, userLibraryRepository, analyticsDispatcher)
                 else -> null
             }
         }
