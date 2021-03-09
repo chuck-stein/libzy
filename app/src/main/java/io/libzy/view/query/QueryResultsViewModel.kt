@@ -4,7 +4,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import io.libzy.BuildConfig
-import io.libzy.analytics.Analytics.Events.SUBMIT_QUERY
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.model.Query
 import io.libzy.recommendation.RecommendationService
@@ -28,13 +27,6 @@ class QueryResultsViewModel @Inject constructor(
     private val defaultQuery = Query()
 
     private val queryLiveData = MutableLiveData(defaultQuery)
-
-    /**
-     * Function to send the [SUBMIT_QUERY] analytics event with the correct parameters.
-     * Updates whenever the recommendation algorithm runs, so that the most up-to-date
-     * query input and output can be sent along as event parameters.
-     */
-    var sendSubmitQueryEvent: () -> Unit = {}
 
     var familiarity = defaultQuery.familiarity
         set(value) {
@@ -103,13 +95,23 @@ class QueryResultsViewModel @Inject constructor(
         queryLiveData.value = queryToCopy::copy.callBy(mapOf(queryCopyParameter to newValue))
     }
 
+    /**
+     * Whether the user has submitted their query but the corresponding analytics event has not yet been sent.
+     * The analytics event will be sent the next time [recommendedAlbums] updates, in order to provide the results
+     * of the query as an event property.
+     */
+    var submitQueryEventPending = false
+
     // we should recalculate the recommendations from the user's library
     // whenever their query updates or their library updates
     private val recommendationInput = CombinedLiveData(queryLiveData, userLibraryRepository.libraryAlbums)
 
     val recommendedAlbums = recommendationInput.map { (query, libraryAlbums) ->
         recommendationService.recommendAlbums(query, libraryAlbums).also { results ->
-            sendSubmitQueryEvent = { analyticsDispatcher.sendSubmitQueryEvent(query, results) }
+            if (submitQueryEventPending) {
+                analyticsDispatcher.sendSubmitQueryEvent(query, results)
+                submitQueryEventPending = false
+            }
         }
     }
 

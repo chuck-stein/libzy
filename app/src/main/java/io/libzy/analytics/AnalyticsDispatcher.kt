@@ -3,7 +3,6 @@ package io.libzy.analytics
 import com.amplitude.api.Amplitude
 import io.libzy.analytics.Analytics.EventProperties.ACOUSTICNESS
 import io.libzy.analytics.Analytics.EventProperties.ALBUM_RESULTS
-import io.libzy.analytics.Analytics.EventProperties.ARTIST
 import io.libzy.analytics.Analytics.EventProperties.DANCEABILITY
 import io.libzy.analytics.Analytics.EventProperties.ENERGY
 import io.libzy.analytics.Analytics.EventProperties.FAMILIARITY
@@ -16,14 +15,13 @@ import io.libzy.analytics.Analytics.EventProperties.NUM_ALBUM_RESULTS
 import io.libzy.analytics.Analytics.EventProperties.NUM_GENRES
 import io.libzy.analytics.Analytics.EventProperties.RATING
 import io.libzy.analytics.Analytics.EventProperties.RESULT
-import io.libzy.analytics.Analytics.EventProperties.SPOTIFY_URI
-import io.libzy.analytics.Analytics.EventProperties.TITLE
 import io.libzy.analytics.Analytics.EventProperties.VALENCE
 import io.libzy.analytics.Analytics.Events.RATE_ALBUM_RESULTS
 import io.libzy.analytics.Analytics.Events.SUBMIT_QUERY
 import io.libzy.analytics.Analytics.Events.SYNC_LIBRARY_DATA
 import io.libzy.model.AlbumResult
 import io.libzy.model.Query
+import io.libzy.util.toString
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,6 +36,9 @@ class AnalyticsDispatcher @Inject constructor() {
 
     private val amplitude = Amplitude.getInstance()
 
+    /**
+     * Send an event with the given name and properties to Amplitude.
+     */
     private fun sendEvent(eventName: String, eventProperties: Map<String, Any?>) {
         amplitude.logEvent(eventName, JSONObject(eventProperties))
     }
@@ -47,23 +48,16 @@ class AnalyticsDispatcher @Inject constructor() {
     }
 
     fun sendSubmitQueryEvent(query: Query, results: List<AlbumResult>) {
-
-        fun convertAlbumResultToMap(album: AlbumResult) = mapOf(
-            TITLE to album.title,
-            ARTIST to album.artists,
-            SPOTIFY_URI to album.spotifyUri
-        )
-
         sendEvent(SUBMIT_QUERY, mapOf(
             FAMILIARITY to query.familiarity?.value,
             INSTRUMENTAL to query.instrumental,
-            ACOUSTICNESS to query.acousticness,
-            VALENCE to query.valence,
-            ENERGY to query.energy,
-            DANCEABILITY to query.danceability,
+            ACOUSTICNESS to query.acousticness?.toString(FLOAT_PRECISION),
+            VALENCE to query.valence?.toString(FLOAT_PRECISION),
+            ENERGY to query.energy?.toString(FLOAT_PRECISION),
+            DANCEABILITY to query.danceability?.toString(FLOAT_PRECISION),
             GENRES to query.genres,
             NUM_GENRES to (query.genres?.size ?: 0),
-            ALBUM_RESULTS to results.map { convertAlbumResultToMap(it) },
+            ALBUM_RESULTS to results.map { "${it.artists} - ${it.title} (${it.spotifyUri})" },
             NUM_ALBUM_RESULTS to results.size
         ))
     }
@@ -83,3 +77,8 @@ class AnalyticsDispatcher @Inject constructor() {
         )
     }
 }
+
+/**
+ * The number of decimal places to which floating point event properties should be formatted for analytics events.
+ */
+private const val FLOAT_PRECISION = 2

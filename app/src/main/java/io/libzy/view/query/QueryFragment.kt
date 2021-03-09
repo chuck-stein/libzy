@@ -129,7 +129,7 @@ class QueryFragment : Fragment() {
             changeQuestion(currQuestionIndex + 1)
         }
         else {
-            model.sendSubmitQueryEvent()
+            model.submitQueryEventPending = true
             findNavController().navigate(QueryFragmentDirections.actionQueryFragmentToResultsFragment())
         }
     }
