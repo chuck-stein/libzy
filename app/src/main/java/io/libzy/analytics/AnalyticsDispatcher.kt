@@ -1,6 +1,7 @@
 package io.libzy.analytics
 
 import com.amplitude.api.Amplitude
+import com.amplitude.api.Identify
 import io.libzy.analytics.Analytics.EventProperties.ACOUSTICNESS
 import io.libzy.analytics.Analytics.EventProperties.ALBUM_RESULTS
 import io.libzy.analytics.Analytics.EventProperties.DANCEABILITY
@@ -19,6 +20,7 @@ import io.libzy.analytics.Analytics.EventProperties.VALENCE
 import io.libzy.analytics.Analytics.Events.RATE_ALBUM_RESULTS
 import io.libzy.analytics.Analytics.Events.SUBMIT_QUERY
 import io.libzy.analytics.Analytics.Events.SYNC_LIBRARY_DATA
+import io.libzy.analytics.Analytics.UserProperties.DISPLAY_NAME
 import io.libzy.model.AlbumResult
 import io.libzy.model.Query
 import io.libzy.util.toString
@@ -41,11 +43,16 @@ class AnalyticsDispatcher @Inject constructor() {
         amplitude.userId = userId
     }
 
+    fun setUserDisplayName(displayName: String) {
+        val displayNameIdentification = Identify().set(DISPLAY_NAME, displayName)
+        amplitude.identify(displayNameIdentification)
+    }
+
     /**
      * Send an event with the given name and properties to Amplitude.
      */
-    private fun sendEvent(eventName: String, eventProperties: Map<String, Any?>) {
-        amplitude.logEvent(eventName, JSONObject(eventProperties))
+    private fun sendEvent(eventName: String, eventProperties: Map<String, Any?>, outOfSession: Boolean = false) {
+        amplitude.logEvent(eventName, JSONObject(eventProperties), outOfSession)
     }
 
     fun sendRateAlbumResultsEvent(rating: Int) {
@@ -73,13 +80,13 @@ class AnalyticsDispatcher @Inject constructor() {
         numAlbumsSynced: Int? = null,
         librarySyncTime: Double? = null
     ) {
-        sendEvent(SYNC_LIBRARY_DATA, mapOf(
+        val eventProperties = mapOf(
             RESULT to result.value,
             IS_INITIAL_SCAN to isInitialScan,
             NUM_ALBUMS_SYNCED to numAlbumsSynced,
             LIBRARY_SYNC_TIME to librarySyncTime?.roundToInt()
-            )
         )
+        sendEvent(SYNC_LIBRARY_DATA, eventProperties, outOfSession = true)
     }
 }
 

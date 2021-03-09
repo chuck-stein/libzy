@@ -22,6 +22,9 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = userProfileRepository.getUserId()
             analyticsDispatcher.setUserId(userId)
+            userProfileRepository.fetchDisplayName()?.let {
+                analyticsDispatcher.setUserDisplayName(it)
+            }
         }
     }
 }

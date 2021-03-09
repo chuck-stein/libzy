@@ -105,21 +105,6 @@ object Analytics {
         const val ALBUM_RESULTS = "album results"
 
         /**
-         * A [String] property for each element of the [ALBUM_RESULTS] property, representing the album title.
-         */
-        const val TITLE = "title"
-
-        /**
-         * A [String] property for each element of the [ALBUM_RESULTS] property, representing the album artist(s).
-         */
-        const val ARTIST = "artist"
-
-        /**
-         * A [String] property for each element of the [ALBUM_RESULTS] property, representing the album's spotify URI.
-         */
-        const val SPOTIFY_URI = "spotify uri"
-
-        /**
          * An [Int] property representing the number of albums recommended as a result of the user's current mood query
          * for [Events.SUBMIT_QUERY].
          */
@@ -132,7 +117,11 @@ object Analytics {
          * An [Int] property representing the number of albums a user has saved in their Spotify library.
          */
         const val NUM_ALBUMS_IN_LIBRARY = "num albums in library"
-        
+
+        /**
+         * A [String] property representing the user's Spotify display name
+         */
+        const val DISPLAY_NAME = "display name"
     }
 
 }
