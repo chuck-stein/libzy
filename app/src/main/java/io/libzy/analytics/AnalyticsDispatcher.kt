@@ -25,6 +25,7 @@ import io.libzy.util.toString
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 /**
  * Wrapper for Amplitude's SDK, used for dispatching analytics events via a simple API.
@@ -69,10 +70,10 @@ class AnalyticsDispatcher @Inject constructor() {
         librarySyncTime: Double? = null
     ) {
         sendEvent(SYNC_LIBRARY_DATA, mapOf(
-            RESULT to result,
+            RESULT to result.value,
             IS_INITIAL_SCAN to isInitialScan,
             NUM_ALBUMS_SYNCED to numAlbumsSynced,
-            LIBRARY_SYNC_TIME to librarySyncTime
+            LIBRARY_SYNC_TIME to librarySyncTime?.roundToInt()
             )
         )
     }
