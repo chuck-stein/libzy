@@ -71,13 +71,11 @@ class SpotifyApiDelegator @Inject constructor(
         return SpotifyClientApiBuilder(authorization = apiAuthorization, options = apiOptions).build()
     }
 
+    suspend fun getUserId() = getApiDelegate().userId
+
+    // TODO: rename all these functions to "fetchXXXXX" instead of "getXXXXX"
     suspend fun getPlayHistory(): List<PlayHistory> = doSafeApiCall {
         getApiDelegate().player.getRecentlyPlayed(API_ITEM_LIMIT_LOW).suspendQueue().items
-    }
-
-    // TODO: delete if unused
-    suspend fun getTopArtists(timeRange: ClientPersonalizationApi.TimeRange): List<Artist> = doSafeApiCall {
-        getApiDelegate().personalization.getTopArtists(API_ITEM_LIMIT_LOW_MAX_PAGING, timeRange = timeRange).suspendQueueAll() // TODO: fix apparent JSON parsing issue w/ max paging?
     }
 
     suspend fun getTopTracks(timeRange: ClientPersonalizationApi.TimeRange): List<Track> = doSafeApiCall {
@@ -94,6 +92,10 @@ class SpotifyApiDelegator @Inject constructor(
     // TODO: fix rate limiting
     suspend fun getAudioFeaturesOfTracks(ids: Collection<String>): List<AudioFeatures?> =
         getBatchedItems(ids, getApiDelegate().tracks::getAudioFeatures, API_ITEM_LIMIT_HIGH)
+
+    suspend fun getProfileInformation() = doSafeApiCall {
+        getApiDelegate().users.getClientProfile().suspendQueue()
+    }
 
     // TODO: remove num503s param when the source of the issue is fixed
     private suspend fun <T> doSafeApiCall(num503s: Int = 0, apiCall: suspend () -> T): T {

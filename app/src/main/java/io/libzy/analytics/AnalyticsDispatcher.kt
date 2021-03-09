@@ -37,6 +37,10 @@ class AnalyticsDispatcher @Inject constructor() {
 
     private val amplitude = Amplitude.getInstance()
 
+    fun setUserId(userId: String) {
+        amplitude.userId = userId
+    }
+
     /**
      * Send an event with the given name and properties to Amplitude.
      */

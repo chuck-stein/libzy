@@ -4,11 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.lifecycle.ViewModelProvider
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
-import com.spotify.sdk.android.auth.AuthorizationResponse
+import com.spotify.sdk.android.auth.AuthorizationResponse.Type.ERROR
+import com.spotify.sdk.android.auth.AuthorizationResponse.Type.TOKEN
 import io.libzy.LibzyApplication
 import io.libzy.R
 import io.libzy.spotify.auth.*
@@ -33,6 +36,10 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
         private val AUTH_SCOPES =
             arrayOf("user-library-read", "app-remote-control", "user-read-recently-played", "user-top-read")
     }
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val model by viewModels<MainViewModel> { viewModelFactory }
 
     @Inject
     lateinit var spotifyAuthDispatcher: SpotifyAuthDispatcher
@@ -73,9 +80,8 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
         if (requestCode == SPOTIFY_AUTH_REQUEST_CODE) {
             val response = AuthorizationClient.getResponse(resultCode, intent)
             when (response.type) {
-                AuthorizationResponse.Type.TOKEN ->
-                    onSpotifyAuthSuccess(SpotifyAccessToken(response.accessToken, response.expiresIn))
-                AuthorizationResponse.Type.ERROR -> onSpotifyAuthFailure(response.error)
+                TOKEN -> onSpotifyAuthSuccess(SpotifyAccessToken(response.accessToken, response.expiresIn))
+                ERROR -> onSpotifyAuthFailure(response.error)
                 else -> onSpotifyAuthFailure("Authorization was prematurely cancelled")
             }
         }
@@ -84,6 +90,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
     private fun onSpotifyAuthSuccess(accessToken: SpotifyAccessToken) {
         spotifyAuthCallback?.onSuccess(accessToken)
         saveAccessToken(accessToken)
+        model.onNewSpotifySession()
     }
 
     private fun saveAccessToken(accessToken: SpotifyAccessToken) {
@@ -107,7 +114,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
     private fun buildAuthRequest() =
         AuthorizationRequest.Builder(
             getString(R.string.spotify_client_id),
-            AuthorizationResponse.Type.TOKEN,
+            TOKEN,
             getString(R.string.spotify_auth_redirect_uri)
         )
             .setScopes(AUTH_SCOPES)
