@@ -61,7 +61,7 @@ class LibzyApplication : Application(), Configuration.Provider {
         workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository, analyticsDispatcher))
 
         return Configuration.Builder()
-            .setMinimumLoggingLevel(Log.DEBUG)
+            .setMinimumLoggingLevel(Log.VERBOSE)
             .setWorkerFactory(workerFactory)
             .build()
     }

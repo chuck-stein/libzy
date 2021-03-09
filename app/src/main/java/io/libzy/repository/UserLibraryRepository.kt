@@ -26,12 +26,6 @@ class UserLibraryRepository @Inject constructor(
     // TODO: should this initialization be done in a coroutine since it's using the db? why don't I get the warning that Room shouldn't be accessed from main thread?
     val libraryAlbums = database.albumDao.getAllAlbums()
 
-    // TODO: ensure this task can run in background (ANSWER: not consistently, so probably has to be a @Service) -- and if it takes more than ~10 seconds make that obvious from UI (first library load probably needs a redesign if it takes a very long time)
-    // TODO: for each request made here, think about how often I should be making it
-    // TODO: if UI is stable enough to handle continuous updates, continuously flow/stream new library data by inserting each album and its genres as data is gathered?
-    // TODO: save top artist data in either an artist entity or a "familiarity" DbAlbum field or a "<duration>_term_fav_artist" DbAlbum field
-    //      - or maybe artists shouldn't be considered as factoring into favorite albums, because they could be listening to a different album by that artist
-    // TODO: think about how I want to store/present data for recency and familiarity
     /**
      * Run a Spotify library sync by requesting the user's latest library data from the Spotify API,
      * converting that data to Libzy's schema, and caching it in the local database.
@@ -39,21 +33,16 @@ class UserLibraryRepository @Inject constructor(
      * @return the number of albums synced from the user's Spotify library
      */
     suspend fun syncLibraryData(): Int = withContext(Dispatchers.IO) {
-        Timber.d("Fetching recently played tracks")
+        Timber.v("Fetching recently played tracks")
         val recentlyPlayedTracks = spotifyApi.getPlayHistory().map { it.track } // TODO: add an "after" time stamp so if they last played Spotify over a week ago it doesn't count as recently played?
-        Timber.d("Fetching top tracks -- short term")
+        Timber.v("Fetching top tracks -- short term")
         val topTracksShortTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.SHORT_TERM)
-        Timber.d("Fetching top tracks -- medium term")
+        Timber.v("Fetching top tracks -- medium term")
         val topTracksMediumTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.MEDIUM_TERM)
-        Timber.d("Fetching top tracks -- long term")
+        Timber.v("Fetching top tracks -- long term")
         val topTracksLongTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.LONG_TERM)
 
-        // TODO: determine whether it's useful to have top artists if we already have top track granularity
-//            val topArtistsShortTerm = spotifyApi.getTopArtists(ClientPersonalizationApi.TimeRange.SHORT_TERM)
-//            val topArtistsMediumTerm = spotifyApi.getTopArtists(ClientPersonalizationApi.TimeRange.MEDIUM_TERM)
-//            val topArtistsLongTerm = spotifyApi.getTopArtists(ClientPersonalizationApi.TimeRange.LONG_TERM)
-
-        Timber.d("Fetching saved albums")
+        Timber.v("Fetching saved albums")
         val albums = spotifyApi.getAllSavedAlbums().map { savedAlbum -> savedAlbum.album }
 
         val dbAlbums = albums.map { album ->
@@ -66,12 +55,12 @@ class UserLibraryRepository @Inject constructor(
             )
         }
 
-        Timber.d("Scanning genres in saved albums")
+        Timber.v("Scanning genres in saved albums")
         val dbGenres = mutableSetOf<DbGenre>()
         val albumGenreJunctions = mutableSetOf<AlbumGenreJunction>()
         fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums)
         
-        Timber.d("Saving library data in local database")
+        Timber.v("Saving library data in local database")
         database.runInTransaction { // TODO: ensure the nested transactions work well
             database.albumDao.replaceAll(dbAlbums)
             database.genreDao.replaceAll(dbGenres)
@@ -81,7 +70,7 @@ class UserLibraryRepository @Inject constructor(
     }
 
     private suspend fun getAlbumAudioFeatures(album: Album): AudioFeaturesTuple {
-        Timber.d("Fetching audio features for ${album.name}")
+        Timber.v("Fetching audio features for ${album.name}")
         val cachedAudioFeatures = withContext(Dispatchers.IO) { database.albumDao.getAudioFeatures(album.id) }
         if (cachedAudioFeatures != null) return cachedAudioFeatures
 
@@ -108,19 +97,16 @@ class UserLibraryRepository @Inject constructor(
         dbGenres: MutableSet<DbGenre>,
         albumGenreJunctions: MutableSet<AlbumGenreJunction>,
         albums: List<Album>
-    ) { // TODO: ensure sets/keys/collisions/hashing work with this data class
-        val albumsByArtists =
-            mutableMapOf<String, MutableSet<String>>() // TODO: use existing junction data class if it will be in the final schema?
+    ) {
+        // TODO: use existing junction data class if it will be in the final schema?
+        val albumsByArtists = mutableMapOf<String, MutableSet<String>>()
         for (album in albums) {
             for (genre in album.genres) {
                 dbGenres.add(DbGenre(genre))
                 albumGenreJunctions.add(AlbumGenreJunction(album.id, genre))
             }
             for (artistId in album.artists.map { it.id }) {
-                albumsByArtists[artistId].let { albumsByArtist ->
-                    if (albumsByArtist != null) albumsByArtist.add(album.id) // TODO: figure out how to do this syntax the way JetBrains wants me to...
-                    else albumsByArtists[artistId] = mutableSetOf(album.id)
-                }
+                albumsByArtists.getOrPut(artistId, ::mutableSetOf).add(album.id)
             }
         }
         val artists = spotifyApi.getArtists(albumsByArtists.keys).filterNotNull()
