@@ -146,9 +146,8 @@ class LibzyApplication : Application(), Configuration.Provider {
     private fun initLogging() {
         if (BuildConfig.DEBUG) {
             Timber.plant(DebugTree())
-        } else {
-            Timber.plant(CrashlyticsTree())
         }
+        Timber.plant(CrashlyticsTree())
     }
     
     private fun initAnalytics() {
