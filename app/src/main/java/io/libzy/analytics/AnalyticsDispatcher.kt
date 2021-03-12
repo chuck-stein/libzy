@@ -21,15 +21,19 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.LIBRARY_SYNC_TIME
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SYNCED
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_GENRES
+import io.libzy.analytics.AnalyticsConstants.EventProperties.QUESTION_NAME
+import io.libzy.analytics.AnalyticsConstants.EventProperties.QUESTION_NUM
 import io.libzy.analytics.AnalyticsConstants.EventProperties.RATING
 import io.libzy.analytics.AnalyticsConstants.EventProperties.RESULT
 import io.libzy.analytics.AnalyticsConstants.EventProperties.SPOTIFY_URI
 import io.libzy.analytics.AnalyticsConstants.EventProperties.TITLE
+import io.libzy.analytics.AnalyticsConstants.EventProperties.TOTAL_QUESTIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.VALENCE
 import io.libzy.analytics.AnalyticsConstants.Events.PLAY_ALBUM
 import io.libzy.analytics.AnalyticsConstants.Events.RATE_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.Events.SUBMIT_QUERY
 import io.libzy.analytics.AnalyticsConstants.Events.SYNC_LIBRARY_DATA
+import io.libzy.analytics.AnalyticsConstants.Events.VIEW_QUESTION
 import io.libzy.analytics.AnalyticsConstants.UserProperties.DISPLAY_NAME
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRARY
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
@@ -144,6 +148,14 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
                 IS_LOW_FAMILIARITY to album.familiarity.isLowFamiliarity()
             ))
         }
+    }
+
+    fun sendViewQuestionEvent(questionName: String, questionNum: Int, totalQuestions: Int) {
+        sendEvent(VIEW_QUESTION, mapOf(
+            QUESTION_NUM to questionNum,
+            QUESTION_NAME to questionName,
+            TOTAL_QUESTIONS to totalQuestions
+        ))
     }
 }
 

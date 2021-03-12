@@ -17,6 +17,7 @@ import io.libzy.LibzyApplication
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.model.AlbumResult
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.fragment_results.albums_recycler as albumsRecycler
@@ -94,6 +95,7 @@ class ResultsFragment : Fragment() {
             model.playAlbum(spotifyUri)
             analyticsDispatcher.sendPlayAlbumEvent(spotifyUri)
         } catch (e: Exception) {
+            Timber.e(e, "Failed to play album remotely")
             Toast.makeText(requireContext(), R.string.toast_spotify_remote_failed, Toast.LENGTH_LONG).show()
         }
     }

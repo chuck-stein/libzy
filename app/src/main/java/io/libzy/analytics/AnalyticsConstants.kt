@@ -1,6 +1,7 @@
 package io.libzy.analytics
 
 import io.libzy.model.Query.Familiarity
+import io.libzy.view.query.QueryFragment
 import io.libzy.view.query.ResultsFragment
 import io.libzy.work.LibrarySyncWorker
 
@@ -29,6 +30,11 @@ object AnalyticsConstants {
          * When the user plays an album from those recommended to them in [ResultsFragment].
          */
         const val PLAY_ALBUM = "play album"
+
+        /**
+         * When the user views a question in [QueryFragment].
+         */
+        const val VIEW_QUESTION = "view question"
     }
 
     object EventProperties {
@@ -183,6 +189,23 @@ object AnalyticsConstants {
          * period of time.
          */
         const val IS_LOW_FAMILIARITY = "is low familiarity"
+
+        /**
+         * An [Int] property representing which question number in [QueryFragment]'s question sequence was
+         * viewed for [Events.VIEW_QUESTION].
+         */
+        const val QUESTION_NUM = "question num"
+
+        /**
+         * An [Int] property representing the total number of questions in the question sequence for which a question
+         * was viewed for [Events.VIEW_QUESTION].
+         */
+        const val TOTAL_QUESTIONS = "total questions"
+
+        /**
+         * A [String] property representing the name of the question viewed for [Events.VIEW_QUESTION].
+         */
+        const val QUESTION_NAME = "question name"
     }
     
     object UserProperties {
@@ -207,5 +230,4 @@ object AnalyticsConstants {
          */
         const val NUM_QUERIES_SUBMITTED = "num queries submitted"
     }
-
 }

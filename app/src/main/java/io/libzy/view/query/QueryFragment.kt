@@ -25,6 +25,8 @@ import com.airbnb.paris.extensions.style
 import com.google.android.material.chip.Chip
 import io.libzy.LibzyApplication
 import io.libzy.R
+import io.libzy.analytics.AnalyticsDispatcher
+import io.libzy.analytics.QuestionName
 import io.libzy.model.Query
 import kotlinx.android.synthetic.main.fragment_query.slider
 import timber.log.Timber
@@ -65,6 +67,9 @@ class QueryFragment : Fragment() {
 
     private val navArgs: QueryFragmentArgs by navArgs()
 
+    @Inject
+    lateinit var analyticsDispatcher: AnalyticsDispatcher
+
     private lateinit var questionViews: List<Group>
     private var currQuestionIndex = 0
     private var changingQuestions = false
@@ -91,6 +96,11 @@ class QueryFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) { onBackPressed() }
         updateBackNavigation()
         model.recommendedGenres.observe(viewLifecycleOwner) { fillGenreChips(it) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        sendViewQuestionEvent()
     }
 
     private fun setGreetingText() {
@@ -142,6 +152,7 @@ class QueryFragment : Fragment() {
         noPreferenceButton.isClickable = false
         fadeOutGroup(questionViews[currQuestionIndex]) {
             currQuestionIndex = index
+            sendViewQuestionEvent()
             loadAnswer()
             updateBackNavigation()
             fadeInGroup(questionViews[currQuestionIndex]) {
@@ -249,6 +260,24 @@ class QueryFragment : Fragment() {
         val onFirstQuestion = currQuestionIndex == 0
         backButton.visibility = if (onFirstQuestion) View.GONE else View.VISIBLE
         prevQuestionOnBackCallback.isEnabled = !onFirstQuestion
+    }
+
+    private fun sendViewQuestionEvent() {
+        val questionName = when(questionViews[currQuestionIndex]) {
+            familiarityQuestion -> QuestionName.FAMILIARITY
+            instrumentalnessQuestion -> QuestionName.INSTRUMENTALNESS
+            acousticnessQuestion -> QuestionName.ACOUSTICNESS
+            valenceQuestion -> QuestionName.VALENCE
+            energyQuestion -> QuestionName.ENERGY
+            danceabilityQuestion -> QuestionName.DANCEABILITY
+            genreQuestion -> QuestionName.GENRES
+            else -> null
+        }
+        analyticsDispatcher.sendViewQuestionEvent(
+            questionName = questionName?.value ?: "unknown",
+            questionNum = currQuestionIndex + 1,
+            totalQuestions = LAST_QUESTION_INDEX + 1
+        )
     }
 
     private fun onClickNoPreferenceButton() {
