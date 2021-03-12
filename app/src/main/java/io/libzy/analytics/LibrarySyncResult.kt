@@ -1,7 +1,7 @@
 package io.libzy.analytics
 
-import io.libzy.analytics.Analytics.EventProperties
-import io.libzy.analytics.Analytics.Events
+import io.libzy.analytics.AnalyticsConstants.EventProperties
+import io.libzy.analytics.AnalyticsConstants.Events
 
 /**
  * Contains the possible values for [Events.SYNC_LIBRARY_DATA].

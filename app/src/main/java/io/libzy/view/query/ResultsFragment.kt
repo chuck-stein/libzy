@@ -92,6 +92,7 @@ class ResultsFragment : Fragment() {
     private fun onAlbumClicked(spotifyUri: String) {
         try {
             model.playAlbum(spotifyUri)
+            analyticsDispatcher.sendPlayAlbumEvent(spotifyUri)
         } catch (e: Exception) {
             Toast.makeText(requireContext(), R.string.toast_spotify_remote_failed, Toast.LENGTH_LONG).show()
         }

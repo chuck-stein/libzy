@@ -1,22 +1,34 @@
 package io.libzy.analytics
 
 import io.libzy.model.Query.Familiarity
+import io.libzy.view.query.ResultsFragment
 import io.libzy.work.LibrarySyncWorker
 
 /**
  * Constants related to analytics events, including event names, event properties, and user properties.
  */
-object Analytics {
+object AnalyticsConstants {
 
     object Events {
-        /** When the user rates how accurate the given album results are to their query */
+        /**
+         * When the user rates how accurate the given album results are to their query
+         */
         const val RATE_ALBUM_RESULTS = "rate album results"
 
-        /** When a [LibrarySyncWorker] either fails, succeeds, or retries */
+        /**
+         * When a [LibrarySyncWorker] either fails, succeeds, or retries
+         */
         const val SYNC_LIBRARY_DATA = "sync library data"
 
-        /** When the user submits a query representing what they are currently in the mood to listen to. */
+        /**
+         * When the user submits a query representing what they are currently in the mood to listen to.
+         */
         const val SUBMIT_QUERY = "submit query"
+
+        /**
+         * When the user plays an album from those recommended to them in [ResultsFragment].
+         */
+        const val PLAY_ALBUM = "play album"
     }
 
     object EventProperties {
@@ -64,32 +76,42 @@ object Analytics {
         const val INSTRUMENTAL = "instrumental"
 
         /**
-         * A [Boolean] property representing the user's selection of acousticness for [Events.SUBMIT_QUERY].
+         * A [Float] property representing the user's selection of acousticness for [Events.SUBMIT_QUERY].
          * Null means no preference.
+         *
+         * A [Float] property representing the acousticness value of the album played for [Events.PLAY_ALBUM].
          */
         const val ACOUSTICNESS = "acousticness"
 
         /**
          * A [Float] property representing the user's selection of negative vs. positive emotion for
          * [Events.SUBMIT_QUERY]. Null means no preference.
+         *
+         * A [Float] property representing the valence value of the album played for [Events.PLAY_ALBUM].
          */
         const val VALENCE = "valence"
 
         /**
          * A [Float] property representing the user's selection of energy level for [Events.SUBMIT_QUERY].
          * Null means no preference.
+         *
+         * A [Float] property representing the energy value of the album played for [Events.PLAY_ALBUM].
          */
         const val ENERGY = "energy"
 
         /**
          * A [Float] property representing the user's selection of danceable vs. arrhythmic for [Events.SUBMIT_QUERY].
          * Null means no preference.
+         *
+         * A [Float] property representing the danceability value of the album played for [Events.PLAY_ALBUM].
          */
         const val DANCEABILITY = "danceability"
 
         /**
          * A [List] property representing the user's selection of genres for [Events.SUBMIT_QUERY].
          * Null means no preference.
+         *
+         * A [Set] property representing the genres belonging to the album played for [Events.PLAY_ALBUM].
          */
         const val GENRES = "genres"
 
@@ -109,6 +131,58 @@ object Analytics {
          * for [Events.SUBMIT_QUERY].
          */
         const val NUM_ALBUM_RESULTS = "num album results"
+
+        /**
+         * A [String] property representing the Spotify URI for the album played in [Events.PLAY_ALBUM].
+         */
+        const val SPOTIFY_URI = "spotify uri"
+
+        /**
+         * A [String] property representing the title of the album played in [Events.PLAY_ALBUM].
+         */
+        const val TITLE = "title"
+
+        /**
+         * A [String] property representing the artist of the album played in [Events.PLAY_ALBUM].
+         * May be multiple artist names concatenated by commas.
+         */
+        const val ARTIST = "artist"
+
+        /**
+         * A [Float] property representing the instrumentalness value of the album played for [Events.PLAY_ALBUM].
+         */
+        const val INSTRUMENTALNESS = "instrumentalness"
+
+        /**
+         * A [Boolean] property representing whether the album played for [Events.PLAY_ALBUM] is a long term favorite
+         * of the user.
+         */
+        const val IS_LONG_TERM_FAVORITE = "is long term favorite"
+
+        /**
+         * A [Boolean] property representing whether the album played for [Events.PLAY_ALBUM] is a medium term favorite
+         * of the user.
+         */
+        const val IS_MEDIUM_TERM_FAVORITE = "is medium term favorite"
+
+        /**
+         * A [Boolean] property representing whether the album played for [Events.PLAY_ALBUM] is a short term favorite
+         * of the user.
+         */
+        const val IS_SHORT_TERM_FAVORITE = "is short term favorite"
+
+        /**
+         * A [Boolean] property representing whether the user has recently played
+         * the album played for [Events.PLAY_ALBUM].
+         */
+        const val IS_RECENTLY_PLAYED = "is recently played"
+
+        /**
+         * A [Boolean] property representing whether the album played for [Events.PLAY_ALBUM] is of relatively low
+         * familiarity to the user, meaning it has not been recently played and is not a favorite of theirs over any
+         * period of time.
+         */
+        const val IS_LOW_FAMILIARITY = "is low familiarity"
     }
     
     object UserProperties {
@@ -122,6 +196,16 @@ object Analytics {
          * A [String] property representing the user's Spotify display name
          */
         const val DISPLAY_NAME = "display name"
+
+        /**
+         * An [Int] property representing the total number of times this user has played an album from Libzy
+         */
+        const val NUM_ALBUM_PLAYS = "num album plays"
+
+        /**
+         * An [Int] property representing the total number of times this user has submitted a query
+         */
+        const val NUM_QUERIES_SUBMITTED = "num queries submitted"
     }
 
 }

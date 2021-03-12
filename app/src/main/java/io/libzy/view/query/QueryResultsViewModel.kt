@@ -3,6 +3,7 @@ package io.libzy.view.query
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import io.libzy.BuildConfig
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.model.Query
@@ -10,7 +11,6 @@ import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
 import io.libzy.util.CombinedLiveData
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -143,7 +143,7 @@ class QueryResultsViewModel @Inject constructor(
     }
 
     private fun logAlbumDetails(spotifyUri: String) {
-        GlobalScope.launch {
+        viewModelScope.launch {
             val album = userLibraryRepository.getAlbumFromUri(spotifyUri)
             val albumDetails =
                 """
