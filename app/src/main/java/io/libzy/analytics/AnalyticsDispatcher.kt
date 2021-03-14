@@ -188,7 +188,7 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
     }
 
     fun sendAuthorizeSpotifyConnectionEvent() {
-          sendEvent(AUTHORIZE_SPOTIFY_CONNECTION)
+        sendEvent(AUTHORIZE_SPOTIFY_CONNECTION)
     }
 }
 
