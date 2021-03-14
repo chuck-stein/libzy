@@ -35,7 +35,7 @@ class LibrarySyncWorker(
     }
 
     private val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
-    private val sharedPrefs by lazy {
+    private val spotifyPrefs by lazy {
         applicationContext.getSharedPreferences(
             applicationContext.getString(R.string.spotify_prefs_name),
             Context.MODE_PRIVATE
@@ -73,7 +73,7 @@ class LibrarySyncWorker(
 
         if (isInitialScan) {
             setForeground(createInitialScanForegroundInfo())
-            sharedPrefs.edit {
+            spotifyPrefs.edit {
                 putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), true)
             }
         }
@@ -81,7 +81,7 @@ class LibrarySyncWorker(
 
     private fun afterLibrarySync(numAlbumsSynced: TimedValue<Int>) {
         if (isInitialScan) {
-            sharedPrefs.edit {
+            spotifyPrefs.edit {
                 putBoolean(applicationContext.getString(R.string.spotify_connected_key), true)
                 putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
             }
@@ -106,7 +106,7 @@ class LibrarySyncWorker(
         Timber.e(exception, "Failed to sync Spotify library data")
         analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialScan)
         if (isInitialScan) {
-            sharedPrefs.edit {
+            spotifyPrefs.edit {
                 putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
             }
             notifyLibraryScanEnded(

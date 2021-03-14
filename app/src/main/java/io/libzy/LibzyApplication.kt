@@ -8,7 +8,6 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.util.Log
 import androidx.work.*
-import com.amplitude.api.Amplitude
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.CrashlyticsTree
 import io.libzy.config.ApiKeys
@@ -39,7 +38,7 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var analyticsDispatcher: AnalyticsDispatcher
-    
+
     @Inject
     lateinit var apiKeys: ApiKeys
 
@@ -53,7 +52,7 @@ class LibzyApplication : Application(), Configuration.Provider {
         createNotificationChannels()
         scheduleLibrarySync()
         initLogging()
-        initAnalytics()
+        analyticsDispatcher.initialize(this, apiKeys.amplitudeApiKey)
     }
 
     override fun getWorkManagerConfiguration(): Configuration {
@@ -133,7 +132,7 @@ class LibzyApplication : Application(), Configuration.Provider {
                     // so schedule the next one in 15 minutes, which will recur every subsequent 15 minutes
                     Handler().postDelayed({
                         enqueueWorkRequest()
-                    }, 5000)
+                    }, LIBRARY_SYNC_INTERVAL.toMillis())
 
                     prefs.unregisterOnSharedPreferenceChangeListener(sharedPrefsListener)
                     sharedPrefsListener = null
@@ -148,11 +147,5 @@ class LibzyApplication : Application(), Configuration.Provider {
             Timber.plant(DebugTree())
         }
         Timber.plant(CrashlyticsTree())
-    }
-    
-    private fun initAnalytics() {
-        Amplitude.getInstance()
-            .initialize(this, apiKeys.amplitudeApiKey)
-            .enableForegroundTracking(this)
     }
 }

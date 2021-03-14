@@ -15,6 +15,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.work.WorkInfo
 import io.libzy.LibzyApplication
 import io.libzy.R
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.util.extensions.spotifyConnected
@@ -31,6 +32,9 @@ class ConnectSpotifyFragment : Fragment() {
 
     @Inject
     lateinit var spotifyAuthDispatcher: SpotifyAuthDispatcher
+
+    @Inject
+    lateinit var analyticsDispatcher: AnalyticsDispatcher
 
     private val navArgs: ConnectSpotifyFragmentArgs by navArgs()
 
@@ -59,9 +63,7 @@ class ConnectSpotifyFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        val libraryScanInProgress =
-            requireContext().getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
-                .getBoolean(getString(R.string.spotify_initial_scan_in_progress_key), false)
+        val libraryScanInProgress = getSpotifyPrefs().getBoolean(getString(R.string.spotify_initial_scan_in_progress_key), false)
         if (libraryScanInProgress) displayLibraryScanScreen()
         else displayConnectSpotifyScreen()
     }
@@ -77,6 +79,9 @@ class ConnectSpotifyFragment : Fragment() {
     }
 
     private fun onConnectSpotifyButtonClicked() {
+        val currentlyConnectedUserId = getSpotifyPrefs().getString(getString(R.string.spotify_user_id_key), null)
+        analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId)
+
         lifecycleScope.launch {
             try {
                 spotifyAuthDispatcher.requestAuthorization()
@@ -116,5 +121,8 @@ class ConnectSpotifyFragment : Fragment() {
     private fun navigateToQueryFragment() {
         findNavController().navigate(ConnectSpotifyFragmentDirections.actionConnectSpotifyFragmentToQueryFragment())
     }
+
+    private fun getSpotifyPrefs() =
+        requireContext().getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
 
 }

@@ -1,6 +1,7 @@
 package io.libzy.analytics
 
 import io.libzy.model.Query.Familiarity
+import io.libzy.view.connect.ConnectSpotifyFragment
 import io.libzy.view.query.QueryFragment
 import io.libzy.view.query.ResultsFragment
 import io.libzy.work.LibrarySyncWorker
@@ -35,6 +36,11 @@ object AnalyticsConstants {
          * When the user views a question in [QueryFragment].
          */
         const val VIEW_QUESTION = "view question"
+
+        /**
+         * When the user clicks the "Connect Spotify" button in [ConnectSpotifyFragment]
+         */
+        const val CLICK_CONNECT_SPOTIFY = "click connect spotify"
     }
 
     object EventProperties {
@@ -206,6 +212,12 @@ object AnalyticsConstants {
          * A [String] property representing the name of the question viewed for [Events.VIEW_QUESTION].
          */
         const val QUESTION_NAME = "question name"
+
+        /**
+         * A [String] property representing the Spotify user ID that is currently connected to Libzy at the time of
+         * [Events.CLICK_CONNECT_SPOTIFY]. Null if no Spotify account is currently connected.
+         */
+        const val CURRENTLY_CONNECTED_USER_ID = "currently connected user id"
     }
     
     object UserProperties {

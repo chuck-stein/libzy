@@ -1,10 +1,12 @@
 package io.libzy.analytics
 
+import android.app.Application
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ACOUSTICNESS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ARTIST
+import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_CONNECTED_USER_ID
 import io.libzy.analytics.AnalyticsConstants.EventProperties.DANCEABILITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ENERGY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FAMILIARITY
@@ -29,6 +31,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.SPOTIFY_URI
 import io.libzy.analytics.AnalyticsConstants.EventProperties.TITLE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.TOTAL_QUESTIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.VALENCE
+import io.libzy.analytics.AnalyticsConstants.Events.CLICK_CONNECT_SPOTIFY
 import io.libzy.analytics.AnalyticsConstants.Events.PLAY_ALBUM
 import io.libzy.analytics.AnalyticsConstants.Events.RATE_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.Events.SUBMIT_QUERY
@@ -59,6 +62,15 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
 
     private val amplitude = Amplitude.getInstance()
 
+    fun initialize(application: Application, apiKey: String) {
+        amplitude
+            .trackSessionEvents(true)
+            .initialize(application, apiKey)
+            .enableForegroundTracking(application)
+    }
+
+    // ~~~~~~~~~~~~~~~~~~ User Properties  ~~~~~~~~~~~~~~~~~~
+
     /**
      * Shorthand for updating Amplitude user properties at the end of a call chain on an Identify object
      */
@@ -78,6 +90,8 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
     fun setUserDisplayName(displayName: String) {
         Identify().set(DISPLAY_NAME, displayName).updateUserProperties()
     }
+
+    // ~~~~~~~~~~~~~~~~~~ Events ~~~~~~~~~~~~~~~~~~
 
     /**
      * Send an event with the given name and properties to Amplitude.
@@ -156,6 +170,10 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
             QUESTION_NAME to questionName,
             TOTAL_QUESTIONS to totalQuestions
         ))
+    }
+
+    fun sendClickConnectSpotifyEvent(currentlyConnectedUserId: String?) {
+        sendEvent(CLICK_CONNECT_SPOTIFY, mapOf(CURRENTLY_CONNECTED_USER_ID to currentlyConnectedUserId))
     }
 }
 
