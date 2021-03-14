@@ -46,6 +46,11 @@ object AnalyticsConstants {
          * When the user clicks the "Connect Spotify" button in [ConnectSpotifyFragment].
          */
         const val CLICK_CONNECT_SPOTIFY = "click connect spotify"
+
+        /**
+         * When the user authorizes Libzy to connect to their Spotify account.
+         */
+        const val AUTHORIZE_SPOTIFY_CONNECTION = "authorize spotify connection"
     }
 
     object EventProperties {

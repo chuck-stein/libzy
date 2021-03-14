@@ -14,6 +14,7 @@ import com.spotify.sdk.android.auth.AuthorizationResponse.Type.ERROR
 import com.spotify.sdk.android.auth.AuthorizationResponse.Type.TOKEN
 import io.libzy.LibzyApplication
 import io.libzy.R
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.spotify.auth.*
 import io.libzy.util.currentTimeSeconds
 import timber.log.Timber
@@ -40,6 +41,9 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val model by viewModels<MainViewModel> { viewModelFactory }
+
+    @Inject
+    lateinit var analyticsDispatcher: AnalyticsDispatcher
 
     @Inject
     lateinit var spotifyAuthDispatcher: SpotifyAuthDispatcher
@@ -91,6 +95,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
         spotifyAuthCallback?.onSuccess(accessToken)
         saveAccessToken(accessToken)
         model.onNewSpotifySession()
+        analyticsDispatcher.sendAuthorizeSpotifyConnectionEvent()
     }
 
     private fun saveAccessToken(accessToken: SpotifyAccessToken) {

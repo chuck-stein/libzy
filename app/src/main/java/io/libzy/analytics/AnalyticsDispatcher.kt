@@ -31,6 +31,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.SPOTIFY_URI
 import io.libzy.analytics.AnalyticsConstants.EventProperties.TITLE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.TOTAL_QUESTIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.VALENCE
+import io.libzy.analytics.AnalyticsConstants.Events.AUTHORIZE_SPOTIFY_CONNECTION
 import io.libzy.analytics.AnalyticsConstants.Events.CLICK_CONNECT_SPOTIFY
 import io.libzy.analytics.AnalyticsConstants.Events.PLAY_ALBUM
 import io.libzy.analytics.AnalyticsConstants.Events.RATE_ALBUM_RESULTS
@@ -184,6 +185,10 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
 
     fun sendClickConnectSpotifyEvent(currentlyConnectedUserId: String?) {
         sendEvent(CLICK_CONNECT_SPOTIFY, mapOf(CURRENTLY_CONNECTED_USER_ID to currentlyConnectedUserId))
+    }
+
+    fun sendAuthorizeSpotifyConnectionEvent() {
+          sendEvent(AUTHORIZE_SPOTIFY_CONNECTION)
     }
 }
 
