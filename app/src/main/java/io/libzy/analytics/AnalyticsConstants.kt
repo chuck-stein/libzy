@@ -38,7 +38,12 @@ object AnalyticsConstants {
         const val VIEW_QUESTION = "view question"
 
         /**
-         * When the user clicks the "Connect Spotify" button in [ConnectSpotifyFragment]
+         * When the user views [ConnectSpotifyFragment].
+         */
+        const val VIEW_CONNECT_SPOTIFY_SCREEN = "view connect spotify screen"
+
+        /**
+         * When the user clicks the "Connect Spotify" button in [ConnectSpotifyFragment].
          */
         const val CLICK_CONNECT_SPOTIFY = "click connect spotify"
     }

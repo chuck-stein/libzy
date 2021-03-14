@@ -68,6 +68,11 @@ class ConnectSpotifyFragment : Fragment() {
         else displayConnectSpotifyScreen()
     }
 
+    override fun onResume() {
+        super.onResume()
+        analyticsDispatcher.sendViewConnectSpotifyScreenEvent()
+    }
+
     private fun displayConnectSpotifyScreen() {
         scanningLibraryScreen.visibility = View.GONE
         connectSpotifyButton.visibility = View.VISIBLE

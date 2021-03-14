@@ -36,6 +36,7 @@ import io.libzy.analytics.AnalyticsConstants.Events.PLAY_ALBUM
 import io.libzy.analytics.AnalyticsConstants.Events.RATE_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.Events.SUBMIT_QUERY
 import io.libzy.analytics.AnalyticsConstants.Events.SYNC_LIBRARY_DATA
+import io.libzy.analytics.AnalyticsConstants.Events.VIEW_CONNECT_SPOTIFY_SCREEN
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_QUESTION
 import io.libzy.analytics.AnalyticsConstants.UserProperties.DISPLAY_NAME
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRARY
@@ -96,8 +97,13 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
     /**
      * Send an event with the given name and properties to Amplitude.
      */
-    private fun sendEvent(eventName: String, eventProperties: Map<String, Any?>, outOfSession: Boolean = false) {
-        amplitude.logEvent(eventName, JSONObject(eventProperties), outOfSession)
+    private fun sendEvent(
+        eventName: String,
+        eventProperties: Map<String, Any?>? = null,
+        outOfSession: Boolean = false
+    ) {
+        val eventPropertiesJson = eventProperties?.let { JSONObject(eventProperties) }
+        amplitude.logEvent(eventName, eventPropertiesJson, outOfSession)
     }
 
     fun sendRateAlbumResultsEvent(rating: Int) {
@@ -170,6 +176,10 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
             QUESTION_NAME to questionName,
             TOTAL_QUESTIONS to totalQuestions
         ))
+    }
+
+    fun sendViewConnectSpotifyScreenEvent() {
+        sendEvent(VIEW_CONNECT_SPOTIFY_SCREEN)
     }
 
     fun sendClickConnectSpotifyEvent(currentlyConnectedUserId: String?) {
