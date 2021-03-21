@@ -123,7 +123,7 @@ class LibrarySyncWorker(
         val notificationTitle = applicationContext.getString(R.string.initial_library_scan_notification_title)
 
         val notification = NotificationCompat.Builder(applicationContext, notificationChannelId)
-            .setSmallIcon(R.drawable.placeholder_album_art) // TODO: replace this with app icon once it's made (in the mean time, figure out why it just shows a gray square)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(notificationTitle)
             .setContentIntent(applicationContext.createNotificationTapAction(R.id.connectSpotifyFragment))
             .setCategory(NotificationCompat.CATEGORY_PROGRESS) // TODO: if scan progress is never added to this notification, change to CATEGORY_SERVICE
@@ -133,7 +133,12 @@ class LibrarySyncWorker(
             .build()
 
         val notificationId = currentTimeSeconds()
-        return ForegroundInfo(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            ForegroundInfo(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            ForegroundInfo(notificationId, notification)
+        }
     }
 
     private fun notifyLibraryScanEnded(
@@ -148,7 +153,7 @@ class LibrarySyncWorker(
         val notificationChannelId = applicationContext.getString(R.string.library_scan_update_notification_channel_id)
 
         val notification = NotificationCompat.Builder(applicationContext, notificationChannelId)
-            .setSmallIcon(R.drawable.placeholder_album_art) // TODO: replace this with app icon once it's made
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(notificationTitle)
             .setContentText(notificationText)
             .setContentIntent(applicationContext.createNotificationTapAction(tapDestinationResId))
