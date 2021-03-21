@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
     private fun saveAccessToken(accessToken: SpotifyAccessToken) {
         getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE).edit {
             putString(getString(R.string.spotify_access_token_key), accessToken.token)
-            putInt(getString(R.string.spotify_token_expiry_key), currentTimeSeconds() + accessToken.expiresIn)
+            putInt(getString(R.string.spotify_token_expiration_key), currentTimeSeconds() + accessToken.expiresIn)
         }
     }
 

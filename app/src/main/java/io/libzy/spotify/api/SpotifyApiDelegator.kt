@@ -49,10 +49,10 @@ class SpotifyApiDelegator @Inject constructor(
             Context.MODE_PRIVATE
         )
         val accessTokenKey: String = context.getString(R.string.spotify_access_token_key)
-        val expiryKey: String = context.getString(R.string.spotify_token_expiry_key)
+        val expirationKey: String = context.getString(R.string.spotify_token_expiration_key)
         val savedAccessToken = spotifyPrefs.getString(accessTokenKey, null)
-        val savedTokenExpiry = spotifyPrefs.getInt(expiryKey, 0)
-        if (savedAccessToken != null && currentTimeSeconds() < savedTokenExpiry) {
+        val savedTokenExpiration = spotifyPrefs.getInt(expirationKey, 0)
+        if (savedAccessToken != null && currentTimeSeconds() < savedTokenExpiration) {
             _apiDelegate = createApiDelegate(savedAccessToken)
         }
         return _apiDelegate

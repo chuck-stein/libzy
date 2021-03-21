@@ -14,8 +14,8 @@
     <!-- SharedPreferences keys -->
     <string name="spotify_connected_key" translatable="false">spotify.connected</string>
     <string name="spotify_user_id_key" translatable="false">spotify.user.id</string>
-    <string name="spotify_access_token_key" translatable="false">"spotify.accesstoken"</string>
-    <string name="spotify_token_expiry_key" translatable="false">spotify.accesstoken.expiry</string>
+    <string name="spotify_access_token_key" translatable="false">"spotify.token"</string>
+    <string name="spotify_token_expiration_key" translatable="false">spotify.token.expiration</string>
     <string name="spotify_initial_scan_in_progress_key" translatable="false">spotify.scanning</string>
 
     <!-- Room DB -->

@@ -35,14 +35,18 @@ class LibrarySyncWorker(
     }
 
     private val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
-    private val spotifyPrefs by lazy {
-        applicationContext.getSharedPreferences(
-            applicationContext.getString(R.string.spotify_prefs_name),
-            Context.MODE_PRIVATE
-        )
-    }
+    private val spotifyPrefs = applicationContext.getSharedPreferences(
+        applicationContext.getString(R.string.spotify_prefs_name),
+        Context.MODE_PRIVATE
+    )
 
     override suspend fun doWork(): Result {
+        val accessTokenExpiration = spotifyPrefs.getInt(applicationContext.getString(R.string.spotify_token_expiration_key), 0)
+        if (currentTimeSeconds() > accessTokenExpiration && !appInForeground()) {
+            // If auth has expired and the app is in the background,
+            // retry the library sync later since we need to be in the foreground to refresh auth
+            return Result.retry()
+        }
         beforeLibrarySync()
 
         val numAlbumsSynced = try {
