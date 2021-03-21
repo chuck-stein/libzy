@@ -58,10 +58,10 @@
     <string name="positive_emotion">Positive Emotion</string>
     <string name="negative_emotion">Negative Emotion</string>
     <string name="acoustic">Acoustic</string>
-    <string name="electronic">Electronic</string>
+    <string name="electric_electronic">Electric / Electronic</string>
     <string name="instrumental">Instrumental</string>
     <string name="vocal">Vocal</string>
-    <string name="ambient">Ambient</string>
+    <string name="chill">Chill</string>
     <string name="energetic">Energetic</string>
     <string name="danceable">Danceable</string>
     <string name="arrhythmic">Arrhythmic</string>
