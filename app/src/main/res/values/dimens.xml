@@ -7,6 +7,7 @@
     <dimen name="spacing_03">12dp</dimen>
     <dimen name="spacing_04">24dp</dimen>
     <dimen name="spacing_05">36dp</dimen>
+    <dimen name="spacing_06">70dp</dimen>
 
     <!-- Text size -->
     <dimen name="heading_text_size">36sp</dimen>

@@ -21,6 +21,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.fragment_results.albums_recycler as albumsRecycler
+import kotlinx.android.synthetic.main.fragment_results.back_button as backButton
 import kotlinx.android.synthetic.main.fragment_results.rating_bar as ratingBar
 import kotlinx.android.synthetic.main.fragment_results.rating_section as ratingSection
 import kotlinx.android.synthetic.main.fragment_results.results_header as resultsHeader
@@ -64,6 +65,7 @@ class ResultsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initAlbumsRecycler()
 
+        backButton.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
         ratingBar.setOnRatingBarChangeListener { _, _, _ -> resultsRatingPendingSubmission = true  }
 
         // TODO: move observer lambda to its own function

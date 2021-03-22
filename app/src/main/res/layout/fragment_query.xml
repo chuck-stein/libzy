@@ -10,7 +10,7 @@
         android:id="@+id/greeting_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/spacing_04"
+        android:layout_marginHorizontal="@dimen/spacing_06"
         android:layout_marginTop="@dimen/spacing_04"
         android:text="@string/default_greeting_text"
         android:textSize="@dimen/heading_text_size"

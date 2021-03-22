@@ -5,11 +5,25 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <ImageButton
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_03"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/back_button"
+        android:padding="@dimen/spacing_03"
+        android:src="@drawable/back_button"
+        app:layout_constraintBottom_toBottomOf="@id/results_header"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/results_header" />
+
     <TextView
         android:id="@+id/results_header"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_04"
+        android:layout_marginVertical="@dimen/spacing_04"
+        android:layout_marginHorizontal="@dimen/spacing_06"
         android:text="@string/results_header"
         android:textAlignment="center"
         android:textSize="@dimen/subheading_text_size"
