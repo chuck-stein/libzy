@@ -43,6 +43,12 @@ class LibrarySyncWorker(
     override suspend fun doWork(): Result {
         val accessTokenExpiration = spotifyPrefs.getInt(applicationContext.getString(R.string.spotify_token_expiration_key), 0)
         if (currentTimeSeconds() > accessTokenExpiration && !appInForeground()) {
+            // TODO: handle all cases:
+            //  - if auth is expired and we are in foreground, request auth (and handle failures)
+            //  - if auth is expired and we are in the initial scan, don't retry but fail if in background and request auth if in foreground
+            //  - ...maybe more cases...
+
+
             // If auth has expired and the app is in the background,
             // retry the library sync later since we need to be in the foreground to refresh auth
             return Result.retry()

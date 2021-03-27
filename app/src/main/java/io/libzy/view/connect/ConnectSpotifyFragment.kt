@@ -20,6 +20,7 @@ import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.util.extensions.spotifyConnected
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_connect_spotify.connect_spotify_button as connectSpotifyButton
 import kotlinx.android.synthetic.main.fragment_connect_spotify.scanning_library_screen as scanningLibraryScreen
@@ -85,14 +86,16 @@ class ConnectSpotifyFragment : Fragment() {
 
     private fun onConnectSpotifyButtonClicked() {
         val currentlyConnectedUserId = getSpotifyPrefs().getString(getString(R.string.spotify_user_id_key), null)
-        analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId)
+        analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId) // TODO: send more appropriate analytics event properties -- e.g. can have a connected user ID after grabbing auth, but their spotify isn't fully connected if the library scan hasn't completed (e.g. failed so we're back at this screen) -- maybe add a isSpotifyConnected property and change connectedUserId to authorizedUserId?
 
         lifecycleScope.launch {
             try {
-                spotifyAuthDispatcher.requestAuthorization()
+                // TODO: don't request authorization if we already have it
+                // TODO: somehow find out if we will get automatic auth or if the user needs to give permission via the dialog first -- if the former, then set withTimeout = true
+                spotifyAuthDispatcher.requestAuthorization(withTimeout = false)
             } catch (e: SpotifyAuthException) {
-                if (navArgs.networkErrorReceived) reportSpotifyError()
-                else reportSpotifyError(R.string.toast_connecting_spotify_account_failed)
+                if (navArgs.networkErrorReceived) reportSpotifyError(error = e)
+                else reportSpotifyError(R.string.toast_connecting_spotify_account_failed, e)
                 return@launch
             }
 
@@ -119,7 +122,8 @@ class ConnectSpotifyFragment : Fragment() {
         }
     }
 
-    private fun reportSpotifyError(errorMessageResId: Int = R.string.toast_spotify_generic_network_error) {
+    private fun reportSpotifyError(errorMessageResId: Int = R.string.toast_spotify_generic_network_error, error: Exception? = null) {
+        Timber.e(error, getString(errorMessageResId))
         Toast.makeText(requireContext(), errorMessageResId, Toast.LENGTH_LONG).show()
     }
 

@@ -24,6 +24,7 @@ class ConnectSpotifyViewModel @Inject constructor(private val appContext: Contex
         val alreadyScanning =
             appContext.getSharedPreferences(appContext.getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
                 .getBoolean(appContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
+        // TODO: instead of checking shared prefs here, check if the worker is running (then can maybe remove these shared prefs scanning state properties)
         if (alreadyScanning) return
 
         viewModelScope.launch {
