@@ -9,7 +9,7 @@ class UserProfileRepository @Inject constructor(
     private val spotifyApi: SpotifyApiDelegator
 ) {
 
-    suspend fun fetchDisplayName() = spotifyApi.getProfileInformation().displayName
+    suspend fun fetchDisplayName() = spotifyApi.fetchProfileInformation().displayName
 
     suspend fun getUserId() = spotifyApi.getUserId()
 }

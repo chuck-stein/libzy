@@ -35,16 +35,16 @@ class UserLibraryRepository @Inject constructor(
      */
     suspend fun syncLibraryData(): Int = withContext(Dispatchers.IO) {
         Timber.v("Fetching recently played tracks")
-        val recentlyPlayedTracks = spotifyApi.getPlayHistory().map { it.track }
+        val recentlyPlayedTracks = spotifyApi.fetchPlayHistory().map { it.track }
         Timber.v("Fetching top tracks -- short term")
-        val topTracksShortTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.SHORT_TERM)
+        val topTracksShortTerm = spotifyApi.fetchTopTracks(ClientPersonalizationApi.TimeRange.SHORT_TERM)
         Timber.v("Fetching top tracks -- medium term")
-        val topTracksMediumTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.MEDIUM_TERM)
+        val topTracksMediumTerm = spotifyApi.fetchTopTracks(ClientPersonalizationApi.TimeRange.MEDIUM_TERM)
         Timber.v("Fetching top tracks -- long term")
-        val topTracksLongTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.LONG_TERM)
+        val topTracksLongTerm = spotifyApi.fetchTopTracks(ClientPersonalizationApi.TimeRange.LONG_TERM)
 
         Timber.v("Fetching saved albums")
-        val albums = spotifyApi.getAllSavedAlbums().map { savedAlbum -> savedAlbum.album }
+        val albums = spotifyApi.fetchAllSavedAlbums().map { savedAlbum -> savedAlbum.album }
 
         val dbAlbums = albums.map { album ->
             toDbAlbum(
@@ -76,7 +76,7 @@ class UserLibraryRepository @Inject constructor(
         if (cachedAudioFeatures != null) return cachedAudioFeatures
 
         val albumTrackIds = album.tracks.items.map { it.id }
-        val audioFeaturesOfTracks = spotifyApi.getAudioFeaturesOfTracks(albumTrackIds).filterNotNull()
+        val audioFeaturesOfTracks = spotifyApi.fetchAudioFeaturesOfTracks(albumTrackIds).filterNotNull()
         if (audioFeaturesOfTracks.isEmpty()) return AudioFeaturesTuple(0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F)
 
         // TODO: handle NaN case if averaging an empty list
@@ -108,7 +108,7 @@ class UserLibraryRepository @Inject constructor(
                 albumsByArtists.getOrPut(artistId, ::mutableSetOf).add(album.id)
             }
         }
-        val artists = spotifyApi.getArtists(albumsByArtists.keys).filterNotNull()
+        val artists = spotifyApi.fetchArtists(albumsByArtists.keys).filterNotNull()
         for (artist in artists) {
             albumsByArtists[artist.id]?.let { albumsByArtist ->
                 for (albumId in albumsByArtist) {

@@ -74,31 +74,29 @@ class SpotifyApiDelegator @Inject constructor(
 
     suspend fun getUserId() = getApiDelegate().userId
 
-    // TODO: rename all these functions to "fetchXXXXX" instead of "getXXXXX"
-    suspend fun getPlayHistory(): List<PlayHistory> = doSafeApiCall {
+    suspend fun fetchPlayHistory(): List<PlayHistory> = doSafeApiCall {
         getApiDelegate().player.getRecentlyPlayed(API_ITEM_LIMIT_LOW).suspendQueue().items
     }
 
-    suspend fun getTopTracks(timeRange: ClientPersonalizationApi.TimeRange): List<Track> = doSafeApiCall {
+    suspend fun fetchTopTracks(timeRange: ClientPersonalizationApi.TimeRange): List<Track> = doSafeApiCall {
         getApiDelegate().personalization.getTopTracks(API_ITEM_LIMIT_LOW_MAX_PAGING, timeRange = timeRange).suspendQueueAll() // TODO: fix apparent JSON parsing issue w/ max paging?
     }
 
-    suspend fun getAllSavedAlbums(): List<SavedAlbum> = doSafeApiCall {
+    suspend fun fetchAllSavedAlbums(): List<SavedAlbum> = doSafeApiCall {
         getApiDelegate().library.getSavedAlbums().suspendQueueAll()
     }
 
-    suspend fun getArtists(ids: Collection<String>): List<Artist?> =
-        getBatchedItems(ids, getApiDelegate().artists::getArtists, API_ITEM_LIMIT_LOW)
+    suspend fun fetchArtists(ids: Collection<String>): List<Artist?> =
+        fetchBatchedItems(ids, getApiDelegate().artists::getArtists, API_ITEM_LIMIT_LOW)
 
-    // TODO: fix rate limiting
-    suspend fun getAudioFeaturesOfTracks(ids: Collection<String>): List<AudioFeatures?> =
-        getBatchedItems(ids, getApiDelegate().tracks::getAudioFeatures, API_ITEM_LIMIT_HIGH)
+    suspend fun fetchAudioFeaturesOfTracks(ids: Collection<String>): List<AudioFeatures?> =
+        fetchBatchedItems(ids, getApiDelegate().tracks::getAudioFeatures, API_ITEM_LIMIT_HIGH)
 
-    suspend fun getProfileInformation() = doSafeApiCall {
+    suspend fun fetchProfileInformation() = doSafeApiCall {
         getApiDelegate().users.getClientProfile().suspendQueue()
     }
 
-    // TODO: remove num503s param when the source of the issue is fixed
+    // TODO: remove num503s param when Spotify's issue with frequent 503s is resolved
     private suspend fun <T> doSafeApiCall(num503s: Int = 0, apiCall: suspend () -> T): T {
 
         suspend fun retryCallWithNewToken(): T {
@@ -126,7 +124,7 @@ class SpotifyApiDelegator @Inject constructor(
                 }
             } catch (e: SpotifyException.ParseException) {
                 Timber.w(e, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
-                // TODO: resolve this temporary workaround for Spotify sometimes sending 503 during library refresh
+                // this is a temporary workaround for Spotify sometimes sending 503 errors during library refresh
                 if (num503s < 10) doSafeApiCall(num503s + 1, apiCall)
                 else throw e
             } catch (e: SpotifyException.TimeoutException) {
@@ -137,7 +135,7 @@ class SpotifyApiDelegator @Inject constructor(
     }
 
     // TODO: delegate batching responsibility to SpotifyClientApi once adamint fixes bulk request bug w/ empty JSON (allegedly done as of 3.1.0?)
-    private suspend fun <T> getBatchedItems(
+    private suspend fun <T> fetchBatchedItems(
         ids: Collection<String>,
         endpoint: (Array<out String>) -> SpotifyRestAction<List<T?>>,
         batchSize: Int
