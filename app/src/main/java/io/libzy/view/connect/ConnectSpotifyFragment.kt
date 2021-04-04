@@ -55,7 +55,7 @@ class ConnectSpotifyFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // alert the user if they were directed to this fragment because of a network error
-        // TODO: only show this once, instead of after each configuration change (using ViewModel) -- OR don't worry about this if yet if we shouldn't always redirect to Connect Spotify screen fro errors that can still occur once getting past this screen
+        // TODO: only show this once, instead of after each configuration change
         if (navArgs.networkErrorReceived) reportSpotifyError()
 
         connectSpotifyButton.setOnClickListener { onConnectSpotifyButtonClicked() }
@@ -86,12 +86,13 @@ class ConnectSpotifyFragment : Fragment() {
 
     private fun onConnectSpotifyButtonClicked() {
         val currentlyConnectedUserId = getSpotifyPrefs().getString(getString(R.string.spotify_user_id_key), null)
-        analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId) // TODO: send more appropriate analytics event properties -- e.g. can have a connected user ID after grabbing auth, but their spotify isn't fully connected if the library scan hasn't completed (e.g. failed so we're back at this screen) -- maybe add a isSpotifyConnected property and change connectedUserId to authorizedUserId?
+        analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId)
 
         lifecycleScope.launch {
             try {
                 // TODO: don't request authorization if we already have it
-                // TODO: somehow find out if we will get automatic auth or if the user needs to give permission via the dialog first -- if the former, then set withTimeout = true
+                // TODO: somehow find out if we will get automatic auth or if the user needs to give permission
+                //  via the dialog first. If the former, then set withTimeout = true
                 spotifyAuthDispatcher.requestAuthorization(withTimeout = false)
             } catch (e: SpotifyAuthException) {
                 if (navArgs.networkErrorReceived) reportSpotifyError(error = e)
@@ -118,7 +119,7 @@ class ConnectSpotifyFragment : Fragment() {
             navigateToQueryFragment()
         } else if (libraryScanWorkState == WorkInfo.State.FAILED || libraryScanWorkState == WorkInfo.State.CANCELLED) {
             displayConnectSpotifyScreen()
-            reportSpotifyError(R.string.toast_library_scan_failed) // TODO: only show this once, instead of after each configuration change (using ViewModel)
+            reportSpotifyError(R.string.toast_library_scan_failed) // TODO: only show this once, instead of after each configuration change
         }
     }
 

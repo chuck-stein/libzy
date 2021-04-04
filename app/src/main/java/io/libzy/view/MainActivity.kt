@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     override fun onStart() {
         super.onStart()
-        initializeBackgroundAnimation() // TODO: does this need to be in onStart?
+        initializeBackgroundAnimation()
     }
 
     private fun initializeBackgroundAnimation() {

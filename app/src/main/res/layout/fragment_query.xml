@@ -366,7 +366,6 @@
 
     <!-- The views below are used by all slider questions -->
 
-    <!-- TODO: find a way to make slider take up remaining space -->
     <com.google.android.material.slider.Slider
         android:id="@+id/slider"
         android:layout_width="170dp"

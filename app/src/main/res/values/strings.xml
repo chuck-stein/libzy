@@ -75,5 +75,6 @@
     <string name="album_art_desc">album artwork</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
     <string name="results_rating_text">How are these suggestions?\n Your feedback is much appreciated!</string>
+    <string name="no_results_header">Sorry! No results were found for that query. Try saving more albums on Spotify or entering a different query.</string>
 
 </resources>

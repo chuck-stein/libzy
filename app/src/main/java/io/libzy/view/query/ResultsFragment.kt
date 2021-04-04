@@ -26,7 +26,6 @@ import kotlinx.android.synthetic.main.fragment_results.rating_bar as ratingBar
 import kotlinx.android.synthetic.main.fragment_results.rating_section as ratingSection
 import kotlinx.android.synthetic.main.fragment_results.results_header as resultsHeader
 
-// TODO: add back button to this screen
 class ResultsFragment : Fragment() {
 
     companion object {
@@ -72,9 +71,7 @@ class ResultsFragment : Fragment() {
         model.recommendedAlbums.observe(viewLifecycleOwner, { albums ->
             albumsRecyclerAdapter.albums = albums
             ratingSection.isVisible = albums.isNotEmpty()
-            if (albums.isEmpty()) resultsHeader.text =
-                "Sorry! No results were found for that query. Try saving more albums on Spotify or entering a different query."
-            // TODO: implement a better no results screen (w/ "try another query" button)
+            if (albums.isEmpty()) resultsHeader.text = getString(R.string.no_results_header)
         })
     }
 
@@ -89,13 +86,13 @@ class ResultsFragment : Fragment() {
         albumsRecycler.layoutManager = GridLayoutManager(
             requireContext(),
             3
-        ) // TODO: either don't hardcode spanCount or change this screen's UI to browse by artist, category, audio features, etc
+        ) // TODO: either don't hardcode spanCount, make it based on screen size
     }
 
     private fun onAlbumClicked(spotifyUri: String) {
+        analyticsDispatcher.sendPlayAlbumEvent(spotifyUri)
         try {
             model.playAlbum(spotifyUri)
-            analyticsDispatcher.sendPlayAlbumEvent(spotifyUri)
         } catch (e: Exception) {
             Timber.e(e, "Failed to play album remotely")
             Toast.makeText(requireContext(), R.string.toast_spotify_remote_failed, Toast.LENGTH_LONG).show()
@@ -104,7 +101,9 @@ class ResultsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        model.connectSpotifyAppRemote {} // TODO: make failure handler display a message over bottom "now playing" banner with an option to try reconnecting to Spotify remote (and if an album is tapped while remote is disabled, highlight this message)
+        model.connectSpotifyAppRemote {
+            // TODO: handle connection failure: https://chilipot.atlassian.net/browse/LIB-253
+        }
     }
 
     override fun onStop() {

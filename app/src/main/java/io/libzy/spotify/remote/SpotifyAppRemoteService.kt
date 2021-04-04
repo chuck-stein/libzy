@@ -12,7 +12,6 @@ import io.libzy.R
 import timber.log.Timber
 import javax.inject.Inject
 
-// TODO: test how I can play music when Spotify app is closed (when it gets closed both before and after SpotifyAppRemoteService's instantiation)
 class SpotifyAppRemoteService @Inject constructor(private val context: Context) {
 
     private val _playerState = MutableLiveData<PlayerState>()
@@ -67,7 +66,6 @@ class SpotifyAppRemoteService @Inject constructor(private val context: Context) 
     }
 
     fun playAlbum(spotifyUri: String) {
-        // TODO: clear the queue when the SDK supports that (a possible workaround for now is to check the player context, and while the type is "play_queue", skip to next track)
         requireRemote().playerApi.setShuffle(false)
         requireRemote().playerApi.play(spotifyUri)
     }

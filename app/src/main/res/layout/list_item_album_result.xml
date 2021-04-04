@@ -20,7 +20,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="@string/album_title_placeholder" />
-    <!-- TODO: support line wrap, max 2 lines (and maybe for artist name as well? -->
 
     <TextView
         android:id="@+id/album_artist"

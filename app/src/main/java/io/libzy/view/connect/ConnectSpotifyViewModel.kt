@@ -18,13 +18,14 @@ class ConnectSpotifyViewModel @Inject constructor(private val appContext: Contex
 
     private val workManager = WorkManager.getInstance(appContext)
 
-    val libraryScanWorkInfo: LiveData<List<WorkInfo>> = workManager.getWorkInfosByTagLiveData(LIBRARY_SCAN_WORK_TAG) // TODO: add a Transformations map to save the work id if !state.isFinished, and only send finished work if it was previously unfinished
+    val libraryScanWorkInfo: LiveData<List<WorkInfo>> = workManager.getWorkInfosByTagLiveData(LIBRARY_SCAN_WORK_TAG)
 
     fun scanLibrary() {
         val alreadyScanning =
             appContext.getSharedPreferences(appContext.getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
                 .getBoolean(appContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
-        // TODO: instead of checking shared prefs here, check if the worker is running (then can maybe remove these shared prefs scanning state properties)
+        // TODO: instead of checking shared prefs here, check if the worker is running
+        //  (then can we can probably remove these shared prefs scanning state properties)
         if (alreadyScanning) return
 
         viewModelScope.launch {
