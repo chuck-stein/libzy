@@ -61,7 +61,7 @@ class LibrarySyncWorker(
             }
         } catch (e: SpotifyException.BadRequestException) {
             e.statusCode.let { statusCode ->
-                // TODO: find a better way to always catch all server errors (may have to forgo the Spotify API wrapper library)
+                // TODO: find a better way to always catch all server errors
                 return if (!isInitialScan && isServerError(statusCode)) {
                     Timber.e(e, "Failed to sync Spotify library data due to a server error. Retrying...")
                     analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.RETRY, isInitialScan)

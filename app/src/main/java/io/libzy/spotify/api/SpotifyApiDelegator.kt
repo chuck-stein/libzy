@@ -79,7 +79,7 @@ class SpotifyApiDelegator @Inject constructor(
     }
 
     suspend fun fetchTopTracks(timeRange: ClientPersonalizationApi.TimeRange): List<Track> = doSafeApiCall {
-        getApiDelegate().personalization.getTopTracks(API_ITEM_LIMIT_LOW_MAX_PAGING, timeRange = timeRange).suspendQueueAll() // TODO: fix apparent JSON parsing issue w/ max paging?
+        getApiDelegate().personalization.getTopTracks(API_ITEM_LIMIT_LOW_MAX_PAGING, timeRange = timeRange).suspendQueueAll()
     }
 
     suspend fun fetchAllSavedAlbums(): List<SavedAlbum> = doSafeApiCall {
