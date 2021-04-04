@@ -6,7 +6,6 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:colorControlHighlight">@color/accent</item>
-        <!-- <item name="colorAccent">@color/offWhite</item> TODO: delete this if I don't need to go back -->
 
         <!-- Text -->
         <item name="fontFamily">@font/varela_round</item>
@@ -16,7 +15,6 @@
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowBackground">@drawable/bkg_gradient_anim</item>
-        <item name="android:windowActivityTransitions">true</item> <!-- TODO: delete this if unnecessary -->
 
         <!-- Styles -->
         <item name="android:textViewStyle">@style/TextView</item>

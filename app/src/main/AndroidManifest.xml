@@ -17,7 +17,8 @@
 
         <activity
             android:name=".view.MainActivity"
-            android:screenOrientation="portrait"> <!-- TODO: support landscape orientation -->
+            android:screenOrientation="userPortrait"
+            android:exported="true"> <!-- TODO: support landscape orientation -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

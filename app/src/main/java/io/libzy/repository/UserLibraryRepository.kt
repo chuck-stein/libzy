@@ -23,7 +23,8 @@ class UserLibraryRepository @Inject constructor(
     private val spotifyApi: SpotifyApiDelegator
 ) {
 
-    // TODO: should this initialization be done in a coroutine since it's using the db? why don't I get the warning that Room shouldn't be accessed from main thread?
+    // TODO: should this initialization be done in a coroutine since it's accessing the db?
+    //  Why is there no warning saying that Room shouldn't be accessed from main thread?
     val libraryAlbums = database.albumDao.getAllAlbums()
 
     /**
@@ -34,7 +35,7 @@ class UserLibraryRepository @Inject constructor(
      */
     suspend fun syncLibraryData(): Int = withContext(Dispatchers.IO) {
         Timber.v("Fetching recently played tracks")
-        val recentlyPlayedTracks = spotifyApi.getPlayHistory().map { it.track } // TODO: add an "after" time stamp so if they last played Spotify over a week ago it doesn't count as recently played?
+        val recentlyPlayedTracks = spotifyApi.getPlayHistory().map { it.track }
         Timber.v("Fetching top tracks -- short term")
         val topTracksShortTerm = spotifyApi.getTopTracks(ClientPersonalizationApi.TimeRange.SHORT_TERM)
         Timber.v("Fetching top tracks -- medium term")
@@ -61,7 +62,7 @@ class UserLibraryRepository @Inject constructor(
         fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums)
         
         Timber.v("Saving library data in local database")
-        database.runInTransaction { // TODO: ensure the nested transactions work well
+        database.runInTransaction { // TODO: ensure nested transactions work as expected
             database.albumDao.replaceAll(dbAlbums)
             database.genreDao.replaceAll(dbGenres)
             database.albumGenreJunctionDao.replaceAll(albumGenreJunctions)
@@ -75,11 +76,10 @@ class UserLibraryRepository @Inject constructor(
         if (cachedAudioFeatures != null) return cachedAudioFeatures
 
         val albumTrackIds = album.tracks.items.map { it.id }
-        // TODO: log a warning if there's a null entry? also check to ensure all rate-limited requests eventually go though
         val audioFeaturesOfTracks = spotifyApi.getAudioFeaturesOfTracks(albumTrackIds).filterNotNull()
         if (audioFeaturesOfTracks.isEmpty()) return AudioFeaturesTuple(0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F)
 
-        // TODO: check if SQLite can handle NaN case from average(), if there are somehow no audio features for an album? can that even happen?
+        // TODO: handle NaN case if averaging an empty list
         fun findAudioFeatureAverage(getSpecificAudioFeature: (AudioFeatures) -> Float): Float =
             audioFeaturesOfTracks.map(getSpecificAudioFeature).average().toFloat()
 
@@ -98,7 +98,6 @@ class UserLibraryRepository @Inject constructor(
         albumGenreJunctions: MutableSet<AlbumGenreJunction>,
         albums: List<Album>
     ) {
-        // TODO: use existing junction data class if it will be in the final schema?
         val albumsByArtists = mutableMapOf<String, MutableSet<String>>()
         for (album in albums) {
             for (genre in album.genres) {
@@ -122,7 +121,6 @@ class UserLibraryRepository @Inject constructor(
         }
     }
 
-    // TODO: move this to an extensions helper file? make it a function on List<Album>?
     private suspend fun toDbAlbum(
         spotifyAlbum: Album,
         recentlyPlayedTrackIds: List<String>,
@@ -131,7 +129,6 @@ class UserLibraryRepository @Inject constructor(
         topTrackIdsLongTerm: List<String>
     ): DbAlbum {
 
-        // TODO: determine whether an album counts as recent/favorite if ANY of its tracks are recent/favorite or AT LEAST HALF are recent/favorite
         fun albumTracksAreInList(album: Album, trackIds: List<String>) =
             album.tracks.items.any { trackIds.contains(it.id) }
 

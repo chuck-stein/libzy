@@ -1,10 +1,9 @@
-package io.libzy.database.dao
+package io.libzy.database
 
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.libzy.database.UserLibraryDatabase
 import io.libzy.database.entity.DbAlbum
 import io.libzy.database.entity.DbGenre
 import io.libzy.database.entity.junction.AlbumGenreJunction
@@ -12,13 +11,12 @@ import io.libzy.database.tuple.AudioFeaturesTuple
 import io.libzy.database.tuple.FamiliarityTuple
 import org.junit.After
 import org.junit.Before
-import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.IOException
 
-// TODO: make a base db test class that initializes the database and test data
+// TODO: add test methods
 @RunWith(AndroidJUnit4::class)
-class GenreDaoTest {
+class UserLibraryDatabaseTest {
 
     private lateinit var db: UserLibraryDatabase
 
@@ -84,10 +82,4 @@ class GenreDaoTest {
     fun closeDb() {
         db.close()
     }
-
-    @Test
-    fun testSomething() {
-        // TODO
-    }
-
 }

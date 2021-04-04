@@ -7,30 +7,24 @@ import io.libzy.model.Query
 import javax.inject.Inject
 import kotlin.math.abs
 
-// TODO: make this a singleton?
-// TODO: handle more edge cases, including different size/variety/type of library
+// TODO: make this a Dagger @Singleton?
 class RecommendationService @Inject constructor() {
 
     companion object {
-        private const val RELEVANCE_THRESHOLD = 0.5 // TODO: decide on best value
+        private const val RELEVANCE_THRESHOLD = 0.5
     }
 
-    // TODO: restructure recommendGenres/recommendAlbums so that they are LiveData properties of themselves, and update when query updates or libraryAlbums updates
-    // TODO: check this algorithm
-    // TODO: don't get libraryAlbums from param, but from userLibraryRepository directly
-    // TODO: make this a computed value rather than function
+    // TODO: clean up this logic and syntax
     fun recommendGenres(query: Query, libraryAlbums: List<LibraryAlbum>): List<String> {
         val genresToRelevance = mutableMapOf<String, Float>()
         val albumsToRelevance = calculateRelevanceOfAlbums(libraryAlbums, query)
         val relevantAlbums = libraryAlbums.filter { albumIsRelevant(it, albumsToRelevance) }
         for (album in relevantAlbums) {
-            albumsToRelevance[album].let { albumRelevance ->
-                if (albumRelevance != null) {
-                    for (genre in album.genres) {
-                        genresToRelevance[genre].let { genreRelevance ->
-                            if (genreRelevance == null) genresToRelevance[genre] = albumRelevance
-                            else genresToRelevance[genre] = genreRelevance + albumRelevance
-                        }
+            albumsToRelevance[album]?.let { albumRelevance ->
+                for (genre in album.genres) {
+                    genresToRelevance[genre].let { genreRelevance ->
+                        if (genreRelevance == null) genresToRelevance[genre] = albumRelevance
+                        else genresToRelevance[genre] = genreRelevance + albumRelevance
                     }
                 }
             }
@@ -38,9 +32,7 @@ class RecommendationService @Inject constructor() {
         return genresToRelevance.keys.sortedByDescending { genresToRelevance[it] }
     }
 
-    // TODO: improve output by presenting a mix of albums that best satisfy different parts of the query
     fun recommendAlbums(query: Query, libraryAlbums: List<LibraryAlbum>): List<AlbumResult> {
-        // TODO: ensure DbAlbum is hashable as map key because it's a data class
         val albumsToRelevance = calculateRelevanceOfAlbums(libraryAlbums, query)
         return libraryAlbums
             .sortedByDescending { albumsToRelevance[it] }
@@ -110,7 +102,6 @@ class RecommendationService @Inject constructor() {
         return relevanceScoresToBeAveraged.sum() / relevanceScoresToBeAveraged.size
     }
 
-    // TODO: make this more accurate by making related genres somewhat relevant, even if they weren't selected explicitly
     private fun calculateGenreRelevance(genres: Set<String>, preferredGenres: Set<String>) =
         genres.any { it in preferredGenres }
 

@@ -11,14 +11,4 @@ data class DbGenre(
     @PrimaryKey
     @ColumnInfo(name = "name_id")
     val nameId: String
-
-    // TODO: save this data
-//    @ColumnInfo(name = "is_favorite")
-//    val isFavorite: Boolean,
-//
-//    @ColumnInfo(name = "is_recent")
-//    val isRecent: Boolean
-
-    // TODO: add genre properties related to audio features -- determine what generalizations can be made from genres to specific features (or combinations of features)
-
 )

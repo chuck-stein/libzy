@@ -14,7 +14,6 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// TODO: handle the case where getApiDelegate() is called, starts initializing the client, then is called again from elsewhere -- don't want to start initializing again
 @Singleton
 class SpotifyApiDelegator @Inject constructor(
     private val context: Context,
@@ -29,7 +28,6 @@ class SpotifyApiDelegator @Inject constructor(
 
         // a limit to maximize the number of items available from Spotify's paging endpoints which use the lower max
         // limit -- this works by requesting the next page at the highest allowed offset
-        // TODO: verify this works and is the best approach
         private const val API_ITEM_LIMIT_LOW_MAX_PAGING = API_ITEM_LIMIT_LOW - 1
     }
 
@@ -40,6 +38,9 @@ class SpotifyApiDelegator @Inject constructor(
         createApiDelegateIfTokenAvailable()
     }
 
+    // TODO: make this thread-safe by holding a lock during execution,
+    //  in case it is called again while we are still creating the delegate,
+    //  as to note start creating a new one
     private suspend fun getApiDelegate() =
         _apiDelegate ?: createApiDelegateIfTokenAvailable() ?: createApiDelegateWithNewToken()
 

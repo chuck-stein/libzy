@@ -24,9 +24,6 @@ class AlbumsRecyclerAdapter(
     var albums = listOf<AlbumResult>()
         set(value) {
             field = value
-
-            // TODO: use DiffUtil if I'll ever need to update data set after filling the initial data (see Udacity course for details... does replacing loading placeholders count?)
-            // TODO: see if DiffUtil can prevent jump to beginning of album row if # results is the same because it was just loading screen being replaced (might be irrelevant if horizontal scrolling is prevented on loading screen or if actual data set just replaces album fields not album itself)
             notifyDataSetChanged()
         }
 
@@ -40,7 +37,6 @@ class AlbumsRecyclerAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val album = albums[position]
         with(holder) {
-            // TODO: look into Glide usage, error handling, null handling, other builder functions (e.g. centerCrop), etc.
             if (album.artworkUrl != null) glide.load(album.artworkUrl).placeholder(albumArtPlaceholder).into(albumArt)
             else if (albumArtPlaceholder != null) albumArt.setImageDrawable(albumArtPlaceholder)
             albumTitle.text = album.title
@@ -48,7 +44,6 @@ class AlbumsRecyclerAdapter(
 
             if (album.isPlaceholder) itemView.isClickable = false
             else if (album.spotifyUri != null) itemView.setOnClickListener { onAlbumClick(album.spotifyUri) }
-            // TODO: if it violates separation of concerns to have the spotify URI in the view data, then instead pass in a 2d genre/album position for the ViewModel to figure out the spotify URI from
         }
     }
 
