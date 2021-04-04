@@ -11,7 +11,6 @@ import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
 import io.libzy.repository.UserLibraryRepository
-import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.util.currentTimeSeconds
 import io.libzy.util.extensions.appInForeground
 import io.libzy.util.extensions.createNotificationTapAction
@@ -68,9 +67,7 @@ class LibrarySyncWorker(
                     Result.retry()
                 } else fail(e)
             }
-        } catch (e: SpotifyException) {
-            return fail(e)
-        } catch (e: SpotifyAuthException) {
+        } catch (e: Exception) {
             return fail(e)
         }
 
