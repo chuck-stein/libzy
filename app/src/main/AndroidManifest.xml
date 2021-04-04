@@ -6,10 +6,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <!-- TODO: set android:allowBackup="true" before release versions -->
     <application
         android:name=".LibzyApplication"
-        android:allowBackup="false"
+        android:allowBackup="true"
+        android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -17,8 +17,8 @@
 
         <activity
             android:name=".view.MainActivity"
-            android:screenOrientation="userPortrait"
-            android:exported="true"> <!-- TODO: support landscape orientation -->
+            android:exported="true"
+            android:screenOrientation="userPortrait"> <!-- TODO: support landscape orientation -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
