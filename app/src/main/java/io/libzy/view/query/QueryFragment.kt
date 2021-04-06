@@ -225,6 +225,7 @@ class QueryFragment : Fragment() {
 
     // TODO: fix lag on first call by using a loading screen + coroutine, or more efficient function
     private fun fillGenreChips(genreSuggestions: List<String>) {
+        genreChips.removeAllViews()
         for (genre in genreSuggestions.take(50)) { // TODO: remove magic number
             genreChips.addView(Chip(requireContext()).apply {
                 style(R.style.Chip)

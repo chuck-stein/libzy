@@ -116,7 +116,8 @@ class QueryResultsViewModel @Inject constructor(
     }
 
     val recommendedGenres = recommendationInput.map { (query, libraryAlbums) ->
-        recommendationService.recommendGenres(query, libraryAlbums)
+        // get recommended genres based on all non-genre parameters of the current query
+        recommendationService.recommendGenres(query.copy(genres = null), libraryAlbums)
     }
 
     // TODO: delete if unused
@@ -124,8 +125,8 @@ class QueryResultsViewModel @Inject constructor(
     val spotifyPlayerContext = spotifyAppRemoteService.playerContext
 
     fun updateSelectedGenres(genreOptions: List<String>) {
-        genres.let { previousGenres ->
-            if (previousGenres != null) genres = genreOptions.filter { previousGenres.contains(it) }.toSet()
+        genres?.let { previousGenres ->
+            genres = genreOptions.filter { previousGenres.contains(it) }.toSet()
         }
     }
 
