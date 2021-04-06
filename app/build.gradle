@@ -18,9 +18,6 @@ android {
         versionCode 1
         versionName "0.1.0"
 
-        // Uncomment this to support vectors if min sdk is < 21
-        // vectorDrawables.useSupportLibrary = true
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         kapt {
@@ -30,11 +27,23 @@ android {
         }
     }
 
+    signingConfigs {
+        def keystoreProperties = new Properties()
+        file('../signing/keys.properties').withInputStream { keystoreProperties.load(it) }
+        release {
+            storeFile file('../signing/libzy-android-keystore.jks')
+            storePassword keystoreProperties.getProperty('libzyStorePassword')
+            keyPassword keystoreProperties.getProperty('libzyKeyPassword')
+            keyAlias keystoreProperties.getProperty('libzyKeyAlias')
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
 
         debug {
