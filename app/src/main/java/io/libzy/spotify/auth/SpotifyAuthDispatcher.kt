@@ -38,7 +38,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
     private val pendingAuthCallbacks = mutableListOf<SpotifyAuthCallback>()
 
     private val onAuthComplete = object : SpotifyAuthCallback {
-        override fun onSuccess(accessToken: SpotifyAccessToken) {
+        override fun onSuccess(accessToken: LegacySpotifyAccessToken) {
             for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onSuccess(accessToken)
             pendingAuthCallbacks.clear()
         }
@@ -49,7 +49,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
         }
     }
 
-    suspend fun requestAuthorization(withTimeout: Boolean = true): SpotifyAccessToken = withContext(Dispatchers.IO) {
+    suspend fun requestAuthorization(withTimeout: Boolean = true): LegacySpotifyAccessToken = withContext(Dispatchers.IO) {
         val timeout = if (withTimeout) AUTH_TIMEOUT.seconds else Duration.INFINITE
         withTimeoutOrNull(timeout) {
             suspendCancellableCoroutine { continuation ->
@@ -61,7 +61,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
 
                     // initialize an auth callback to unsuspend the coroutine upon completion with either a token or exception
                     val spotifyAuthCallback = object : SpotifyAuthCallback {
-                        override fun onSuccess(accessToken: SpotifyAccessToken) {
+                        override fun onSuccess(accessToken: LegacySpotifyAccessToken) {
                             if (continuation.isActive) continuation.resume(accessToken)
                         }
 

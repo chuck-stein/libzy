@@ -84,21 +84,21 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
         if (requestCode == SPOTIFY_AUTH_REQUEST_CODE) {
             val response = AuthorizationClient.getResponse(resultCode, intent)
             when (response.type) {
-                TOKEN -> onSpotifyAuthSuccess(SpotifyAccessToken(response.accessToken, response.expiresIn))
+                TOKEN -> onSpotifyAuthSuccess(LegacySpotifyAccessToken(response.accessToken, response.expiresIn))
                 ERROR -> onSpotifyAuthFailure(response.error)
                 else -> onSpotifyAuthFailure("Authorization was prematurely cancelled")
             }
         }
     }
 
-    private fun onSpotifyAuthSuccess(accessToken: SpotifyAccessToken) {
+    private fun onSpotifyAuthSuccess(accessToken: LegacySpotifyAccessToken) {
         spotifyAuthCallback?.onSuccess(accessToken)
         saveAccessToken(accessToken)
         model.onNewSpotifySession()
         analyticsDispatcher.sendAuthorizeSpotifyConnectionEvent()
     }
 
-    private fun saveAccessToken(accessToken: SpotifyAccessToken) {
+    private fun saveAccessToken(accessToken: LegacySpotifyAccessToken) {
         getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE).edit {
             putString(getString(R.string.spotify_access_token_key), accessToken.token)
             putInt(getString(R.string.spotify_token_expiration_key), currentTimeSeconds() + accessToken.expiresIn)
