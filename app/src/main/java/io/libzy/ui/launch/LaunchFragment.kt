@@ -1,4 +1,4 @@
-package io.libzy.view.launch
+package io.libzy.ui.launch
 
 import android.os.Bundle
 import android.view.LayoutInflater

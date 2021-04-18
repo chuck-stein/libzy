@@ -1,9 +1,9 @@
 package io.libzy.analytics
 
 import io.libzy.model.Query.Familiarity
-import io.libzy.view.connect.ConnectSpotifyFragment
-import io.libzy.view.query.QueryFragment
-import io.libzy.view.query.ResultsFragment
+import io.libzy.ui.connect.ConnectSpotifyFragment
+import io.libzy.ui.query.QueryFragment
+import io.libzy.ui.query.ResultsFragment
 import io.libzy.work.LibrarySyncWorker
 
 /**

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/launchFragment"
-        android:name="io.libzy.view.launch.LaunchFragment"
+        android:name="io.libzy.ui.launch.LaunchFragment"
         android:label="fragment_launch"
         tools:layout="@layout/fragment_launch">
         <action
@@ -27,7 +27,7 @@
     </fragment>
     <fragment
         android:id="@+id/connectSpotifyFragment"
-        android:name="io.libzy.view.connect.ConnectSpotifyFragment"
+        android:name="io.libzy.ui.connect.ConnectSpotifyFragment"
         android:label="fragment_connect_spotify"
         tools:layout="@layout/fragment_connect_spotify">
         <argument
@@ -42,7 +42,7 @@
     </fragment>
     <fragment
         android:id="@+id/queryFragment"
-        android:name="io.libzy.view.query.QueryFragment"
+        android:name="io.libzy.ui.query.QueryFragment"
         android:label="fragment_query"
         tools:layout="@layout/fragment_query" >
         <argument
@@ -64,7 +64,7 @@
     </fragment>
     <fragment
         android:id="@+id/resultsFragment"
-        android:name="io.libzy.view.query.ResultsFragment"
+        android:name="io.libzy.ui.query.ResultsFragment"
         android:label="ResultsFragment" >
         <action
             android:id="@+id/action_resultsFragment_to_connectSpotifyFragment"
