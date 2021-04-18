@@ -225,7 +225,9 @@ class QueryFragment : Fragment() {
 
     // TODO: fix lag on first call by using a loading screen + coroutine, or more efficient function
     private fun fillGenreChips(genreSuggestions: List<String>) {
+        saveSelectedGenres() // TODO: doesn't seem to work for some reason
         genreChips.removeAllViews()
+
         for (genre in genreSuggestions.take(50)) { // TODO: remove magic number
             genreChips.addView(Chip(requireContext()).apply {
                 style(R.style.Chip)
@@ -251,6 +253,10 @@ class QueryFragment : Fragment() {
     }
 
     private fun getGenreOptions() = genreChips.children.filterIsInstance<Chip>().toList()
+
+    private fun saveSelectedGenres() {
+        model.genres = getGenreOptions().filter { it.isChecked }.map { it.text.toString() }.toSet().ifEmpty { null }
+    }
 
     private fun onBackPressed() {
         if (currQuestionIndex > 0) changeQuestion(currQuestionIndex - 1)
@@ -305,15 +311,7 @@ class QueryFragment : Fragment() {
             valenceQuestion -> model.valence = slider.value
             energyQuestion -> model.energy = slider.value
             danceabilityQuestion -> model.danceability = slider.value
-            genreQuestion -> {
-                val checkedGenreChips = getGenreOptions().filter { it.isChecked }
-                model.genres =
-                    if (checkedGenreChips.isNotEmpty()) {
-                        checkedGenreChips.map { it.text.toString() }.toSet()
-                    } else {
-                        null
-                    }
-            }
+            genreQuestion -> saveSelectedGenres()
         }
         advanceQuestion()
     }
