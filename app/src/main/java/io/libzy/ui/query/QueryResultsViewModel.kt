@@ -1,4 +1,4 @@
-package io.libzy.view.query
+package io.libzy.ui.query
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

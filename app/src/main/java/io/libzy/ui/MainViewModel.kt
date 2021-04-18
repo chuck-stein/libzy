@@ -1,4 +1,4 @@
-package io.libzy.view
+package io.libzy.ui
 
 import android.content.Context
 import androidx.core.content.edit
