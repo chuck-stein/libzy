@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
-import io.libzy.view.MainViewModel
-import io.libzy.view.connect.ConnectSpotifyViewModel
-import io.libzy.view.query.QueryResultsViewModel
+import io.libzy.ui.MainViewModel
+import io.libzy.ui.connect.ConnectSpotifyViewModel
+import io.libzy.ui.query.QueryResultsViewModel
 
 @Module
 abstract class ViewModelModule {

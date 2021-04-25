@@ -1,4 +1,4 @@
-package io.libzy.view.connect
+package io.libzy.ui.connect
 
 import android.content.Context
 import androidx.lifecycle.LiveData

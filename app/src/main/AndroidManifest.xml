@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".view.MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true"
             android:screenOrientation="userPortrait"> <!-- TODO: support landscape orientation -->
             <intent-filter>

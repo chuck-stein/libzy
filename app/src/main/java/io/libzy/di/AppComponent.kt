@@ -5,10 +5,10 @@ import dagger.BindsInstance
 import dagger.Component
 import io.libzy.LibzyApplication
 import io.libzy.di.viewmodel.ViewModelModule
-import io.libzy.view.MainActivity
-import io.libzy.view.connect.ConnectSpotifyFragment
-import io.libzy.view.query.QueryFragment
-import io.libzy.view.query.ResultsFragment
+import io.libzy.ui.MainActivity
+import io.libzy.ui.connect.ConnectSpotifyFragment
+import io.libzy.ui.query.QueryFragment
+import io.libzy.ui.query.ResultsFragment
 import javax.inject.Singleton
 
 @Singleton
