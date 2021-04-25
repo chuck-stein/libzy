@@ -342,4 +342,9 @@ class QueryFragment : Fragment() {
         model.instrumental = false
         advanceQuestion()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        questionViews = emptyList()
+    }
 }
