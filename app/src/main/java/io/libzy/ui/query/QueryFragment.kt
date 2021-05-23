@@ -225,7 +225,14 @@ class QueryFragment : Fragment() {
 
     // TODO: fix lag on first call by using a loading screen + coroutine, or more efficient function
     private fun fillGenreChips(genreSuggestions: List<String>) {
-        saveSelectedGenres() // TODO: doesn't seem to work for some reason
+        if (genreChipsScrollView.isLayoutRequested) {
+            // Do not fill the genre chip scroll view while it still needs a layout,
+            // as we may not be done handling the last fillGenreChips call, which requires a layout to complete.
+            genreChipsScrollView.doOnLayout { fillGenreChips(genreSuggestions) }
+            return
+        }
+
+        saveSelectedGenres()
         genreChips.removeAllViews()
 
         for (genre in genreSuggestions.take(50)) { // TODO: remove magic number
@@ -250,6 +257,7 @@ class QueryFragment : Fragment() {
                 chip.isChecked = model.genres?.contains(chip.text) ?: false
             }
         }
+        genreChipsScrollView.requestLayout()
     }
 
     private fun getGenreOptions() = genreChips.children.filterIsInstance<Chip>().toList()

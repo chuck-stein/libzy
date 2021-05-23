@@ -17,7 +17,9 @@ class RecommendationService @Inject constructor() {
     // TODO: clean up this logic and syntax
     fun recommendGenres(query: Query, libraryAlbums: List<LibraryAlbum>): List<String> {
         val genresToRelevance = mutableMapOf<String, Float>()
-        val albumsToRelevance = calculateRelevanceOfAlbums(libraryAlbums, query)
+
+        // calculate album relevance to recommend genres based on all non-genre parameters of the given query
+        val albumsToRelevance = calculateRelevanceOfAlbums(libraryAlbums, query.copy(genres = null))
         val relevantAlbums = libraryAlbums.filter { albumIsRelevant(it, albumsToRelevance) }
         for (album in relevantAlbums) {
             albumsToRelevance[album]?.let { albumRelevance ->

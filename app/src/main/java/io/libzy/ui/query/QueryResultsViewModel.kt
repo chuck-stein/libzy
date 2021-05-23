@@ -127,8 +127,7 @@ class QueryResultsViewModel @Inject constructor(
     }
 
     val recommendedGenres = recommendationInput.map { (query, libraryAlbums) ->
-        // get recommended genres based on all non-genre parameters of the current query
-        recommendationService.recommendGenres(query.copy(genres = null), libraryAlbums)
+        recommendationService.recommendGenres(query, libraryAlbums)
     }
 
     // TODO: delete if unused
