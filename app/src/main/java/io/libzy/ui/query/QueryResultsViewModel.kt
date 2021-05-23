@@ -11,7 +11,6 @@ import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
 import io.libzy.util.CombinedLiveData
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -94,16 +93,6 @@ class QueryResultsViewModel @Inject constructor(
         checkNotNull(queryCopyParameter) { "Query#copy does not have a parameter called ${queryProperty.name}" }
 
         queryLiveData.value = queryToCopy::copy.callBy(mapOf(queryCopyParameter to newValue))
-    }
-
-    // TODO: delete -- just for debugging
-    init {
-        viewModelScope.launch {
-            while (true) {
-                queryLiveData.value = queryLiveData.value?.copy() ?: defaultQuery
-                delay(2000)
-            }
-        }
     }
 
     /**
