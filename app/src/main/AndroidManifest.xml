@@ -45,4 +45,10 @@
             tools:node="merge" />
     </application>
 
+    <queries>
+        <intent>
+            <action android:name="com.spotify.sso.action.START_AUTH_FLOW" />
+        </intent>
+    </queries>
+
 </manifest>
