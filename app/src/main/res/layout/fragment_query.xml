@@ -24,6 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/spacing_04"
         android:layout_marginTop="@dimen/spacing_04"
+        android:breakStrategy="balanced"
         android:text="@string/query_instructions_text"
         android:textSize="@dimen/subheading_text_size"
         app:layout_constraintEnd_toEndOf="parent"
@@ -368,7 +369,7 @@
 
     <com.google.android.material.slider.Slider
         android:id="@+id/slider"
-        android:layout_width="170dp"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:value="0.5"
         app:labelBehavior="gone"
