@@ -16,6 +16,7 @@ import androidx.activity.addCallback
 import androidx.constraintlayout.widget.Group
 import androidx.core.view.children
 import androidx.core.view.doOnLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -225,7 +226,7 @@ class QueryFragment : Fragment() {
 
     // TODO: fix lag on first call by using a loading screen + coroutine, or more efficient function
     private fun fillGenreChips(genreSuggestions: List<String>) {
-        if (genreChipsScrollView.isLayoutRequested) {
+        if (genreChipsScrollView.isLayoutRequested && genreChipsScrollView.isVisible) {
             // Do not fill the genre chip scroll view while it still needs a layout,
             // as we may not be done handling the last fillGenreChips call, which requires a layout to complete.
             genreChipsScrollView.doOnLayout { fillGenreChips(genreSuggestions) }
@@ -242,22 +243,21 @@ class QueryFragment : Fragment() {
             })
         }
 
-        fun chipIsOffScreen(chipIndex: Int) =
-            chipIndex > 0 && genreChips.getChildAt(chipIndex).bottom > genreChipsScrollView.height
-
+//        fun chipIsOffScreen(chipIndex: Int) =
+//            chipIndex > 0 && genreChips.getChildAt(chipIndex).bottom > genreChipsScrollView.height
+//
         genreChipsScrollView.doOnLayout {
-            // remove any chips beyond the bottom of the scroll view window, so they fill up the whole space but no more
-            var chipIndex = genreChips.childCount - 1
-            while (chipIsOffScreen(chipIndex)) {
-                genreChips.removeViewAt(chipIndex)
-                chipIndex--
-            }
+//            // remove any chips beyond the bottom of the scroll view window, so they fill up the whole space but no more
+//            var chipIndex = genreChips.childCount - 1
+//            while (chipIsOffScreen(chipIndex)) {
+//                genreChips.removeViewAt(chipIndex)
+//                chipIndex--
+//            }
             model.updateSelectedGenres(getGenreOptions().map { it.text.toString() })
             for (chip in getGenreOptions()) {
                 chip.isChecked = model.genres?.contains(chip.text) ?: false
             }
         }
-        genreChipsScrollView.requestLayout()
     }
 
     private fun getGenreOptions() = genreChips.children.filterIsInstance<Chip>().toList()
