@@ -1,20 +1,21 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'androidx.navigation.safeargs'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlinx-serialization'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
-
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'androidx.navigation.safeargs'
+    id 'kotlin-kapt'
+    id 'kotlinx-serialization'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
+    id 'org.jetbrains.kotlin.android'
+}
 android {
-    compileSdkVersion 30
-    buildToolsVersion "29.0.3"
+    compileSdk 30
 
     defaultConfig {
         applicationId "io.libzy"
-        minSdkVersion 26
-        targetSdkVersion 30
+        minSdk 26
+        targetSdk 30
         versionCode 3
         versionName "0.1.2"
 
@@ -73,8 +74,18 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = '1.8'
+        useIR = true
         freeCompilerArgs = ["-XXLanguage:+NewInference", "-Xopt-in=kotlin.time.ExperimentalTime"]
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerVersion kotlin_version
     }
 
     packagingOptions {
@@ -97,9 +108,6 @@ repositories {
     mavenCentral()
     google() // For Glide
     jcenter() // For adamint Spotify API wrapper
-    flatDir {
-        dirs 'libs'
-    }
 }
 
 dependencies {
