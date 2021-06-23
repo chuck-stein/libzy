@@ -7,8 +7,8 @@ buildscript {
         navigation_version = '2.3.5'
     }
     repositories {
+        mavenCentral()
         google()
-        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.1.0-alpha02'
