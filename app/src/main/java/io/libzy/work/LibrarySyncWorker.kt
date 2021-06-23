@@ -15,6 +15,7 @@ import io.libzy.util.currentTimeSeconds
 import io.libzy.util.extensions.appInForeground
 import io.libzy.util.extensions.createNotificationTapAction
 import timber.log.Timber
+import kotlin.time.DurationUnit
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
@@ -97,7 +98,7 @@ class LibrarySyncWorker(
             LibrarySyncResult.SUCCESS,
             isInitialScan,
             numAlbumsSynced.value,
-            numAlbumsSynced.duration.inSeconds
+            numAlbumsSynced.duration.toDouble(DurationUnit.SECONDS)
         )
     }
 
