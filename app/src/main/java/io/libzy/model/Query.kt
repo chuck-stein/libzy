@@ -1,7 +1,7 @@
 package io.libzy.model
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * Represents a user's mood / listening preferences, as a collection of desired album properties.
