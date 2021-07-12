@@ -1,14 +1,14 @@
-package io.libzy.database
+package io.libzy.persistence.database
 
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.libzy.database.entity.DbAlbum
-import io.libzy.database.entity.DbGenre
-import io.libzy.database.entity.junction.AlbumGenreJunction
-import io.libzy.database.tuple.AudioFeaturesTuple
-import io.libzy.database.tuple.FamiliarityTuple
+import io.libzy.persistence.database.entity.DbAlbum
+import io.libzy.persistence.database.entity.DbGenre
+import io.libzy.persistence.database.entity.junction.AlbumGenreJunction
+import io.libzy.persistence.database.tuple.AudioFeaturesTuple
+import io.libzy.persistence.database.tuple.FamiliarityTuple
 import org.junit.After
 import org.junit.Before
 import org.junit.runner.RunWith

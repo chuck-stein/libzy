@@ -1,4 +1,4 @@
-package io.libzy.database.dao
+package io.libzy.persistence.database.dao
 
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy

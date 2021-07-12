@@ -15,6 +15,8 @@ import com.adamratzman.spotify.SpotifyException
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.Screen
 import io.libzy.util.appInForeground
@@ -41,13 +43,10 @@ class LibrarySyncWorker(
     }
 
     private val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
-    private val spotifyPrefs = applicationContext.getSharedPreferences(
-        applicationContext.getString(R.string.spotify_prefs_name),
-        Context.MODE_PRIVATE
-    )
+    private val sharedPrefs = applicationContext.getSharedPrefs()
 
     override suspend fun doWork(): Result {
-        val accessTokenExpiration = spotifyPrefs.getInt(applicationContext.getString(R.string.spotify_token_expiration_key), 0)
+        val accessTokenExpiration = sharedPrefs.getInt(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, 0)
         if (currentTimeSeconds() > accessTokenExpiration && !appInForeground()) {
             // If auth has expired and the app is in the background,
             // retry the library sync later since we need to be in the foreground to refresh auth
@@ -81,17 +80,17 @@ class LibrarySyncWorker(
 
         if (isInitialScan) {
             setForeground(createInitialScanForegroundInfo())
-            spotifyPrefs.edit {
-                putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), true)
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, true)
             }
         }
     }
 
     private fun afterLibrarySync(numAlbumsSynced: TimedValue<Int>) {
         if (isInitialScan) {
-            spotifyPrefs.edit {
-                putBoolean(applicationContext.getString(R.string.spotify_connected_key), true)
-                putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, true)
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, false)
             }
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_succeeded_notification_title,
@@ -114,8 +113,8 @@ class LibrarySyncWorker(
         Timber.e(exception, "Failed to sync Spotify library data")
         analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialScan)
         if (isInitialScan) {
-            spotifyPrefs.edit {
-                putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, false)
             }
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_failed_notification_title,

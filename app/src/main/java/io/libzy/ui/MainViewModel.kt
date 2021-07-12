@@ -4,8 +4,9 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserProfileRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -13,8 +14,10 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
-    private val context: Context
+    context: Context
 ) : ViewModel() {
+
+    private val sharedPrefs = context.getSharedPrefs()
 
     /**
      * Handle a new Spotify session starting.
@@ -35,12 +38,8 @@ class MainViewModel @Inject constructor(
     }
 
     private fun saveUserId(userId: String) {
-        val spotifyPrefs = context.getSharedPreferences(
-            context.getString(R.string.spotify_prefs_name),
-            Context.MODE_PRIVATE
-        )
-        spotifyPrefs.edit {
-            putString(context.getString(R.string.spotify_user_id_key), userId)
+        sharedPrefs.edit {
+            putString(SharedPrefKeys.SPOTIFY_USER_ID, userId)
         }
     }
 }

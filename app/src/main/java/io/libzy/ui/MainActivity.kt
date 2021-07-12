@@ -1,6 +1,5 @@
 package io.libzy.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,6 +17,8 @@ import com.spotify.sdk.android.auth.AuthorizationResponse.Type.TOKEN
 import io.libzy.LibzyApplication
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.spotify.auth.SpotifyAccessToken
 import io.libzy.spotify.auth.SpotifyAuthCallback
 import io.libzy.spotify.auth.SpotifyAuthClientProxy
@@ -92,9 +93,9 @@ class MainActivity : ComponentActivity(), SpotifyAuthClientProxy {
     }
 
     private fun saveAccessToken(accessToken: SpotifyAccessToken) {
-        getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE).edit {
-            putString(getString(R.string.spotify_access_token_key), accessToken.token)
-            putInt(getString(R.string.spotify_token_expiration_key), currentTimeSeconds() + accessToken.expiresIn)
+        getSharedPrefs().edit {
+            putString(SharedPrefKeys.SPOTIFY_AUTH_TOKEN, accessToken.token)
+            putInt(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, currentTimeSeconds() + accessToken.expiresIn)
         }
     }
 

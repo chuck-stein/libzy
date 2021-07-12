@@ -1,11 +1,20 @@
 package io.libzy.spotify.api
 
 import android.content.Context
-import android.content.SharedPreferences
-import com.adamratzman.spotify.*
+import com.adamratzman.spotify.SpotifyApiOptionsBuilder
+import com.adamratzman.spotify.SpotifyClientApi
+import com.adamratzman.spotify.SpotifyClientApiBuilder
+import com.adamratzman.spotify.SpotifyException
+import com.adamratzman.spotify.SpotifyRestAction
+import com.adamratzman.spotify.SpotifyUserAuthorizationBuilder
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
-import com.adamratzman.spotify.models.*
-import io.libzy.R
+import com.adamratzman.spotify.models.Artist
+import com.adamratzman.spotify.models.AudioFeatures
+import com.adamratzman.spotify.models.PlayHistory
+import com.adamratzman.spotify.models.SavedAlbum
+import com.adamratzman.spotify.models.Track
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.util.currentTimeSeconds
 import kotlinx.coroutines.Dispatchers
@@ -45,16 +54,12 @@ class SpotifyApiDelegator @Inject constructor(
         _apiDelegate ?: createApiDelegateIfTokenAvailable() ?: createApiDelegateWithNewToken()
 
     private fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
-        val spotifyPrefs: SharedPreferences = context.getSharedPreferences(
-            context.getString(R.string.spotify_prefs_name),
-            Context.MODE_PRIVATE
-        )
-        val accessTokenKey: String = context.getString(R.string.spotify_access_token_key)
-        val expirationKey: String = context.getString(R.string.spotify_token_expiration_key)
-        val savedAccessToken = spotifyPrefs.getString(accessTokenKey, null)
-        val savedTokenExpiration = spotifyPrefs.getInt(expirationKey, 0)
-        if (savedAccessToken != null && currentTimeSeconds() < savedTokenExpiration) {
-            _apiDelegate = createApiDelegate(savedAccessToken)
+        with(context.getSharedPrefs()) {
+            val savedAccessToken = getString(SharedPrefKeys.SPOTIFY_AUTH_TOKEN, null)
+            val savedTokenExpiration = getInt(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, 0)
+            if (savedAccessToken != null && currentTimeSeconds() < savedTokenExpiration) {
+                _apiDelegate = createApiDelegate(savedAccessToken)
+            }
         }
         return _apiDelegate
     }

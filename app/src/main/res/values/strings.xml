@@ -1,8 +1,5 @@
 <resources>
 
-    <!-- Application properties -->
-    <string name="spotify_prefs_name" translatable="false">spotify_preferences</string>
-
     <!-- Spotify SDK -->
     <string name="spotify_client_id" translatable="false">058c796e8b3740d190136f2ebc4d64ab</string>
     <string name="spotify_auth_redirect_uri" translatable="false">io.libzy://spotify-auth</string>
@@ -10,13 +7,6 @@
     <!-- Amplitude SDK -->
     <string name="amplitude_api_key_dev" translatable="false">f1201f6fa3f87ba14fca4e448f3d40b9</string>
     <string name="amplitude_api_key_prod" translatable="false">5257667ce56af0dcc0d10101d455d4d3</string>
-
-    <!-- SharedPreferences keys -->
-    <string name="spotify_connected_key" translatable="false">spotify.connected</string>
-    <string name="spotify_user_id_key" translatable="false">spotify.user.id</string>
-    <string name="spotify_access_token_key" translatable="false">"spotify.token"</string>
-    <string name="spotify_token_expiration_key" translatable="false">spotify.token.expiration</string>
-    <string name="spotify_initial_scan_in_progress_key" translatable="false">spotify.scanning</string>
 
     <!-- Room DB -->
     <string name="database_file_name" translatable="false">spotify_library</string>

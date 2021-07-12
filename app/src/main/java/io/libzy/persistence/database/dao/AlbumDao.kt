@@ -1,11 +1,11 @@
-package io.libzy.database.dao
+package io.libzy.persistence.database.dao
 
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
-import io.libzy.database.entity.DbAlbum
-import io.libzy.database.tuple.AudioFeaturesTuple
-import io.libzy.database.tuple.LibraryAlbum
+import io.libzy.persistence.database.entity.DbAlbum
+import io.libzy.persistence.database.tuple.AudioFeaturesTuple
+import io.libzy.persistence.database.tuple.LibraryAlbum
 import kotlinx.coroutines.flow.Flow
 
 @Dao

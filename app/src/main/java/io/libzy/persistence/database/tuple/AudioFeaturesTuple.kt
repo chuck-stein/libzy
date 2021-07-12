@@ -1,4 +1,4 @@
-package io.libzy.database.tuple
+package io.libzy.persistence.database.tuple
 
 import androidx.room.ColumnInfo
 

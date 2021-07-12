@@ -1,4 +1,4 @@
-package io.libzy.database.entity.junction
+package io.libzy.persistence.database.entity.junction
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

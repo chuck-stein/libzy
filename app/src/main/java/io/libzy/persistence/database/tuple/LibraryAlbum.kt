@@ -1,11 +1,11 @@
-package io.libzy.database.tuple
+package io.libzy.persistence.database.tuple
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
-import io.libzy.database.entity.DbGenre
-import io.libzy.database.entity.junction.AlbumGenreJunction
+import io.libzy.persistence.database.entity.DbGenre
+import io.libzy.persistence.database.entity.junction.AlbumGenreJunction
 
 // TODO: remove any unused columns
 data class LibraryAlbum(

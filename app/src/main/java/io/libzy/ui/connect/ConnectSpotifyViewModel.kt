@@ -8,9 +8,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.database.SharedPrefKeys
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.ui.common.ScreenViewModel
@@ -32,8 +32,7 @@ class ConnectSpotifyViewModel @Inject constructor(
 
     private val workManager = WorkManager.getInstance(appContext)
 
-    private val spotifyPrefs =
-        appContext.getSharedPreferences(appContext.getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
+    private val sharedPrefs = appContext.getSharedPrefs()
 
     init {
         viewModelScope.launch {
@@ -64,7 +63,7 @@ class ConnectSpotifyViewModel @Inject constructor(
     }
 
     fun onConnectSpotifyClick() {
-        val currentlyConnectedUserId = spotifyPrefs.getString(SharedPrefKeys.SPOTIFY_USER_ID, null)
+        val currentlyConnectedUserId = sharedPrefs.getString(SharedPrefKeys.SPOTIFY_USER_ID, null)
         analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId)
 
         if (spotifyConnected()) {
@@ -100,7 +99,7 @@ class ConnectSpotifyViewModel @Inject constructor(
         }
     }
 
-    private fun spotifyConnected() = spotifyPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
+    private fun spotifyConnected() = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 
     companion object {
         private const val LIBRARY_SCAN_WORK_TAG = "initial_library_scan"

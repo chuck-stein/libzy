@@ -13,6 +13,8 @@ import io.libzy.analytics.CrashlyticsTree
 import io.libzy.config.ApiKeys
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
 import kotlinx.coroutines.CoroutineScope
@@ -119,14 +121,13 @@ class LibzyApplication : Application(), Configuration.Provider {
             }
         }
 
-        val sharedPrefs = getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
-        val spotifyConnectedKey = getString(R.string.spotify_connected_key)
-        val spotifyConnected = sharedPrefs.getBoolean(spotifyConnectedKey, false)
+        val sharedPrefs = getSharedPrefs()
+        val spotifyConnected = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 
         if (spotifyConnected) enqueueWorkRequest()
         else {
             sharedPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
-                if (key == spotifyConnectedKey && prefs.getBoolean(key, false)) {
+                if (key == SharedPrefKeys.SPOTIFY_CONNECTED && prefs.getBoolean(key, false)) {
 
                     // Spotify was just connected, meaning the first library scan just completed,
                     // so schedule the next one in 15 minutes, which will recur every subsequent 15 minutes

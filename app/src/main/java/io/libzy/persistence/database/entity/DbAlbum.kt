@@ -1,11 +1,11 @@
-package io.libzy.database.entity
+package io.libzy.persistence.database.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import io.libzy.database.tuple.AudioFeaturesTuple
-import io.libzy.database.tuple.FamiliarityTuple
+import io.libzy.persistence.database.tuple.AudioFeaturesTuple
+import io.libzy.persistence.database.tuple.FamiliarityTuple
 
 @Entity(tableName = "album")
 data class DbAlbum(
