@@ -43,8 +43,8 @@ import io.libzy.analytics.AnalyticsConstants.UserProperties.DISPLAY_NAME
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRARY
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTED
-import io.libzy.model.AlbumResult
-import io.libzy.model.Query
+import io.libzy.domain.AlbumResult
+import io.libzy.domain.Query
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.util.toString
 import kotlinx.coroutines.GlobalScope

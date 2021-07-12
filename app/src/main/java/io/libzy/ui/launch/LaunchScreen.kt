@@ -19,7 +19,7 @@ import io.libzy.ui.LibzyContent
 import io.libzy.ui.Screen
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.theme.LibzyIconTheme
-import io.libzy.util.extensions.navigate
+import io.libzy.util.navigate
 
 /**
  * A **stateful** screen that displays the app logo while its ViewModel loads content necessary to use the app,

@@ -40,8 +40,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
-import io.libzy.model.AlbumResult
-import io.libzy.model.Query
+import io.libzy.domain.AlbumResult
+import io.libzy.domain.Query
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler

@@ -1,4 +1,4 @@
-package io.libzy.model
+package io.libzy.domain
 
 data class AlbumResult(
     val title: String,

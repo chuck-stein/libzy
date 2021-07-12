@@ -2,8 +2,8 @@ package io.libzy.recommendation
 
 import io.libzy.database.tuple.FamiliarityTuple
 import io.libzy.database.tuple.LibraryAlbum
-import io.libzy.model.AlbumResult
-import io.libzy.model.Query
+import io.libzy.domain.AlbumResult
+import io.libzy.domain.Query
 import javax.inject.Inject
 import kotlin.math.abs
 

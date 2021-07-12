@@ -2,7 +2,7 @@ package io.libzy.ui.query
 
 import androidx.lifecycle.viewModelScope
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.model.Query
+import io.libzy.domain.Query
 import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.common.ScreenViewModel

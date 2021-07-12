@@ -15,7 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
-import io.libzy.model.Query
+import io.libzy.domain.Query
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.launch.LaunchScreen
 import io.libzy.ui.query.QueryScreen
@@ -88,7 +88,7 @@ sealed class Screen {
         const val QUERY_ARG = "query"
         override val route = "results"
 
-        fun NavController.navigateToResultsScreen(query: io.libzy.model.Query) {
+        fun NavController.navigateToResultsScreen(query: io.libzy.domain.Query) {
             // TODO: replace this navigation arg (and its counterpart above) with a shared VM scoped to nested nav graph
             currentBackStackEntry?.arguments = Bundle().apply {
                 putParcelable(QUERY_ARG, query)

@@ -3,7 +3,7 @@ package io.libzy.ui.results
 import androidx.lifecycle.viewModelScope
 import io.libzy.BuildConfig
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.model.Query
+import io.libzy.domain.Query
 import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService

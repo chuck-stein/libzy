@@ -1,6 +1,6 @@
 package io.libzy.analytics
 
-import io.libzy.model.Query.Familiarity
+import io.libzy.domain.Query.Familiarity
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.query.QueryScreen
 import io.libzy.ui.results.ResultsScreen

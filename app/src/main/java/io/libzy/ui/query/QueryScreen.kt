@@ -42,7 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
 import io.libzy.R
-import io.libzy.model.Query
+import io.libzy.domain.Query
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.Screen.Results.navigateToResultsScreen
 import io.libzy.ui.common.component.BackIcon

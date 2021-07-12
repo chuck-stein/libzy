@@ -1,4 +1,4 @@
-package io.libzy.model
+package io.libzy.domain
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

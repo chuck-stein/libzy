@@ -17,9 +17,9 @@ import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.Screen
+import io.libzy.util.appInForeground
+import io.libzy.util.createNotificationTapAction
 import io.libzy.util.currentTimeSeconds
-import io.libzy.util.extensions.appInForeground
-import io.libzy.util.extensions.createNotificationTapAction
 import timber.log.Timber
 import kotlin.time.DurationUnit
 import kotlin.time.TimedValue

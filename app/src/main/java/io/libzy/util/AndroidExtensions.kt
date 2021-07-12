@@ -1,4 +1,4 @@
-package io.libzy.util.extensions
+package io.libzy.util
 
 import android.app.PendingIntent
 import android.content.Context
