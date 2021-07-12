@@ -2,11 +2,14 @@ package io.libzy.ui
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.core.content.edit
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
@@ -15,11 +18,14 @@ import com.spotify.sdk.android.auth.AuthorizationResponse.Type.TOKEN
 import io.libzy.LibzyApplication
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.spotify.auth.*
+import io.libzy.spotify.auth.SpotifyAccessToken
+import io.libzy.spotify.auth.SpotifyAuthCallback
+import io.libzy.spotify.auth.SpotifyAuthClientProxy
+import io.libzy.spotify.auth.SpotifyAuthDispatcher
+import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.util.currentTimeSeconds
 import timber.log.Timber
 import javax.inject.Inject
-import kotlinx.android.synthetic.main.activity_main.nav_host_fragment as navHost
 
 /**
  * This is the app's one central Activity, as it is a single activity application using the Navigation component
@@ -50,32 +56,19 @@ class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
 
     private var spotifyAuthCallback: SpotifyAuthCallback? = null
 
-    private lateinit var backgroundGradient: AnimationDrawable
-
+    @ExperimentalAnimationApi
+    @ExperimentalFoundationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         (applicationContext as LibzyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         spotifyAuthDispatcher.authClientProxy = this
-    }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-    override fun onStart() {
-        super.onStart()
-        initializeBackgroundAnimation()
-    }
-
-    private fun initializeBackgroundAnimation() {
-        navHost.setBackgroundResource(R.drawable.bkg_gradient_anim)
-        if (navHost.background !is AnimationDrawable) throw IllegalStateException("Invalid app background resource")
-        backgroundGradient = navHost.background as AnimationDrawable
-        backgroundGradient.setEnterFadeDuration(resources.getInteger(R.integer.bkg_gradient_anim_fade_in_duration))
-        backgroundGradient.setExitFadeDuration(resources.getInteger(R.integer.bkg_gradient_anim_transition_duration))
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) backgroundGradient.start()
-        else backgroundGradient.stop()
+        setContent {
+            LibzyContent {
+                LibzyNavGraph(viewModelFactory)
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {

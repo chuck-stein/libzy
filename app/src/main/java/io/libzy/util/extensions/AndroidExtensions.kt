@@ -6,6 +6,7 @@ import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.navigation.NavController
 import androidx.navigation.NavDeepLinkBuilder
 import io.libzy.R
 import io.libzy.ui.MainActivity
@@ -22,3 +23,11 @@ fun Context.createNotificationTapAction(@IdRes destinationResId: Int): PendingIn
         .setGraph(R.navigation.nav_graph)
         .setDestination(destinationResId)
         .createPendingIntent()
+
+fun NavController.navigate(route: String, popUpToInclusive: String) {
+    navigate(route) {
+        popUpTo(popUpToInclusive) {
+            inclusive = true
+        }
+    }
+}

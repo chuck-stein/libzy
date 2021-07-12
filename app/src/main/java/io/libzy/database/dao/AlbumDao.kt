@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import io.libzy.database.entity.DbAlbum
 import io.libzy.database.tuple.AudioFeaturesTuple
 import io.libzy.database.tuple.LibraryAlbum
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AlbumDao : BaseDao<DbAlbum> {
@@ -20,8 +21,12 @@ interface AlbumDao : BaseDao<DbAlbum> {
         insertAll(albums)
     }
 
+    @Deprecated("use AlbumDao#getAllAlbums instead")
     @Query("SELECT * FROM album")
-    fun getAllAlbums(): LiveData<List<LibraryAlbum>>
+    fun getAllAlbumsLiveData(): LiveData<List<LibraryAlbum>>
+
+    @Query("SELECT * FROM album")
+    fun getAllAlbums(): Flow<List<LibraryAlbum>>
 
     @Query("SELECT * FROM album WHERE spotify_uri = :uri")
     suspend fun getAlbumFromUri(uri: String): LibraryAlbum

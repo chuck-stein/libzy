@@ -3,7 +3,7 @@
 buildscript {
     ext {
         kotlin_version = '1.5.10'
-        compose_version = '1.0.0-beta09'
+        compose_version = '1.0.0-rc01'
         navigation_version = '2.3.5'
     }
     repositories {
@@ -26,7 +26,6 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
         maven { url 'https://maven.google.com' }
     }
 }

@@ -12,9 +12,10 @@
         <item name="android:textAlignment">center</item>
 
         <!-- Window-->
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:windowBackground">@drawable/bkg_gradient_anim</item>
+        <!-- TODO: remove these, as they are done via Compose now -->
+<!--        <item name="android:windowTranslucentStatus">true</item>-->
+<!--        <item name="android:windowTranslucentNavigation">true</item>-->
+<!--        <item name="android:windowBackground">@drawable/bkg_gradient_anim</item>-->
 
         <!-- Styles -->
         <item name="android:textViewStyle">@style/TextView</item>
