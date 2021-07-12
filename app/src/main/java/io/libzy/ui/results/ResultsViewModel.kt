@@ -3,7 +3,6 @@ package io.libzy.ui.results
 import androidx.lifecycle.viewModelScope
 import io.libzy.BuildConfig
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.model.AlbumResult
 import io.libzy.model.Query
 import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
@@ -22,10 +21,7 @@ class ResultsViewModel @Inject constructor(
     private val analyticsDispatcher: AnalyticsDispatcher
 ) : ScreenViewModel<ResultsUiState, ResultsUiEvent>() {
 
-    override val initialUiState = ResultsUiState(albumResults = List(NUM_PLACEHOLDER_RESULTS) {
-        // TODO: make these string resources instead of hardcoded
-        AlbumResult("Fetching album data", "Please wait...", isPlaceholder = true)
-    })
+    override val initialUiState = ResultsUiState(loading = true)
 
     private var albumRecommendationJob: Job? = null
 
@@ -34,7 +30,7 @@ class ResultsViewModel @Inject constructor(
         albumRecommendationJob = viewModelScope.launch {
             userLibraryRepository.albums.collect { albums ->
                 updateUiState {
-                    copy(albumResults = recommendationService.recommendAlbums(query, albums))
+                    copy(albumResults = recommendationService.recommendAlbums(query, albums), loading = false)
                 }
                 analyticsDispatcher.sendSubmitQueryEvent(query, uiState.value.albumResults)
             }

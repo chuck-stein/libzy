@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
@@ -44,6 +45,7 @@ import io.libzy.model.Query
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler
+import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.loadRemoteImage
 import io.libzy.ui.theme.LibzyColors
@@ -116,24 +118,30 @@ private fun ResultsScreen(
         scaffoldState = scaffoldState,
         navigationIcon = { BackIcon(onBackClick) },
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
-        ) {
-            val headerResId = if (uiState.albumResults.isNotEmpty()) R.string.results_header else R.string.no_results_header
-            Text(
-                stringResource(headerResId),
-                style = MaterialTheme.typography.h6,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-            AlbumResultsGrid(uiState.albumResults, onAlbumClick, Modifier.weight(1f))
-            if (uiState.albumResults.isNotEmpty()) {
+        if (uiState.loading) {
+            Frame {
+                CircularProgressIndicator(Modifier.size(60.dp))
+            }
+        } else {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
+            ) {
+                val headerResId = if (uiState.albumResults.isNotEmpty()) R.string.results_header else R.string.no_results_header
                 Text(
-                    stringResource(R.string.results_rating_text),
-                    style = MaterialTheme.typography.body1,
-                    modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
+                    stringResource(headerResId),
+                    style = MaterialTheme.typography.h6,
+                    modifier = Modifier.padding(bottom = 24.dp)
                 )
-                RatingBar(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 12.dp))
+                if (uiState.albumResults.isNotEmpty()) {
+                    AlbumResultsGrid(uiState.albumResults, onAlbumClick, Modifier.weight(1f))
+                    Text(
+                        stringResource(R.string.results_rating_text),
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
+                    )
+                    RatingBar(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 12.dp))
+                }
             }
         }
     }
@@ -242,6 +250,7 @@ private fun ResultsScreenPreview() {
     LibzyContent {
         ResultsScreen(
             uiState = ResultsUiState(
+                loading = false,
                 albumResults = listOf(
                     AlbumResult(
                         "Lateralus",
