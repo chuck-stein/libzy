@@ -3,14 +3,20 @@ package io.libzy.work
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
+import androidx.work.ListenableWorker
+import androidx.work.WorkerFactory
+import androidx.work.WorkerParameters
 import com.adamratzman.spotify.SpotifyException
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
 import io.libzy.repository.UserLibraryRepository
+import io.libzy.ui.Screen
 import io.libzy.util.currentTimeSeconds
 import io.libzy.util.extensions.appInForeground
 import io.libzy.util.extensions.createNotificationTapAction
@@ -90,7 +96,7 @@ class LibrarySyncWorker(
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_succeeded_notification_title,
                 notificationTextResId = R.string.initial_library_scan_succeeded_notification_text,
-                tapDestinationResId = R.id.queryFragment
+                tapDestinationUri = Screen.Query.deepLinkUri
             )
         }
         Timber.i("Successfully synced Spotify library data")
@@ -114,7 +120,7 @@ class LibrarySyncWorker(
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_failed_notification_title,
                 notificationTextResId = R.string.initial_library_scan_failed_notification_text,
-                tapDestinationResId = R.id.connectSpotifyFragment
+                tapDestinationUri = Screen.ConnectSpotify.deepLinkUri
             )
         }
         return Result.failure()
@@ -127,7 +133,7 @@ class LibrarySyncWorker(
         val notification = NotificationCompat.Builder(applicationContext, notificationChannelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(notificationTitle)
-            .setContentIntent(applicationContext.createNotificationTapAction(R.id.connectSpotifyFragment))
+            .setContentIntent(applicationContext.createNotificationTapAction(Screen.ConnectSpotify.deepLinkUri))
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setOngoing(true)
             .setShowWhen(false)
@@ -146,7 +152,7 @@ class LibrarySyncWorker(
     private fun notifyLibraryScanEnded(
         notificationTitleResId: Int,
         notificationTextResId: Int,
-        tapDestinationResId: Int
+        tapDestinationUri: Uri
     ) {
         if (appInForeground()) return // no need to send notification, user will see that the scan has ended
 
@@ -158,7 +164,7 @@ class LibrarySyncWorker(
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(notificationTitle)
             .setContentText(notificationText)
-            .setContentIntent(applicationContext.createNotificationTapAction(tapDestinationResId))
+            .setContentIntent(applicationContext.createNotificationTapAction(tapDestinationUri))
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setTicker(notificationTitle)

@@ -1,14 +1,20 @@
 package io.libzy.ui
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.NavDeepLink
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.NamedNavArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import io.libzy.model.Query
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.launch.LaunchScreen
@@ -23,16 +29,16 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory) {
 
     // TODO: add transition animations to/from each screen in the nav graph once they are supported (especially Results)
     NavHost(navController, startDestination = Screen.Launch.route) {
-        composable(Screen.Launch.route) {
+        destination(Screen.Launch) {
             LaunchScreen(navController, viewModelFactory)
         }
-        composable(Screen.ConnectSpotify.route) {
+        destination(Screen.ConnectSpotify) {
             ConnectSpotifyScreen(navController, viewModelFactory)
         }
-        composable(Screen.Query.route) {
+        destination(Screen.Query) {
             QueryScreen(navController, viewModelFactory)
         }
-        composable(Screen.Results.route) {
+        destination(Screen.Results) {
             ResultsScreen(
                 navController,
                 viewModelFactory,
@@ -42,22 +48,43 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory) {
     }
 }
 
-/**
- * Represents a screen in the navigation graph, to centralize strings like routes and nav args.
- */
-sealed interface Screen {
-    val route: String
+fun NavGraphBuilder.destination(screen: Screen, content: @Composable (NavBackStackEntry) -> Unit) {
+    composable(screen.route, screen.arguments, screen.deepLinks, content)
+}
 
-    object Launch : Screen {
+/**
+ * Represents a screen in the navigation graph, with a corresponding route, arguments, and deep links.
+ */
+sealed class Screen {
+    abstract val route: String
+    open val arguments: List<NamedNavArgument> = emptyList()
+    open val deepLinks: List<NavDeepLink> = emptyList()
+
+    protected fun createDeepLinkUri(): Uri = Uri.Builder()
+        .scheme("libzy")
+        .authority(route)
+        .build()
+
+    protected fun createDeepLinksFrom(vararg deepLinkUris: Uri) = deepLinkUris.map {
+        navDeepLink {
+            uriPattern = it.toString()
+        }
+    }
+
+    object Launch : Screen() {
         override val route = "launch"
     }
-    object ConnectSpotify : Screen {
+    object ConnectSpotify : Screen() {
         override val route = "connect"
+        val deepLinkUri = createDeepLinkUri()
+        override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
-    object Query : Screen {
+    object Query : Screen() {
         override val route = "query"
+        val deepLinkUri = createDeepLinkUri()
+        override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
-    object Results : Screen {
+    object Results : Screen() {
         const val QUERY_ARG = "query"
         override val route = "results"
 
