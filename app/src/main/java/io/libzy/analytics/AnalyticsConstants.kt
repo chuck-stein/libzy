@@ -1,9 +1,9 @@
 package io.libzy.analytics
 
 import io.libzy.model.Query.Familiarity
-import io.libzy.ui.connect.ConnectSpotifyFragment
-import io.libzy.ui.query.QueryFragment
-import io.libzy.ui.query.ResultsFragment
+import io.libzy.ui.connect.ConnectSpotifyScreen
+import io.libzy.ui.query.QueryScreen
+import io.libzy.ui.results.ResultsScreen
 import io.libzy.work.LibrarySyncWorker
 
 /**
@@ -28,22 +28,22 @@ object AnalyticsConstants {
         const val SUBMIT_QUERY = "submit query"
 
         /**
-         * When the user plays an album from those recommended to them in [ResultsFragment].
+         * When the user plays an album from those recommended to them in [ResultsScreen].
          */
         const val PLAY_ALBUM = "play album"
 
         /**
-         * When the user views a question in [QueryFragment].
+         * When the user views a question in [QueryScreen].
          */
         const val VIEW_QUESTION = "view question"
 
         /**
-         * When the user views [ConnectSpotifyFragment].
+         * When the user views [ConnectSpotifyScreen].
          */
         const val VIEW_CONNECT_SPOTIFY_SCREEN = "view connect spotify screen"
 
         /**
-         * When the user clicks the "Connect Spotify" button in [ConnectSpotifyFragment].
+         * When the user clicks the "Connect Spotify" button in [ConnectSpotifyScreen].
          */
         const val CLICK_CONNECT_SPOTIFY = "click connect spotify"
 
@@ -207,7 +207,7 @@ object AnalyticsConstants {
         const val IS_LOW_FAMILIARITY = "is low familiarity"
 
         /**
-         * An [Int] property representing which question number in [QueryFragment]'s question sequence was
+         * An [Int] property representing which question number in [QueryScreen]'s question sequence was
          * viewed for [Events.VIEW_QUESTION].
          */
         const val QUESTION_NUM = "question num"

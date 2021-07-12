@@ -3,9 +3,9 @@ package io.libzy.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.core.content.edit
@@ -28,15 +28,15 @@ import timber.log.Timber
 import javax.inject.Inject
 
 /**
- * This is the app's one central Activity, as it is a single activity application using the Navigation component
- * library. It contains the NavHostFragment, which handles navigation between every screen in the app.
+ * This is Libzy's one central Activity, as it is a single activity application.
  *
- * Manages the app-wide background gradient animation.
+ * Sets the UI content to [LibzyNavGraph], which encapsulates the app's various composable screens
+ * as well as navigation between them.
  *
- * Interacts with Spotify SDK's auth library by opening an authorization activity when requested and sharing the
+ * Interacts with the Spotify SDK's auth library by opening an authorization Activity when requested and sharing the
  * response with the requester, through [SpotifyAuthDispatcher].
  */
-class MainActivity : AppCompatActivity(), SpotifyAuthClientProxy {
+class MainActivity : ComponentActivity(), SpotifyAuthClientProxy {
 
     companion object {
         private const val SPOTIFY_AUTH_REQUEST_CODE = 1104

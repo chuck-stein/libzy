@@ -1,6 +1,5 @@
 package io.libzy.database.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
@@ -20,10 +19,6 @@ interface AlbumDao : BaseDao<DbAlbum> {
         deleteAll()
         insertAll(albums)
     }
-
-    @Deprecated("use AlbumDao#getAllAlbums instead")
-    @Query("SELECT * FROM album")
-    fun getAllAlbumsLiveData(): LiveData<List<LibraryAlbum>>
 
     @Query("SELECT * FROM album")
     fun getAllAlbums(): Flow<List<LibraryAlbum>>

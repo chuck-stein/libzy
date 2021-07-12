@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <!-- Durations -->
-    <integer name="bkg_gradient_anim_transition_duration">5000</integer>
-    <integer name="bkg_gradient_anim_fade_in_duration">10</integer>
-
-</resources>

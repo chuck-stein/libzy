@@ -8,7 +8,6 @@ import dagger.multibindings.IntoMap
 import io.libzy.ui.MainViewModel
 import io.libzy.ui.connect.ConnectSpotifyViewModel
 import io.libzy.ui.launch.LaunchViewModel
-import io.libzy.ui.query.QueryResultsViewModel
 import io.libzy.ui.query.QueryViewModel
 import io.libzy.ui.results.ResultsViewModel
 
@@ -27,11 +26,6 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(ConnectSpotifyViewModel::class)
     abstract fun bindConnectSpotifyViewModel(viewModel: ConnectSpotifyViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(QueryResultsViewModel::class)
-    abstract fun bindQueryResultsViewModel(viewModel: QueryResultsViewModel): ViewModel
 
     @Binds
     @IntoMap

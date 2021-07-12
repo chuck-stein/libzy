@@ -22,8 +22,6 @@ class UserLibraryRepository @Inject constructor(
     private val database: UserLibraryDatabase,
     private val spotifyApi: SpotifyApiDelegator
 ) {
-    @Deprecated("use UserLibraryRepository#albums instead")
-    val libraryAlbums = database.albumDao.getAllAlbumsLiveData()
 
     val albums = database.albumDao.getAllAlbums()
 
