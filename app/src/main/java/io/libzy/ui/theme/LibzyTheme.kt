@@ -33,8 +33,8 @@ private val DarkColors = darkColors(
 
 private val LibzyTypography = Typography(
     defaultFontFamily = FontFamily(
-        Font(R.font.varela_round_regular),
-        Font(R.font.varela_round_regular, FontWeight.Bold)
+        Font(R.font.varela_round),
+        Font(R.font.varela_round, FontWeight.Bold)
     ),
     h1 = TextStyle(
         fontWeight = FontWeight.Medium,
