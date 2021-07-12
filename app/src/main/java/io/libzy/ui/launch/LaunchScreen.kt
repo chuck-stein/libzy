@@ -2,6 +2,7 @@ package io.libzy.ui.launch
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -17,7 +18,6 @@ import io.libzy.R
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.Screen
 import io.libzy.ui.common.component.Frame
-import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyIconTheme
 import io.libzy.util.extensions.navigate
 
@@ -45,7 +45,7 @@ private fun SplashImage() {
         Icon(
             imageVector = LibzyIconTheme.LibraryMusic, // TODO: replace with actual app icon once done
             contentDescription = stringResource(R.string.cd_app_logo),
-            tint = LibzyColors.OffWhite,
+            tint = MaterialTheme.colors.surface,
             modifier = Modifier.fillMaxSize(0.25f)
         )
     }

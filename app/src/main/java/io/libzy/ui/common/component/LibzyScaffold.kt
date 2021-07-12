@@ -60,7 +60,11 @@ fun LibzyScaffold(
 @Composable
 private fun LibzySnackbarHost(state: SnackbarHostState) {
     SnackbarHost(state, modifier = Modifier.navigationBarsPadding()) {
-        Snackbar(backgroundColor = MaterialTheme.colors.surface, modifier = Modifier.padding(12.dp)) {
+        Snackbar(
+            backgroundColor = MaterialTheme.colors.surface,
+            contentColor = MaterialTheme.colors.onSurface,
+            modifier = Modifier.padding(12.dp)
+        ) {
             Text(it.message, style = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Start))
         }
     }
