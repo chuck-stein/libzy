@@ -28,6 +28,11 @@ object AnalyticsConstants {
         const val SUBMIT_QUERY = "submit query"
 
         /**
+         * When the user views recommended albums on [ResultsScreen] based on a query they submitted.
+         */
+        const val VIEW_ALBUM_RESULTS = "view album results"
+
+        /**
          * When the user plays an album from those recommended to them in [ResultsScreen].
          */
         const val PLAY_ALBUM = "play album"
@@ -85,21 +90,21 @@ object AnalyticsConstants {
         const val RESULT = "result"
 
         /**
-         * A [String] property representing the user's selection of familiarity for [Events.SUBMIT_QUERY].
-         * Should be the name of one of the [Familiarity] enum values.
+         * A [String] property representing the user's selection of familiarity for [Events.SUBMIT_QUERY]
+         * or [Events.VIEW_ALBUM_RESULTS]. Should be the name of one of the [Familiarity] enum values.
          * Null means no preference.
          */
         const val FAMILIARITY = "familiarity"
 
         /**
-         * A [Boolean] property representing the user's selection of instrumental vs. vocal for [Events.SUBMIT_QUERY].
-         * Null means no preference.
+         * A [Boolean] property representing the user's selection of instrumental vs. vocal for [Events.SUBMIT_QUERY]
+         * or [Events.VIEW_ALBUM_RESULTS]. Null means no preference.
          */
         const val INSTRUMENTAL = "instrumental"
 
         /**
-         * A [Float] property representing the user's selection of acousticness for [Events.SUBMIT_QUERY].
-         * Null means no preference.
+         * A [Float] property representing the user's selection of acousticness for [Events.SUBMIT_QUERY]
+         * or [Events.VIEW_ALBUM_RESULTS]. Null means no preference.
          *
          * A [Float] property representing the acousticness value of the album played for [Events.PLAY_ALBUM].
          */
@@ -107,50 +112,51 @@ object AnalyticsConstants {
 
         /**
          * A [Float] property representing the user's selection of negative vs. positive emotion for
-         * [Events.SUBMIT_QUERY]. Null means no preference.
+         * [Events.SUBMIT_QUERY] or [Events.VIEW_ALBUM_RESULTS]. Null means no preference.
          *
          * A [Float] property representing the valence value of the album played for [Events.PLAY_ALBUM].
          */
         const val VALENCE = "valence"
 
         /**
-         * A [Float] property representing the user's selection of energy level for [Events.SUBMIT_QUERY].
-         * Null means no preference.
+         * A [Float] property representing the user's selection of energy level for [Events.SUBMIT_QUERY]
+         * or [Events.VIEW_ALBUM_RESULTS]. Null means no preference.
          *
          * A [Float] property representing the energy value of the album played for [Events.PLAY_ALBUM].
          */
         const val ENERGY = "energy"
 
         /**
-         * A [Float] property representing the user's selection of danceable vs. arrhythmic for [Events.SUBMIT_QUERY].
-         * Null means no preference.
+         * A [Float] property representing the user's selection of danceable vs. arrhythmic for [Events.SUBMIT_QUERY]
+         * or [Events.VIEW_ALBUM_RESULTS]. Null means no preference.
          *
          * A [Float] property representing the danceability value of the album played for [Events.PLAY_ALBUM].
          */
         const val DANCEABILITY = "danceability"
 
         /**
-         * A [List] property representing the user's selection of genres for [Events.SUBMIT_QUERY].
-         * Null means no preference.
+         * A [List] property representing the user's selection of genres for [Events.SUBMIT_QUERY]
+         * or [Events.VIEW_ALBUM_RESULTS]. Null means no preference.
          *
          * A [Set] property representing the genres belonging to the album played for [Events.PLAY_ALBUM].
          */
         const val GENRES = "genres"
 
         /**
-         * An [Int] property representing the number of genres a user selected for [Events.SUBMIT_QUERY].
+         * An [Int] property representing the number of genres a user selected for [Events.SUBMIT_QUERY]
+         * or [Events.VIEW_ALBUM_RESULTS].
          */
         const val NUM_GENRES = "num genres"
 
         /**
          * A [List] property representing the albums recommended as a result of the user's current mood query for
-         * [Events.SUBMIT_QUERY].
+         * [Events.VIEW_ALBUM_RESULTS].
          */
         const val ALBUM_RESULTS = "album results"
 
         /**
          * An [Int] property representing the number of albums recommended as a result of the user's current mood query
-         * for [Events.SUBMIT_QUERY].
+         * for [Events.VIEW_ALBUM_RESULTS].
          */
         const val NUM_ALBUM_RESULTS = "num album results"
 

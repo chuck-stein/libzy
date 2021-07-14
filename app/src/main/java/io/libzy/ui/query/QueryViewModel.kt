@@ -20,6 +20,16 @@ class QueryViewModel @Inject constructor(
 
     private val libraryAlbums = userLibraryRepository.albums.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    fun sendQuestionViewAnalyticsEvent() {
+        with(uiState.value) {
+            analyticsDispatcher.sendViewQuestionEvent(
+                questionName = currentStep.stringValue,
+                questionNum = currentStepIndex + 1,
+                totalQuestions = querySteps.size
+            )
+        }
+    }
+
     fun goToPreviousStep() {
         goToStep(uiState.value.currentStepIndex - 1)
     }
@@ -28,6 +38,7 @@ class QueryViewModel @Inject constructor(
         with(uiState.value) {
             val newStepIndex = currentStepIndex + 1
             if (newStepIndex == querySteps.size) {
+                analyticsDispatcher.sendSubmitQueryEvent(query)
                 produceUiEvent(QueryUiEvent.SUBMIT_QUERY)
             } else {
                 goToStep(newStepIndex)
@@ -42,14 +53,7 @@ class QueryViewModel @Inject constructor(
                 currentStepIndex = newStepIndex.coerceIn(querySteps.indices)
             ).withRecommendedGenresIfNecessary()
         }
-
-        with(uiState.value) {
-            analyticsDispatcher.sendViewQuestionEvent(
-                questionName = currentStep.stringValue,
-                questionNum = currentStepIndex + 1,
-                totalQuestions = querySteps.size
-            )
-        }
+        sendQuestionViewAnalyticsEvent()
     }
 
     private fun QueryUiState.withRecommendedGenresIfNecessary() =

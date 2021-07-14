@@ -32,7 +32,7 @@ class ResultsViewModel @Inject constructor(
                 updateUiState {
                     copy(albumResults = recommendationService.recommendAlbums(query, albums), loading = false)
                 }
-                analyticsDispatcher.sendSubmitQueryEvent(query, uiState.value.albumResults)
+                analyticsDispatcher.sendViewAlbumResultsEvent(query, uiState.value.albumResults)
             }
         }
     }
@@ -46,6 +46,9 @@ class ResultsViewModel @Inject constructor(
     fun sendResultsRating() {
         uiState.value.resultsRating?.let {
             analyticsDispatcher.sendRateAlbumResultsEvent(it)
+            updateUiState {
+                copy(resultsRating = null) // reset the rating so that it is not sent again later unless changed
+            }
         }
     }
 
@@ -92,10 +95,5 @@ class ResultsViewModel @Inject constructor(
                 """
             Timber.d(albumDetails.trimIndent())
         }
-    }
-
-    companion object {
-        // TODO: determine this based on screen size instead of hardcoding it
-        private const val NUM_PLACEHOLDER_RESULTS = 50
     }
 }

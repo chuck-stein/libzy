@@ -24,6 +24,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +69,10 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
         when (it) {
             QueryUiEvent.SUBMIT_QUERY -> navController.navigateToResultsScreen(uiState.query)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.sendQuestionViewAnalyticsEvent()
     }
 
     QueryScreen(

@@ -22,7 +22,6 @@ import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,6 +46,7 @@ import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyScaffold
+import io.libzy.ui.common.component.LifecycleObserver
 import io.libzy.ui.common.loadRemoteImage
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
@@ -82,14 +82,13 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
         viewModel.recommendAlbums(query)
     }
 
-    DisposableEffect(viewModel) {
-        viewModel.connectSpotifyAppRemote()
-
-        onDispose {
+    LifecycleObserver(
+        onStart = { viewModel.connectSpotifyAppRemote() },
+        onStop = {
             viewModel.disconnectSpotifyAppRemote()
             viewModel.sendResultsRating()
         }
-    }
+    )
 
     ResultsScreen(
         uiState = uiState,
