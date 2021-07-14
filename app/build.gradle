@@ -107,6 +107,7 @@ android {
 repositories {
     mavenCentral()
     google()
+    jcenter() // temporarily required for the latest version of adamint's Spotify API wrapper
 }
 
 dependencies {
