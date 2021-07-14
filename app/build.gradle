@@ -16,7 +16,7 @@ android {
         applicationId "io.libzy"
         minSdk 26
         targetSdk 30
-        versionCode 4
+        versionCode 5
         versionName "0.2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -169,7 +169,7 @@ dependencies {
     implementation 'com.spotify.android:auth:1.2.3'
     implementation project(':spotify-app-remote')
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.adamratzman:spotify-api-kotlin:3.2.16'
+    implementation 'com.adamratzman:spotify-api-kotlin-core:3.8.0'
 
     // Database
     def room_version = "2.3.0"

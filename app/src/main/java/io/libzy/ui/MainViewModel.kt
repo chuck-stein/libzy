@@ -27,10 +27,12 @@ class MainViewModel @Inject constructor(
      */
     fun onNewSpotifySession() {
         viewModelScope.launch {
-            val userId = userProfileRepository.getUserId()
-            saveUserId(userId)
-            analyticsDispatcher.setUserId(userId)
-
+            userProfileRepository.fetchUserId()?.let {
+                saveUserId(it)
+                analyticsDispatcher.setUserId(it)
+            }
+        }
+        viewModelScope.launch {
             userProfileRepository.fetchDisplayName()?.let {
                 analyticsDispatcher.setUserDisplayName(it)
             }
