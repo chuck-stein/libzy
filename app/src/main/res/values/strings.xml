@@ -35,13 +35,11 @@
     <!-- Connect Spotify Screen -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
     <string name="snackbar_spotify_authorization_failed">Failed to authorize your Spotify account! Please try again.</string>
-    <string name="snackbar_spotify_generic_network_error">There was a problem connecting to Spotify! Please try again.</string>
     <string name="snackbar_library_scan_failed">There was a problem scanning your Spotify library! Please try again.</string>
     <string name="scanning_library_heading">Scanning your Spotify library…</string>
     <string name="scanning_library_subheading">This may take a few minutes, so feel free to come back later</string>
 
     <!-- Query Screen -->
-    <string name="default_greeting_text">Hey there!</string>
     <string name="morning_greeting_text">Good morning!</string>
     <string name="afternoon_greeting_text">Good afternoon!</string>
     <string name="evening_greeting_text">Good evening!</string>
@@ -62,13 +60,9 @@
     <string name="arrhythmic">Arrhythmic</string>
     <string name="continue_button">Continue</string>
     <string name="ready_button">Ready, show me some albums!</string>
-    <string name="back_button">back button</string>
 
     <!-- Results Screen -->
     <string name="results_header">Here are some suggested albums from your library:</string>
-    <string name="album_title_placeholder">Album Title</string>
-    <string name="artist_name_placeholder">Album Artist</string>
-    <string name="album_art_desc">album artwork</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
     <string name="results_rating_text">How are these suggestions?\n Your feedback is much appreciated!</string>
     <string name="no_results_header">Oops! We couldn\'t quite find the vibe right now. Try looking for something else or saving more albums on Spotify.</string>
