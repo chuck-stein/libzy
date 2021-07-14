@@ -1,29 +1,29 @@
 package io.libzy.ui.common
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
  * A [ViewModel] which produces UI [STATE] for a particular screen,
- * as well as UI [EVENT]s for that screen to react to.
+ * as well as instantaneous UI [EVENT]s for that screen to react to.
  *
  * If a screen does not require both [STATE] and [EVENT]s,
- * then the unused type parameter can simply be [Nothing].
+ * then instead use either [EventsOnlyViewModel] or [StateOnlyViewModel].
  *
  * @param eventBufferSize How many UI [EVENT]s should remain buffered
  *                        in memory before the event channel suspends.
  */
-abstract class ScreenViewModel<STATE, EVENT>(eventBufferSize: Int = 16) : ViewModel() {
+abstract class ScreenViewModel<STATE, EVENT>(eventBufferSize: Int = DEFAULT_EVENT_BUFFER_SIZE) : ViewModel() {
 
     protected abstract val initialUiState: STATE
-    private val _uiState by lazy { MutableStateFlow(initialUiState) }
-    val uiState by lazy { _uiState.asStateFlow() }
+    private val _uiState by lazy { mutableStateOf(initialUiState) }
+    val uiState: State<STATE> by lazy { _uiState }
 
     private val _uiEvents = Channel<EVENT>(capacity = eventBufferSize)
     val uiEvents = _uiEvents.receiveAsFlow()
@@ -39,3 +39,21 @@ abstract class ScreenViewModel<STATE, EVENT>(eventBufferSize: Int = 16) : ViewMo
         }
     }
 }
+
+/**
+ * A [ViewModel] which produces instantaneous [EVENT]s for the UI to react to, but produces no state for that UI.
+ */
+abstract class EventsOnlyViewModel<EVENT>(eventBufferSize: Int = DEFAULT_EVENT_BUFFER_SIZE) :
+    ScreenViewModel<Nothing, EVENT>(eventBufferSize) {
+
+    /** Accessing this value will throw an Error because this [EventsOnlyViewModel] holds no state. */
+    override val initialUiState: Nothing
+        get() = throw NotImplementedError("This ViewModel has no UI state")
+}
+
+/**
+ * A [ViewModel] which produces [STATE] for the UI, but produces no instantaneous events for the UI to react to.
+ */
+abstract class StateOnlyViewModel<STATE> : ScreenViewModel<STATE, Nothing>()
+
+private const val DEFAULT_EVENT_BUFFER_SIZE = 16

@@ -13,10 +13,6 @@ data class QueryUiState(
     val currentStep = querySteps[currentStepIndex]
 }
 
-enum class QueryUiEvent {
-    SUBMIT_QUERY
-}
-
 enum class QueryStep(val stringValue: String) {
     FAMILIARITY("familiarity"),
     INSTRUMENTALNESS("instrumentalness"),

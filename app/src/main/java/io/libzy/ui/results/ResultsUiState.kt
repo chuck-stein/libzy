@@ -10,7 +10,3 @@ data class ResultsUiState(
     val albumResults: List<AlbumResult> = emptyList(),
     val resultsRating: Int? = null
 )
-
-enum class ResultsUiEvent {
-    SPOTIFY_REMOTE_FAILURE
-}

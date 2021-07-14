@@ -5,7 +5,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,7 +27,7 @@ import io.libzy.util.navigate
 @Composable
 fun LaunchScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory) {
     val viewModel: LaunchViewModel = viewModel(factory = viewModelFactory)
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState
 
     when (state) {
         LaunchUiState.NEEDS_SPOTIFY_CONNECTION ->

@@ -25,7 +25,6 @@ import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,7 +62,7 @@ import java.time.LocalTime
 @Composable
 fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory) {
     val viewModel: QueryViewModel = viewModel(factory = viewModelFactory)
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState
 
     EventHandler(viewModel.uiEvents) {
         when (it) {
