@@ -13,7 +13,7 @@ import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
-import io.libzy.ui.common.ScreenViewModel
+import io.libzy.ui.common.LibzyViewModel
 import io.libzy.util.handle
 import io.libzy.util.unwrap
 import io.libzy.util.wrapResult
@@ -26,7 +26,7 @@ class ConnectSpotifyViewModel @Inject constructor(
     appContext: Context,
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
-) : ScreenViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
+) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
     override val initialUiState = ConnectSpotifyUiState(libraryScanState = null)
 

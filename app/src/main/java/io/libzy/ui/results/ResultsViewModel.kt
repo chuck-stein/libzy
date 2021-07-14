@@ -7,7 +7,7 @@ import io.libzy.domain.Query
 import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
-import io.libzy.ui.common.ScreenViewModel
+import io.libzy.ui.common.LibzyViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -19,7 +19,7 @@ class ResultsViewModel @Inject constructor(
     private val recommendationService: RecommendationService,
     private val spotifyAppRemoteService: SpotifyAppRemoteService,
     private val analyticsDispatcher: AnalyticsDispatcher
-) : ScreenViewModel<ResultsUiState, ResultsUiEvent>() {
+) : LibzyViewModel<ResultsUiState, ResultsUiEvent>() {
 
     override val initialUiState = ResultsUiState(loading = true)
 

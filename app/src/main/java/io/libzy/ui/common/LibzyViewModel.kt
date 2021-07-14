@@ -10,8 +10,8 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
- * A [ViewModel] which produces UI [STATE] for a particular screen,
- * as well as instantaneous UI [EVENT]s for that screen to react to.
+ * A [ViewModel] which produces [STATE] for the UI,
+ * as well as instantaneous [EVENT]s for the UI to react to.
  *
  * If a screen does not require both [STATE] and [EVENT]s,
  * then instead use either [EventsOnlyViewModel] or [StateOnlyViewModel].
@@ -19,7 +19,7 @@ import timber.log.Timber
  * @param eventBufferSize How many UI [EVENT]s should remain buffered
  *                        in memory before the event channel suspends.
  */
-abstract class ScreenViewModel<STATE, EVENT>(eventBufferSize: Int = DEFAULT_EVENT_BUFFER_SIZE) : ViewModel() {
+abstract class LibzyViewModel<STATE, EVENT>(eventBufferSize: Int = DEFAULT_EVENT_BUFFER_SIZE) : ViewModel() {
 
     protected abstract val initialUiState: STATE
     private val _uiState by lazy { mutableStateOf(initialUiState) }
@@ -44,7 +44,7 @@ abstract class ScreenViewModel<STATE, EVENT>(eventBufferSize: Int = DEFAULT_EVEN
  * A [ViewModel] which produces instantaneous [EVENT]s for the UI to react to, but produces no state for that UI.
  */
 abstract class EventsOnlyViewModel<EVENT>(eventBufferSize: Int = DEFAULT_EVENT_BUFFER_SIZE) :
-    ScreenViewModel<Nothing, EVENT>(eventBufferSize) {
+    LibzyViewModel<Nothing, EVENT>(eventBufferSize) {
 
     /** Accessing this value will throw an Error because this [EventsOnlyViewModel] holds no state. */
     override val initialUiState: Nothing
@@ -54,6 +54,6 @@ abstract class EventsOnlyViewModel<EVENT>(eventBufferSize: Int = DEFAULT_EVENT_B
 /**
  * A [ViewModel] which produces [STATE] for the UI, but produces no instantaneous events for the UI to react to.
  */
-abstract class StateOnlyViewModel<STATE> : ScreenViewModel<STATE, Nothing>()
+abstract class StateOnlyViewModel<STATE> : LibzyViewModel<STATE, Nothing>()
 
 private const val DEFAULT_EVENT_BUFFER_SIZE = 16

@@ -5,7 +5,7 @@ import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.domain.Query
 import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
-import io.libzy.ui.common.ScreenViewModel
+import io.libzy.ui.common.LibzyViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -14,7 +14,7 @@ class QueryViewModel @Inject constructor(
     userLibraryRepository: UserLibraryRepository,
     private val recommendationService: RecommendationService,
     private val analyticsDispatcher: AnalyticsDispatcher
-) : ScreenViewModel<QueryUiState, QueryUiEvent>() {
+) : LibzyViewModel<QueryUiState, QueryUiEvent>() {
 
     override val initialUiState = QueryUiState()
 
