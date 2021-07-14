@@ -9,6 +9,8 @@ import io.libzy.R
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.util.currentTimeSeconds
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -35,7 +37,10 @@ class SpotifyApiDelegator @Inject constructor(
     private var _apiDelegate: SpotifyClientApi? = null
 
     init {
-        createApiDelegateIfTokenAvailable()
+        // TODO: use an injected application scope instead of GlobalScope
+        GlobalScope.launch {
+            createApiDelegateIfTokenAvailable()
+        }
     }
 
     // TODO: make this thread-safe by holding a lock during execution,
@@ -44,7 +49,7 @@ class SpotifyApiDelegator @Inject constructor(
     private suspend fun getApiDelegate() =
         _apiDelegate ?: createApiDelegateIfTokenAvailable() ?: createApiDelegateWithNewToken()
 
-    private fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
+    private suspend fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
         val spotifyPrefs: SharedPreferences = context.getSharedPreferences(
             context.getString(R.string.spotify_prefs_name),
             Context.MODE_PRIVATE
@@ -66,34 +71,40 @@ class SpotifyApiDelegator @Inject constructor(
         return delegate
     }
 
-    private fun createApiDelegate(accessToken: String): SpotifyClientApi {
-        val apiAuthorization = SpotifyUserAuthorizationBuilder(tokenString = accessToken).build()
-        val apiOptions = SpotifyApiOptionsBuilder(automaticRefresh = false, testTokenValidity = false).build()
+    private suspend fun createApiDelegate(accessToken: String): SpotifyClientApi {
+        val apiAuthorization = SpotifyUserAuthorization(tokenString = accessToken)
+        val apiOptions = SpotifyApiOptions(automaticRefresh = false, allowBulkRequests = true, testTokenValidity = false)
         return SpotifyClientApiBuilder(authorization = apiAuthorization, options = apiOptions).build()
     }
 
-    suspend fun getUserId() = getApiDelegate().userId
+    suspend fun fetchUserId() = doSafeApiCall {
+        getApiDelegate().getUserId()
+    }
 
     suspend fun fetchPlayHistory(): List<PlayHistory> = doSafeApiCall {
-        getApiDelegate().player.getRecentlyPlayed(API_ITEM_LIMIT_LOW).suspendQueue().items
+        getApiDelegate().player.getRecentlyPlayed(API_ITEM_LIMIT_LOW).items
     }
 
     suspend fun fetchTopTracks(timeRange: ClientPersonalizationApi.TimeRange): List<Track> = doSafeApiCall {
-        getApiDelegate().personalization.getTopTracks(API_ITEM_LIMIT_LOW_MAX_PAGING, timeRange = timeRange).suspendQueueAll()
+        getApiDelegate().personalization
+            .getTopTracks(API_ITEM_LIMIT_LOW_MAX_PAGING, timeRange = timeRange)
+            .getAllItems().filterNotNull()
     }
 
     suspend fun fetchAllSavedAlbums(): List<SavedAlbum> = doSafeApiCall {
-        getApiDelegate().library.getSavedAlbums().suspendQueueAll()
+        getApiDelegate().library.getSavedAlbums().getAllItems().filterNotNull()
     }
 
-    suspend fun fetchArtists(ids: Collection<String>): List<Artist?> =
-        fetchBatchedItems(ids, getApiDelegate().artists::getArtists, API_ITEM_LIMIT_LOW)
+    suspend fun fetchArtists(ids: Collection<String>): List<Artist?> = doSafeApiCall {
+        getApiDelegate().artists.getArtists(*ids.toTypedArray())
+    }
 
-    suspend fun fetchAudioFeaturesOfTracks(ids: Collection<String>): List<AudioFeatures?> =
-        fetchBatchedItems(ids, getApiDelegate().tracks::getAudioFeatures, API_ITEM_LIMIT_HIGH)
+    suspend fun fetchAudioFeaturesOfTracks(ids: Collection<String>): List<AudioFeatures?> = doSafeApiCall {
+        getApiDelegate().tracks.getAudioFeatures(*ids.toTypedArray())
+    }
 
     suspend fun fetchProfileInformation() = doSafeApiCall {
-        getApiDelegate().users.getClientProfile().suspendQueue()
+        getApiDelegate().users.getClientProfile()
     }
 
     // TODO: remove num503s param when Spotify's issue with frequent 503s is resolved
@@ -132,21 +143,6 @@ class SpotifyApiDelegator @Inject constructor(
                 apiCall()
             }
         }
-    }
-
-    // TODO: delegate batching responsibility to SpotifyClientApi once adamint fixes bulk request bug w/ empty JSON (allegedly done as of 3.1.0?)
-    private suspend fun <T> fetchBatchedItems(
-        ids: Collection<String>,
-        endpoint: (Array<out String>) -> SpotifyRestAction<List<T?>>,
-        batchSize: Int
-    ): List<T?> {
-        val items = mutableListOf<T?>()
-        val batches = ids.chunked(batchSize)
-        for (batch in batches) {
-            val batchItems = doSafeApiCall { endpoint(*batch.toTypedArray()).suspendQueue() }
-            items.addAll(batchItems)
-        }
-        return items
     }
 
 }
