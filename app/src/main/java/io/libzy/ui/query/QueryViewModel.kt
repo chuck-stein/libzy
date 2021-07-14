@@ -108,7 +108,7 @@ class QueryViewModel @Inject constructor(
 
     fun setGenres(genres: Set<String>?) {
         updateUiState {
-            copy(query = query.copy(genres = genres))
+            copy(query = query.copy(genres = genres?.takeUnless { it.isEmpty() }))
         }
     }
 
