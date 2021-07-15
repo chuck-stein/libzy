@@ -56,7 +56,7 @@ fun ConnectSpotifyScreen(navController: NavController, viewModelFactory: ViewMod
     EventHandler(viewModel.uiEvents) {
         when (it) {
             ConnectSpotifyUiEvent.SPOTIFY_CONNECTED ->
-                navController.navigate(Destination.Query.route, popUpToInclusive = Destination.ConnectSpotify.route)
+                navController.navigate(Destination.Query.route, popUpToInclusive = Destination.NavHost.route)
             ConnectSpotifyUiEvent.SPOTIFY_SCAN_FAILED -> showSnackbar(scanFailedMsg)
             ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED -> showSnackbar(spotifyAuthFailedMsg)
         }
