@@ -14,8 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
+import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
-import io.libzy.ui.Screen
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.theme.LibzyIconTheme
 import io.libzy.util.navigate
@@ -31,9 +31,9 @@ fun LaunchScreen(navController: NavController, viewModelFactory: ViewModelProvid
 
     when (state) {
         LaunchUiState.NEEDS_SPOTIFY_CONNECTION ->
-            navController.navigate(Screen.ConnectSpotify.route, popUpToInclusive = Screen.Launch.route)
+            navController.navigate(Destination.ConnectSpotify.route, popUpToInclusive = Destination.NavHost.route)
         LaunchUiState.SPOTIFY_CONNECTED ->
-            navController.navigate(Screen.Query.route, popUpToInclusive = Screen.Launch.route)
+            navController.navigate(Destination.Query.route, popUpToInclusive = Destination.NavHost.route)
         LaunchUiState.LOADING -> SplashImage()
     }
 }

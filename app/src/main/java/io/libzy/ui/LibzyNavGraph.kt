@@ -28,34 +28,34 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory) {
     val navController = rememberNavController()
 
     // TODO: add transition animations to/from each screen in the nav graph once they are supported (especially Results)
-    NavHost(navController, startDestination = Screen.Launch.route) {
-        destination(Screen.Launch) {
+    NavHost(navController, route = Destination.NavHost.route, startDestination = Destination.Launch.route) {
+        destination(Destination.Launch) {
             LaunchScreen(navController, viewModelFactory)
         }
-        destination(Screen.ConnectSpotify) {
+        destination(Destination.ConnectSpotify) {
             ConnectSpotifyScreen(navController, viewModelFactory)
         }
-        destination(Screen.Query) {
+        destination(Destination.Query) {
             QueryScreen(navController, viewModelFactory)
         }
-        destination(Screen.Results) {
+        destination(Destination.Results) {
             ResultsScreen(
                 navController,
                 viewModelFactory,
-                navController.previousBackStackEntry?.arguments?.getParcelable(Screen.Results.QUERY_ARG) ?: Query()
+                navController.previousBackStackEntry?.arguments?.getParcelable(Destination.Results.QUERY_ARG) ?: Query()
             )
         }
     }
 }
 
-fun NavGraphBuilder.destination(screen: Screen, content: @Composable (NavBackStackEntry) -> Unit) {
-    composable(screen.route, screen.arguments, screen.deepLinks, content)
+fun NavGraphBuilder.destination(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
+    composable(destination.route, destination.arguments, destination.deepLinks, content)
 }
 
 /**
  * Represents a screen in the navigation graph, with a corresponding route, arguments, and deep links.
  */
-sealed class Screen {
+sealed class Destination {
     abstract val route: String
     open val arguments: List<NamedNavArgument> = emptyList()
     open val deepLinks: List<NavDeepLink> = emptyList()
@@ -71,20 +71,23 @@ sealed class Screen {
         }
     }
 
-    object Launch : Screen() {
+    object NavHost : Destination() {
+        override val route = "host"
+    }
+    object Launch : Destination() {
         override val route = "launch"
     }
-    object ConnectSpotify : Screen() {
+    object ConnectSpotify : Destination() {
         override val route = "connect"
         val deepLinkUri = createDeepLinkUri()
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
-    object Query : Screen() {
+    object Query : Destination() {
         override val route = "query"
         val deepLinkUri = createDeepLinkUri()
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
-    object Results : Screen() {
+    object Results : Destination() {
         const val QUERY_ARG = "query"
         override val route = "results"
 

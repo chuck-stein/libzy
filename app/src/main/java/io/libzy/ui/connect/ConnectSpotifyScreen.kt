@@ -25,7 +25,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
-import io.libzy.ui.Screen
+import io.libzy.ui.Destination
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyScaffold
@@ -56,7 +56,7 @@ fun ConnectSpotifyScreen(navController: NavController, viewModelFactory: ViewMod
     EventHandler(viewModel.uiEvents) {
         when (it) {
             ConnectSpotifyUiEvent.SPOTIFY_CONNECTED ->
-                navController.navigate(Screen.Query.route, popUpToInclusive = Screen.ConnectSpotify.route)
+                navController.navigate(Destination.Query.route, popUpToInclusive = Destination.ConnectSpotify.route)
             ConnectSpotifyUiEvent.SPOTIFY_SCAN_FAILED -> showSnackbar(scanFailedMsg)
             ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED -> showSnackbar(spotifyAuthFailedMsg)
         }

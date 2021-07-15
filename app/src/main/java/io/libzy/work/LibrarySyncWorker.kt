@@ -18,7 +18,7 @@ import io.libzy.analytics.LibrarySyncResult
 import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
-import io.libzy.ui.Screen
+import io.libzy.ui.Destination
 import io.libzy.util.appInForeground
 import io.libzy.util.createNotificationTapAction
 import io.libzy.util.currentTimeSeconds
@@ -95,7 +95,7 @@ class LibrarySyncWorker(
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_succeeded_notification_title,
                 notificationTextResId = R.string.initial_library_scan_succeeded_notification_text,
-                tapDestinationUri = Screen.Query.deepLinkUri
+                tapDestinationUri = Destination.Query.deepLinkUri
             )
         }
         Timber.i("Successfully synced Spotify library data")
@@ -119,7 +119,7 @@ class LibrarySyncWorker(
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_failed_notification_title,
                 notificationTextResId = R.string.initial_library_scan_failed_notification_text,
-                tapDestinationUri = Screen.ConnectSpotify.deepLinkUri
+                tapDestinationUri = Destination.ConnectSpotify.deepLinkUri
             )
         }
         return Result.failure()
@@ -132,7 +132,7 @@ class LibrarySyncWorker(
         val notification = NotificationCompat.Builder(applicationContext, notificationChannelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(notificationTitle)
-            .setContentIntent(applicationContext.createNotificationTapAction(Screen.ConnectSpotify.deepLinkUri))
+            .setContentIntent(applicationContext.createNotificationTapAction(Destination.ConnectSpotify.deepLinkUri))
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setOngoing(true)
             .setShowWhen(false)

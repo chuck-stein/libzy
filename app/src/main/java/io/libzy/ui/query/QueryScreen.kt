@@ -43,8 +43,8 @@ import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
 import io.libzy.R
 import io.libzy.domain.Query
+import io.libzy.ui.Destination.Results.navigateToResultsScreen
 import io.libzy.ui.LibzyContent
-import io.libzy.ui.Screen.Results.navigateToResultsScreen
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
