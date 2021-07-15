@@ -124,14 +124,15 @@ class LibzyApplication : Application(), Configuration.Provider {
         val sharedPrefs = getSharedPrefs()
         val spotifyConnected = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 
-        if (spotifyConnected) enqueueWorkRequest()
-        else {
+        if (spotifyConnected) {
+            enqueueWorkRequest()
+        } else {
             sharedPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
                 if (key == SharedPrefKeys.SPOTIFY_CONNECTED && prefs.getBoolean(key, false)) {
 
                     // Spotify was just connected, meaning the first library scan just completed,
                     // so schedule the next one in 15 minutes, which will recur every subsequent 15 minutes
-                    Handler().postDelayed({
+                    Handler().postDelayed({ // TODO: instead put this in a coroutine and use delay(), once we have an applicationScope after migrating to Hilt
                         enqueueWorkRequest()
                     }, LIBRARY_SYNC_INTERVAL.toMillis())
 

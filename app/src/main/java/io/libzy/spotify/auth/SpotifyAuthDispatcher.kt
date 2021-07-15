@@ -1,6 +1,11 @@
 package io.libzy.spotify.auth
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,7 +23,7 @@ TODO:
 class SpotifyAuthDispatcher @Inject constructor() {
 
     companion object {
-        private const val AUTH_TIMEOUT = 10 // in seconds
+        private const val AUTH_TIMEOUT = 10000 // in seconds
     }
 
     var authClientProxy: SpotifyAuthClientProxy? = null
@@ -28,7 +33,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                 requestsWaitingForProxy = true
             } else if (proxy != null && requestsWaitingForProxy) {
                 requestsWaitingForProxy = false
-                proxy.initiateAuthRequest(onAuthComplete)
+                proxy.initiateSpotifyAuthRequest(onAuthComplete)
             }
         }
 
@@ -79,7 +84,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                     if (pendingAuthCallbacks.size == 1) {
                         authClientProxy.let {
                             if (it == null) requestsWaitingForProxy = true
-                            else it.initiateAuthRequest(onAuthComplete)
+                            else it.initiateSpotifyAuthRequest(onAuthComplete)
                         }
                     }
                 }

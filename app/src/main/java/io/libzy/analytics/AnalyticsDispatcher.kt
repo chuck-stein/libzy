@@ -87,6 +87,7 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
      */
     private fun Identify.increment(property: String) = add(property, 1)
 
+    // TODO: set this from sharedprefs if we have one at initialization time, unless Amplitude identification is already persistent between app processes
     fun setUserId(userId: String) {
         amplitude.userId = userId
     }
