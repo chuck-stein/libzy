@@ -1,6 +1,7 @@
 package io.libzy.ui.connect
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
@@ -19,6 +20,8 @@ import io.libzy.util.unwrap
 import io.libzy.util.wrapResult
 import io.libzy.work.LibrarySyncWorker
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,11 +31,13 @@ class ConnectSpotifyViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
-    override val initialUiState = ConnectSpotifyUiState(libraryScanState = null)
-
     private val workManager = WorkManager.getInstance(appContext)
 
     private val sharedPrefs = appContext.getSharedPrefs()
+
+    override val initialUiState = ConnectSpotifyUiState(
+        libraryScanInProgress = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, false)
+    )
 
     init {
         viewModelScope.launch {
@@ -42,12 +47,10 @@ class ConnectSpotifyViewModel @Inject constructor(
 
     private suspend fun processLibraryScanUpdates() {
         workManager.getWorkInfosByTagLiveData(LIBRARY_SCAN_WORK_TAG).asFlow()
-            .collect { libraryScanWorkInfos ->
-
-                val libraryScanState = libraryScanWorkInfos.firstOrNull()?.state
+            .map { it.firstOrNull()?.state }.filterNotNull().collect { libraryScanState ->
 
                 updateUiState {
-                    copy(libraryScanState = libraryScanState)
+                    copy(libraryScanInProgress = !libraryScanState.isFinished)
                 }
 
                 if (libraryScanState == WorkInfo.State.SUCCEEDED && spotifyConnected()) {
@@ -82,6 +85,8 @@ class ConnectSpotifyViewModel @Inject constructor(
         }
     }
 
+    private fun spotifyConnected() = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
+
     private fun scanLibrary() {
         if (uiState.value.libraryScanInProgress) return
 
@@ -96,10 +101,16 @@ class ConnectSpotifyViewModel @Inject constructor(
                 ExistingWorkPolicy.REPLACE,
                 workRequest
             )
+
+            updateUiState {
+                copy(libraryScanInProgress = true)
+            }
+
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, true)
+            }
         }
     }
-
-    private fun spotifyConnected() = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 
     companion object {
         private const val LIBRARY_SCAN_WORK_TAG = "initial_library_scan"

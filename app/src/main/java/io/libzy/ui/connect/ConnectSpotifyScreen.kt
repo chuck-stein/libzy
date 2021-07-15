@@ -30,6 +30,7 @@ import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
+import io.libzy.util.navigate
 import kotlinx.coroutines.launch
 
 /**
@@ -54,7 +55,8 @@ fun ConnectSpotifyScreen(navController: NavController, viewModelFactory: ViewMod
 
     EventHandler(viewModel.uiEvents) {
         when (it) {
-            ConnectSpotifyUiEvent.SPOTIFY_CONNECTED -> navController.navigate(Screen.Query.route)
+            ConnectSpotifyUiEvent.SPOTIFY_CONNECTED ->
+                navController.navigate(Screen.Query.route, popUpToInclusive = Screen.ConnectSpotify.route)
             ConnectSpotifyUiEvent.SPOTIFY_SCAN_FAILED -> showSnackbar(scanFailedMsg)
             ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED -> showSnackbar(spotifyAuthFailedMsg)
         }
