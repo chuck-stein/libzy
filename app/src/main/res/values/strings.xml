@@ -29,9 +29,6 @@
     <!-- Navigation -->
     <string name="cd_navigate_back">Navigate back</string>
 
-    <!-- Launch Screen -->
-    <string name="cd_app_logo">App logo</string>
-
     <!-- Connect Spotify Screen -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
     <string name="snackbar_spotify_authorization_failed">Failed to authorize your Spotify account! Please try again.</string>

@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LibzyContent {
-                LibzyNavGraph(viewModelFactory)
+                LibzyNavGraph(viewModelFactory, viewModel::isSpotifyConnected, ::finish)
             }
         }
     }

@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.core.app.TaskStackBuilder
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.navigation.NavController
 import io.libzy.ui.MainActivity
 
 fun appInForeground() = ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
@@ -17,13 +16,5 @@ fun Context.createNotificationTapAction(uri: Uri): PendingIntent? {
     return with(TaskStackBuilder.create(this)) {
         addNextIntentWithParentStack(intent)
         getPendingIntent(uri.hashCode(), PendingIntent.FLAG_UPDATE_CURRENT)
-    }
-}
-
-fun NavController.navigate(route: String, popUpToInclusive: String) {
-    navigate(route) {
-        popUpTo(popUpToInclusive) {
-            inclusive = true
-        }
     }
 }

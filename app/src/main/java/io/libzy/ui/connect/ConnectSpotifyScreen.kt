@@ -1,5 +1,6 @@
 package io.libzy.ui.connect
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,12 +26,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
-import io.libzy.ui.Destination
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
-import io.libzy.util.navigate
 import kotlinx.coroutines.launch
 
 /**
@@ -38,7 +37,11 @@ import kotlinx.coroutines.launch
  * account and scan their library, or the progress of the library scan if it has started.
  */
 @Composable
-fun ConnectSpotifyScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory) {
+fun ConnectSpotifyScreen(
+    navController: NavController,
+    viewModelFactory: ViewModelProvider.Factory,
+    exitApp: () -> Unit
+) {
     val viewModel: ConnectSpotifyViewModel = viewModel(factory = viewModelFactory)
     val uiState by viewModel.uiState
     val scope = rememberCoroutineScope()
@@ -55,12 +58,13 @@ fun ConnectSpotifyScreen(navController: NavController, viewModelFactory: ViewMod
 
     EventHandler(viewModel.uiEvents) {
         when (it) {
-            ConnectSpotifyUiEvent.SPOTIFY_CONNECTED ->
-                navController.navigate(Destination.Query.route, popUpToInclusive = Destination.NavHost.route)
+            ConnectSpotifyUiEvent.SPOTIFY_CONNECTED -> navController.popBackStack() // this screen is always a redirect
             ConnectSpotifyUiEvent.SPOTIFY_SCAN_FAILED -> showSnackbar(scanFailedMsg)
             ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED -> showSnackbar(spotifyAuthFailedMsg)
         }
     }
+
+    BackHandler(onBack = exitApp)
 
     LaunchedEffect(Unit) {
         viewModel.sendScreenViewAnalyticsEvent()

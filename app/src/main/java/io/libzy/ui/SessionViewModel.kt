@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-// TODO: include previous LaunchViewModel functionality
 class SessionViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val userProfileRepository: UserProfileRepository,
@@ -101,4 +100,6 @@ class SessionViewModel @Inject constructor(
             }
         }
     }
+
+    fun isSpotifyConnected() = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 }
