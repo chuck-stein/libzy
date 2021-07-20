@@ -7,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.toFontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import io.libzy.R
@@ -32,10 +32,7 @@ private val DarkColors = darkColors(
 )
 
 private val LibzyTypography = Typography(
-    defaultFontFamily = FontFamily(
-        Font(R.font.varela_round),
-        Font(R.font.varela_round, FontWeight.Bold)
-    ),
+    defaultFontFamily = Font(R.font.varela_round).toFontFamily(),
     h1 = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 60.sp,
@@ -75,5 +72,11 @@ private val LibzyTypography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         textAlign = TextAlign.Center
-    )
+    ),
+    button = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 14.sp,
+        textAlign = TextAlign.Center,
+        letterSpacing = 1.1.sp
+    ),
 )

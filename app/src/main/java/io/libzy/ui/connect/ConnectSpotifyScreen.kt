@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
@@ -28,6 +27,7 @@ import androidx.navigation.NavController
 import io.libzy.R
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
+import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import kotlinx.coroutines.launch
@@ -98,9 +98,7 @@ private fun ConnectSpotifyScreen(
 @Composable
 private fun ConnectSpotifyButton(onConnectSpotifyClick: () -> Unit) {
     Frame {
-        Button(onConnectSpotifyClick) {
-            Text(stringResource(R.string.connect_spotify_button_text))
-        }
+        LibzyButton(R.string.connect_spotify_button_text, onClick = onConnectSpotifyClick)
     }
 }
 

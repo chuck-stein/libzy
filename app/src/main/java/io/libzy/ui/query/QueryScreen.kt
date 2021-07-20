@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
@@ -48,6 +47,7 @@ import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
+import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.theme.LibzyDimens.BUTTON_GROUP_HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyDimens.BUTTON_GROUP_SPACING
@@ -179,12 +179,11 @@ private fun QueryScreen(
                 onReadyClick,
                 modifier = Modifier.weight(1f)
             )
-            Button(
-                onNoPreferenceClick,
-                modifier = Modifier.padding(bottom = 24.dp, start = HORIZONTAL_INSET.dp, end = HORIZONTAL_INSET.dp)
-            ) {
-                Text(stringResource(R.string.no_preference))
-            }
+            LibzyButton(
+                R.string.no_preference,
+                Modifier.padding(bottom = 24.dp, start = HORIZONTAL_INSET.dp, end = HORIZONTAL_INSET.dp),
+                onNoPreferenceClick
+            )
         }
     }
 }
@@ -324,36 +323,26 @@ private fun FamiliarityStep(
     onUnderappreciatedGemClick: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Button(onCurrentFavoriteClick, modifier = BUTTON_IN_GROUP_MODIFIER) {
-            Text(stringResource(R.string.a_current_favorite))
-        }
+        LibzyButton(R.string.a_current_favorite, BUTTON_IN_GROUP_MODIFIER, onCurrentFavoriteClick)
 
         ButtonGroupSpacer()
 
-        Button(onReliableClassicClick, modifier = BUTTON_IN_GROUP_MODIFIER) {
-            Text(stringResource(R.string.a_reliable_classic))
-        }
+        LibzyButton(R.string.a_reliable_classic, BUTTON_IN_GROUP_MODIFIER, onReliableClassicClick)
 
         ButtonGroupSpacer()
 
-        Button(onUnderappreciatedGemClick, modifier = BUTTON_IN_GROUP_MODIFIER) {
-            Text(stringResource(R.string.an_underappreciated_gem))
-        }
+        LibzyButton(R.string.an_underappreciated_gem, BUTTON_IN_GROUP_MODIFIER, onUnderappreciatedGemClick)
     }
 }
 
 @Composable
 private fun InstrumentalnessStep(onInstrumentalClick: () -> Unit, onVocalClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Button(onInstrumentalClick, modifier = BUTTON_IN_GROUP_MODIFIER) {
-            Text(stringResource(R.string.instrumental))
-        }
+        LibzyButton(R.string.instrumental, BUTTON_IN_GROUP_MODIFIER, onInstrumentalClick)
 
         ButtonGroupSpacer()
 
-        Button(onVocalClick, modifier = BUTTON_IN_GROUP_MODIFIER) {
-            Text(stringResource(R.string.vocal))
-        }
+        LibzyButton(R.string.vocal, BUTTON_IN_GROUP_MODIFIER, onVocalClick)
     }
 }
 
@@ -398,13 +387,15 @@ private fun SliderQueryStep(
                 width = Dimension.preferredWrapContent
             }
         )
-        Button(onClick = { onContinueClick(sliderValue) }, modifier = Modifier.constrainAs(continueButton) {
-            centerHorizontallyTo(parent)
-            top.linkTo(slider.bottom, margin = verticalSpacing)
-            bottom.linkTo(parent.bottom, margin = verticalSpacing)
-        }) {
-            Text(stringResource(R.string.continue_button))
-        }
+        LibzyButton(
+            textResId = R.string.continue_button,
+            onClick = { onContinueClick(sliderValue) },
+            modifier = Modifier.constrainAs(continueButton) {
+                centerHorizontallyTo(parent)
+                top.linkTo(slider.bottom, margin = verticalSpacing)
+                bottom.linkTo(parent.bottom, margin = verticalSpacing)
+            }
+        )
     }
 }
 
@@ -432,9 +423,7 @@ private fun GenresStep(
             }
         }
 
-        Button(onReadyClick, modifier = Modifier.padding(bottom = 16.dp)) {
-            Text(stringResource(R.string.ready_button))
-        }
+        LibzyButton(R.string.ready_button, Modifier.padding(bottom = 16.dp), onReadyClick)
     }
 }
 
