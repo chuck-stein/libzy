@@ -1,0 +1,7 @@
+<resources>
+    <style name="LibzyAppTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:statusBarColor">@color/dark_purple</item>
+        <item name="android:navigationBarColor">@color/dark_purple</item>
+        <item name="android:colorBackground">@color/dark_purple</item>
+    </style>
+</resources>

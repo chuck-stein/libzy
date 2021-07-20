@@ -1,8 +1,5 @@
 <resources>
 
-    <!-- Application properties -->
-    <string name="spotify_prefs_name" translatable="false">spotify_preferences</string>
-
     <!-- Spotify SDK -->
     <string name="spotify_client_id" translatable="false">058c796e8b3740d190136f2ebc4d64ab</string>
     <string name="spotify_auth_redirect_uri" translatable="false">io.libzy://spotify-auth</string>
@@ -10,13 +7,6 @@
     <!-- Amplitude SDK -->
     <string name="amplitude_api_key_dev" translatable="false">f1201f6fa3f87ba14fca4e448f3d40b9</string>
     <string name="amplitude_api_key_prod" translatable="false">5257667ce56af0dcc0d10101d455d4d3</string>
-
-    <!-- SharedPreferences keys -->
-    <string name="spotify_connected_key" translatable="false">spotify.connected</string>
-    <string name="spotify_user_id_key" translatable="false">spotify.user.id</string>
-    <string name="spotify_access_token_key" translatable="false">"spotify.token"</string>
-    <string name="spotify_token_expiration_key" translatable="false">spotify.token.expiration</string>
-    <string name="spotify_initial_scan_in_progress_key" translatable="false">spotify.scanning</string>
 
     <!-- Room DB -->
     <string name="database_file_name" translatable="false">spotify_library</string>
@@ -36,16 +26,17 @@
     <string name="initial_library_scan_failed_notification_title">There was a problem scanning your Spotify library!</string>
     <string name="initial_library_scan_failed_notification_text">Please try again.</string>
 
-    <!-- ConnectSpotifyFragment -->
+    <!-- Navigation -->
+    <string name="cd_navigate_back">Navigate back</string>
+
+    <!-- Connect Spotify Screen -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
-    <string name="toast_connecting_spotify_account_failed">Failed to authorize your Spotify account! Please try again.</string>
-    <string name="toast_spotify_generic_network_error">There was a problem connecting to Spotify! Please try again.</string>
-    <string name="toast_library_scan_failed">There was a problem scanning your Spotify library! Please try again.</string>
+    <string name="snackbar_spotify_authorization_failed">Failed to authorize your Spotify account! Please try again.</string>
+    <string name="snackbar_library_scan_failed">There was a problem scanning your Spotify library! Please try again.</string>
     <string name="scanning_library_heading">Scanning your Spotify library…</string>
     <string name="scanning_library_subheading">This may take a few minutes, so feel free to come back later</string>
 
-    <!-- QueryFragment -->
-    <string name="default_greeting_text">Hey there!</string>
+    <!-- Query Screen -->
     <string name="morning_greeting_text">Good morning!</string>
     <string name="afternoon_greeting_text">Good afternoon!</string>
     <string name="evening_greeting_text">Good evening!</string>
@@ -66,15 +57,14 @@
     <string name="arrhythmic">Arrhythmic</string>
     <string name="continue_button">Continue</string>
     <string name="ready_button">Ready, show me some albums!</string>
-    <string name="back_button">back button</string>
 
-    <!-- ResultsFragment -->
+    <!-- Results Screen -->
     <string name="results_header">Here are some suggested albums from your library:</string>
-    <string name="album_title_placeholder">Album Title</string>
-    <string name="artist_name_placeholder">Album Artist</string>
-    <string name="album_art_desc">album artwork</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
     <string name="results_rating_text">How are these suggestions?\n Your feedback is much appreciated!</string>
     <string name="no_results_header">Oops! We couldn\'t quite find the vibe right now. Try looking for something else or saving more albums on Spotify.</string>
+    <string name="cd_album_artwork">Album artwork</string>
+    <string name="cd_filled_rating_star">Filled rating star</string>
+    <string name="cd_unfilled_rating_star">Unfilled rating star</string>
 
 </resources>

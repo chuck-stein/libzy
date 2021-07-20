@@ -5,9 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
-import io.libzy.ui.MainViewModel
+import io.libzy.ui.SessionViewModel
 import io.libzy.ui.connect.ConnectSpotifyViewModel
-import io.libzy.ui.query.QueryResultsViewModel
+import io.libzy.ui.query.QueryViewModel
+import io.libzy.ui.results.ResultsViewModel
 
 @Module
 abstract class ViewModelModule {
@@ -17,8 +18,8 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(MainViewModel::class)
-    abstract fun bindMainViewModel(viewModel: MainViewModel): ViewModel
+    @ViewModelKey(SessionViewModel::class)
+    abstract fun bindSessionViewModel(viewModel: SessionViewModel): ViewModel
 
     @Binds
     @IntoMap
@@ -27,7 +28,11 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(QueryResultsViewModel::class)
-    abstract fun bindQueryResultsViewModel(viewModel: QueryResultsViewModel): ViewModel
+    @ViewModelKey(QueryViewModel::class)
+    abstract fun bindQueryViewModel(viewModel: QueryViewModel): ViewModel
 
+    @Binds
+    @IntoMap
+    @ViewModelKey(ResultsViewModel::class)
+    abstract fun bindResultsViewModel(viewModel: ResultsViewModel): ViewModel
 }

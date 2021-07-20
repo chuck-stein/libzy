@@ -1,5 +1,6 @@
 package io.libzy.repository
 
+import com.adamratzman.spotify.models.SpotifyUserInformation
 import io.libzy.spotify.api.SpotifyApiDelegator
 import timber.log.Timber
 import javax.inject.Inject
@@ -10,19 +11,11 @@ class UserProfileRepository @Inject constructor(
     private val spotifyApi: SpotifyApiDelegator
 ) {
 
-    suspend fun fetchDisplayName(): String? =
+    suspend fun fetchProfileInfo(): SpotifyUserInformation? =
         try {
-            spotifyApi.fetchProfileInformation().displayName
+            spotifyApi.fetchProfileInfo()
         } catch (e: Exception) {
-            Timber.e(e, "Failed to fetch Spotify display name")
-            null
-        }
-
-    suspend fun fetchUserId(): String? =
-        try {
-            spotifyApi.fetchUserId()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to fetch Spotify user ID")
+            Timber.e(e, "Failed to fetch Spotify profile info")
             null
         }
 }

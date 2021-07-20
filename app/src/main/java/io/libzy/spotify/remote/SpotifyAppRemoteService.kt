@@ -1,26 +1,14 @@
 package io.libzy.spotify.remote
 
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
-import com.spotify.protocol.types.PlayerContext
-import com.spotify.protocol.types.PlayerState
 import io.libzy.R
 import timber.log.Timber
 import javax.inject.Inject
 
 class SpotifyAppRemoteService @Inject constructor(private val context: Context) {
-
-    private val _playerState = MutableLiveData<PlayerState>()
-    val playerState: LiveData<PlayerState>
-        get() = _playerState
-
-    private val _playerContext = MutableLiveData<PlayerContext>()
-    val playerContext: LiveData<PlayerContext>
-        get() = _playerContext
 
     private val connectionParams =
         ConnectionParams.Builder(context.getString(R.string.spotify_client_id))
@@ -40,13 +28,13 @@ class SpotifyAppRemoteService @Inject constructor(private val context: Context) 
                 if (remoteInUse) {
                     appRemote = remote
                     // TODO: ensure subscription isn't garbage collected when this function loses scope
-                    // TODO: handle subscription errors/lifecycle in fragment
+                    // TODO: handle subscription errors/lifecycle in UI
                     remote.playerApi.subscribeToPlayerState().setEventCallback {
-                        _playerState.value = it
+                        // TODO: update a StateFlow<PlayerState> if we ever wish to react to player context
                         Timber.d("Spotify switched player state: $it")
                     }
                     remote.playerApi.subscribeToPlayerContext().setEventCallback {
-                        _playerContext.value = it
+                        // TODO: update a StateFlow<PlayerContext> if we ever wish to react to player context
                         Timber.d("Spotify switched player context: $it")
                     }
                 }

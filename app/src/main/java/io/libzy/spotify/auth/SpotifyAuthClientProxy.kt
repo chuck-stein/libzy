@@ -2,6 +2,6 @@ package io.libzy.spotify.auth
 
 interface SpotifyAuthClientProxy {
 
-    fun initiateAuthRequest(callback: SpotifyAuthCallback)
+    fun initiateSpotifyAuthRequest(callback: SpotifyAuthCallback)
 
 }

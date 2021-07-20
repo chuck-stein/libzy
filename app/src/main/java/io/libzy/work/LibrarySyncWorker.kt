@@ -3,18 +3,27 @@ package io.libzy.work
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
+import androidx.work.ListenableWorker
+import androidx.work.WorkerFactory
+import androidx.work.WorkerParameters
 import com.adamratzman.spotify.SpotifyException
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
+import io.libzy.ui.Destination
+import io.libzy.util.appInForeground
+import io.libzy.util.createNotificationTapAction
 import io.libzy.util.currentTimeSeconds
-import io.libzy.util.extensions.appInForeground
-import io.libzy.util.extensions.createNotificationTapAction
 import timber.log.Timber
+import kotlin.time.DurationUnit
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
@@ -34,13 +43,10 @@ class LibrarySyncWorker(
     }
 
     private val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
-    private val spotifyPrefs = applicationContext.getSharedPreferences(
-        applicationContext.getString(R.string.spotify_prefs_name),
-        Context.MODE_PRIVATE
-    )
+    private val sharedPrefs = applicationContext.getSharedPrefs()
 
     override suspend fun doWork(): Result {
-        val accessTokenExpiration = spotifyPrefs.getInt(applicationContext.getString(R.string.spotify_token_expiration_key), 0)
+        val accessTokenExpiration = sharedPrefs.getInt(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, 0)
         if (currentTimeSeconds() > accessTokenExpiration && !appInForeground()) {
             // If auth has expired and the app is in the background,
             // retry the library sync later since we need to be in the foreground to refresh auth
@@ -74,22 +80,22 @@ class LibrarySyncWorker(
 
         if (isInitialScan) {
             setForeground(createInitialScanForegroundInfo())
-            spotifyPrefs.edit {
-                putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), true)
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, true)
             }
         }
     }
 
     private fun afterLibrarySync(numAlbumsSynced: TimedValue<Int>) {
         if (isInitialScan) {
-            spotifyPrefs.edit {
-                putBoolean(applicationContext.getString(R.string.spotify_connected_key), true)
-                putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, true)
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, false)
             }
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_succeeded_notification_title,
                 notificationTextResId = R.string.initial_library_scan_succeeded_notification_text,
-                tapDestinationResId = R.id.queryFragment
+                tapDestinationUri = Destination.Query.deepLinkUri
             )
         }
         Timber.i("Successfully synced Spotify library data")
@@ -97,7 +103,7 @@ class LibrarySyncWorker(
             LibrarySyncResult.SUCCESS,
             isInitialScan,
             numAlbumsSynced.value,
-            numAlbumsSynced.duration.inSeconds
+            numAlbumsSynced.duration.toDouble(DurationUnit.SECONDS)
         )
     }
 
@@ -107,13 +113,13 @@ class LibrarySyncWorker(
         Timber.e(exception, "Failed to sync Spotify library data")
         analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialScan)
         if (isInitialScan) {
-            spotifyPrefs.edit {
-                putBoolean(applicationContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, false)
             }
             notifyLibraryScanEnded(
                 notificationTitleResId = R.string.initial_library_scan_failed_notification_title,
                 notificationTextResId = R.string.initial_library_scan_failed_notification_text,
-                tapDestinationResId = R.id.connectSpotifyFragment
+                tapDestinationUri = Destination.ConnectSpotify.deepLinkUri
             )
         }
         return Result.failure()
@@ -126,7 +132,7 @@ class LibrarySyncWorker(
         val notification = NotificationCompat.Builder(applicationContext, notificationChannelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(notificationTitle)
-            .setContentIntent(applicationContext.createNotificationTapAction(R.id.connectSpotifyFragment))
+            .setContentIntent(applicationContext.createNotificationTapAction(Destination.ConnectSpotify.deepLinkUri))
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setOngoing(true)
             .setShowWhen(false)
@@ -145,7 +151,7 @@ class LibrarySyncWorker(
     private fun notifyLibraryScanEnded(
         notificationTitleResId: Int,
         notificationTextResId: Int,
-        tapDestinationResId: Int
+        tapDestinationUri: Uri
     ) {
         if (appInForeground()) return // no need to send notification, user will see that the scan has ended
 
@@ -157,7 +163,7 @@ class LibrarySyncWorker(
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(notificationTitle)
             .setContentText(notificationText)
-            .setContentIntent(applicationContext.createNotificationTapAction(tapDestinationResId))
+            .setContentIntent(applicationContext.createNotificationTapAction(tapDestinationUri))
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setTicker(notificationTitle)

@@ -1,32 +1,94 @@
 package io.libzy.ui.connect
 
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
+import androidx.core.content.edit
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.work.*
-import io.libzy.R
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import io.libzy.analytics.AnalyticsDispatcher
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
+import io.libzy.spotify.auth.SpotifyAuthDispatcher
+import io.libzy.spotify.auth.SpotifyAuthException
+import io.libzy.ui.common.LibzyViewModel
+import io.libzy.util.handle
+import io.libzy.util.unwrap
+import io.libzy.util.wrapResult
 import io.libzy.work.LibrarySyncWorker
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class ConnectSpotifyViewModel @Inject constructor(private val appContext: Context) : ViewModel() {
-
-    companion object {
-        private const val LIBRARY_SCAN_WORK_TAG = "initial_library_scan"
-    }
+class ConnectSpotifyViewModel @Inject constructor(
+    appContext: Context,
+    private val analyticsDispatcher: AnalyticsDispatcher,
+    private val spotifyAuthDispatcher: SpotifyAuthDispatcher
+) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
     private val workManager = WorkManager.getInstance(appContext)
 
-    val libraryScanWorkInfo: LiveData<List<WorkInfo>> = workManager.getWorkInfosByTagLiveData(LIBRARY_SCAN_WORK_TAG)
+    private val sharedPrefs = appContext.getSharedPrefs()
 
-    fun scanLibrary() {
-        val alreadyScanning =
-            appContext.getSharedPreferences(appContext.getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
-                .getBoolean(appContext.getString(R.string.spotify_initial_scan_in_progress_key), false)
-        // TODO: instead of checking shared prefs here, check if the worker is running
-        //  (then can we can probably remove these shared prefs scanning state properties)
-        if (alreadyScanning) return
+    override val initialUiState = ConnectSpotifyUiState(
+        libraryScanInProgress = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, false)
+    )
+
+    init {
+        viewModelScope.launch {
+            processLibraryScanUpdates()
+        }
+    }
+
+    private suspend fun processLibraryScanUpdates() {
+        workManager.getWorkInfosByTagLiveData(LIBRARY_SCAN_WORK_TAG).asFlow()
+            .map { it.firstOrNull()?.state }.filterNotNull().collect { libraryScanState ->
+
+                updateUiState {
+                    copy(libraryScanInProgress = !libraryScanState.isFinished)
+                }
+
+                if (libraryScanState == WorkInfo.State.SUCCEEDED && spotifyConnected()) {
+                    produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_CONNECTED)
+                } else if (libraryScanState == WorkInfo.State.FAILED || libraryScanState == WorkInfo.State.CANCELLED) {
+                    produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_SCAN_FAILED)
+                }
+            }
+    }
+
+    fun sendScreenViewAnalyticsEvent() {
+        analyticsDispatcher.sendViewConnectSpotifyScreenEvent()
+    }
+
+    fun onConnectSpotifyClick() {
+        val currentlyConnectedUserId = sharedPrefs.getString(SharedPrefKeys.SPOTIFY_USER_ID, null)
+        analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId)
+
+        if (spotifyConnected()) {
+            produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_CONNECTED)
+            return
+        }
+
+        viewModelScope.launch {
+            wrapResult {
+                spotifyAuthDispatcher.requestAuthorization(withTimeout = false)
+            }.handle(SpotifyAuthException::class) {
+                produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED)
+            }.unwrap {
+                scanLibrary()
+            }
+        }
+    }
+
+    private fun spotifyConnected() = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
+
+    private fun scanLibrary() {
+        if (uiState.value.libraryScanInProgress) return
 
         viewModelScope.launch {
             val workRequest = OneTimeWorkRequestBuilder<LibrarySyncWorker>()
@@ -39,6 +101,18 @@ class ConnectSpotifyViewModel @Inject constructor(private val appContext: Contex
                 ExistingWorkPolicy.REPLACE,
                 workRequest
             )
+
+            updateUiState {
+                copy(libraryScanInProgress = true)
+            }
+
+            sharedPrefs.edit {
+                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, true)
+            }
         }
+    }
+
+    companion object {
+        private const val LIBRARY_SCAN_WORK_TAG = "initial_library_scan"
     }
 }
