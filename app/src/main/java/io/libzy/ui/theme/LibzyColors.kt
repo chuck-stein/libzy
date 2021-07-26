@@ -6,6 +6,9 @@ import androidx.compose.ui.graphics.Color
 /**
  * Contains the colors associated with Libzy's [MaterialTheme] implementation,
  * as well as any other colors used in the app's Compose UI.
+ *
+ * If a color defined both here and in colors.xml is to change,
+ * be sure to change it in both places.
  */
 object LibzyColors {
 
