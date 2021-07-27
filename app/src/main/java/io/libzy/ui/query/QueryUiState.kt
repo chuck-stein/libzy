@@ -2,7 +2,6 @@ package io.libzy.ui.query
 
 import io.libzy.domain.Query
 
-// TODO: throw exception in initializer if current step is out of bounds of querySteps or currentStepIndex is negative
 data class QueryUiState(
     val querySteps: List<QueryStep> = defaultQuerySteps,
     val currentStepIndex: Int = 0,

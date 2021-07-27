@@ -68,11 +68,9 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
     val spotifyRemoteFailMsg = stringResource(R.string.toast_spotify_remote_failed)
 
     EventHandler(viewModel.uiEvents) {
-        when (it) {
-            ResultsUiEvent.SPOTIFY_REMOTE_FAILURE -> {
-                scope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(spotifyRemoteFailMsg, duration = SnackbarDuration.Short)
-                }
+        if (it == ResultsUiEvent.SPOTIFY_REMOTE_FAILURE) {
+            scope.launch {
+                scaffoldState.snackbarHostState.showSnackbar(spotifyRemoteFailMsg, duration = SnackbarDuration.Short)
             }
         }
     }

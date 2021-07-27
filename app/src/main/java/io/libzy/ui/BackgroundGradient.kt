@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import io.libzy.ui.theme.LibzyColors
 
-private const val GRADIENT_ANIMATION_DURATION_MILLIS = 18000
+private const val GRADIENT_ANIMATION_DURATION_MILLIS = 18_000
 
 @Composable
 fun BackgroundGradient(content: @Composable () -> Unit = {}) {

@@ -30,7 +30,7 @@ class SpotifyAppRemoteService @Inject constructor(private val context: Context) 
                     // TODO: ensure subscription isn't garbage collected when this function loses scope
                     // TODO: handle subscription errors/lifecycle in UI
                     remote.playerApi.subscribeToPlayerState().setEventCallback {
-                        // TODO: update a StateFlow<PlayerState> if we ever wish to react to player context
+                        // TODO: update a StateFlow<PlayerState> if we ever wish to react to player state
                         Timber.d("Spotify switched player state: $it")
                     }
                     remote.playerApi.subscribeToPlayerContext().setEventCallback {

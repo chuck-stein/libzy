@@ -8,7 +8,8 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 
 /**
- * Observes the [Lifecycle] of the current [LocalLifecycleOwner] and calls the given callbacks for each lifecycle event.
+ * Observes the [Lifecycle] of the current [LocalLifecycleOwner]
+ * and calls the given callbacks for each corresponding lifecycle event.
  *
  * Removes the observer when this composable leaves the composition.
  */

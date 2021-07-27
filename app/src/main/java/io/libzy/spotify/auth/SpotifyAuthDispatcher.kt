@@ -23,7 +23,7 @@ TODO:
 class SpotifyAuthDispatcher @Inject constructor() {
 
     companion object {
-        private const val AUTH_TIMEOUT = 10000 // in seconds
+        private const val AUTH_TIMEOUT = 10 // in seconds
     }
 
     var authClientProxy: SpotifyAuthClientProxy? = null
