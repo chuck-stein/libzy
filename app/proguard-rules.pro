@@ -23,3 +23,4 @@
 # Amplitude docs say to add the following line, but the package is not recognized
 #-keep class com.google.android.gms.ads.** { *; }
 -dontwarn okio.**
+-keep class com.adamratzman.spotify.** { *; }
