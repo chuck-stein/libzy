@@ -51,22 +51,20 @@ class QueryViewModel @Inject constructor(
             copy(
                 previousStepIndex = currentStepIndex,
                 currentStepIndex = newStepIndex.coerceIn(querySteps.indices)
-            ).withRecommendedGenresIfNecessary()
+            ).withUpdatedGenresIfNecessary()
         }
         sendQuestionViewAnalyticsEvent()
     }
 
-    private fun QueryUiState.withRecommendedGenresIfNecessary() =
+    private fun QueryUiState.withUpdatedGenresIfNecessary() =
         when (currentStep) {
-            QueryStep.GENRES -> copy(
-                recommendedGenres = recommendationService.recommendGenres(
-                    query = query,
-                    libraryAlbums = libraryAlbums.value
+            QueryStep.GENRES -> {
+                val recommendedGenres = recommendationService.recommendGenres(query, libraryAlbums.value)
+                copy(
+                    recommendedGenres = recommendedGenres,
+                    query = query.copy(genres = query.genres.orEmpty().intersect(recommendedGenres.take(30))) // TODO: remove magic number
                 )
-            // TODO: remove any selected genres from query that are not in the newly recommended genres?
-            //  or should the algorithm handle selecting ANY genres, not just those recommended?
-            //  if the latter, then we should display the selected genres to the user in QueryStep
-            )
+            }
             else -> this
         }
 
