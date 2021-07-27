@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -84,6 +85,14 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
             viewModel.sendResultsRating()
         }
     )
+
+    DisposableEffect(viewModel) {
+        onDispose {
+            // We want to disconnect the Spotify remote when this screen leaves the composition,
+            // in addition to when the lifecycle reaches the STOPPED state.
+            viewModel.disconnectSpotifyAppRemote()
+        }
+    }
 
     ResultsScreen(
         uiState = uiState,
