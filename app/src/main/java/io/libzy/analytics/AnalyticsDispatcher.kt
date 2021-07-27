@@ -1,6 +1,7 @@
 package io.libzy.analytics
 
 import android.app.Application
+import android.content.Context
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ACOUSTICNESS
@@ -46,6 +47,8 @@ import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTED
 import io.libzy.domain.AlbumResult
 import io.libzy.domain.Query
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.util.plus
 import io.libzy.util.toString
@@ -62,15 +65,21 @@ import kotlin.math.roundToInt
  * with any method parameters needed to send along event properties.
  */
 @Singleton
-class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository: UserLibraryRepository) {
-
+class AnalyticsDispatcher @Inject constructor(
+    private val userLibraryRepository: UserLibraryRepository,
+    appContext: Context
+) {
     private val amplitude = Amplitude.getInstance()
+
+    private val sharedPrefs = appContext.getSharedPrefs()
 
     fun initialize(application: Application, apiKey: String) {
         amplitude
             .trackSessionEvents(true)
             .initialize(application, apiKey)
             .enableForegroundTracking(application)
+
+        sharedPrefs.getString(SharedPrefKeys.SPOTIFY_USER_ID, null)?.let { setUserId(it) }
     }
 
     // ~~~~~~~~~~~~~~~~~~ User Properties  ~~~~~~~~~~~~~~~~~~
@@ -87,7 +96,6 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
      */
     private fun Identify.increment(property: String) = add(property, 1)
 
-    // TODO: set this from sharedprefs if we have one at initialization time, unless Amplitude identification is already persistent between app processes
     fun setUserId(userId: String) {
         amplitude.userId = userId
     }
