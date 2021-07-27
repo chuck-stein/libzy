@@ -3,15 +3,14 @@
 buildscript {
     ext {
         kotlin_version = '1.5.10'
-        compose_version = '1.0.0-rc01'
-        navigation_version = '2.3.5'
+        compose_version = '1.0.0-rc02'
     }
     repositories {
         mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.0-alpha02'
+        classpath 'com.android.tools.build:gradle:7.1.0-alpha03'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         classpath 'com.google.gms:google-services:4.3.8'
