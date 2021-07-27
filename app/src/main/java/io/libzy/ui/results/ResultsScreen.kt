@@ -22,7 +22,6 @@ import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -75,12 +74,11 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
         }
     }
 
-    LaunchedEffect(viewModel, query) {
-        viewModel.recommendAlbums(query)
-    }
-
     LifecycleObserver(
-        onStart = { viewModel.connectSpotifyAppRemote() },
+        onStart = {
+            viewModel.connectSpotifyAppRemote()
+            viewModel.recommendAlbums(query)
+        },
         onStop = {
             viewModel.disconnectSpotifyAppRemote()
             viewModel.sendResultsRating()
