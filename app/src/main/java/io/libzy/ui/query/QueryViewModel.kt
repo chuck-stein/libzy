@@ -62,7 +62,12 @@ class QueryViewModel @Inject constructor(
                 val recommendedGenres = recommendationService.recommendGenres(query, libraryAlbums.value)
                 copy(
                     recommendedGenres = recommendedGenres,
-                    query = query.copy(genres = query.genres.orEmpty().intersect(recommendedGenres.take(30))) // TODO: remove magic number
+                    query = query.copy(
+                        genres = query.genres
+                            .orEmpty()
+                            .intersect(recommendedGenres.take(30)) // TODO: remove magic number
+                            .takeUnless { it.isEmpty() }
+                    )
                 )
             }
             else -> this

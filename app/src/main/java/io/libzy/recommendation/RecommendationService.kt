@@ -57,36 +57,36 @@ class RecommendationService @Inject constructor() {
 
     private fun calculateAlbumRelevance(album: LibraryAlbum, query: Query): Float {
 
-        fun <T, V> calculateAlbumRelevanceCategory(queryParam: T?, calculateRelevance: (T) -> V): V? {
+        fun <T, V> calculateRelevanceIfNeeded(queryParam: T?, calculateRelevance: (T) -> V): V? {
             // a null relevance score means the user has no preference for this relevance category
-            return if (queryParam == null) null else calculateRelevance(queryParam)
+            return queryParam?.let { calculateRelevance(queryParam) }
         }
 
-        val genreRelevance: Boolean? = calculateAlbumRelevanceCategory(query.genres) { genres ->
+        val genreRelevance: Boolean? = calculateRelevanceIfNeeded(query.genres?.takeIf { it.isNotEmpty() }) { genres ->
             calculateGenreRelevance(album.genres, genres)
         }
 
         if (genreRelevance != null && !genreRelevance) return 0F // only show results that are of a selected genre
 
-        val familiarityRelevance: Boolean? = calculateAlbumRelevanceCategory(query.familiarity) { familiarity ->
+        val familiarityRelevance: Boolean? = calculateRelevanceIfNeeded(query.familiarity) { familiarity ->
             calculateFamiliarityRelevance(album.familiarity, familiarity)
         }
 
         if (familiarityRelevance != null && !familiarityRelevance) return 0F // only show results of selected familiarity
 
-        val instrumentalnessRelevance: Float? = calculateAlbumRelevanceCategory(query.instrumental) { instrumental ->
+        val instrumentalnessRelevance: Float? = calculateRelevanceIfNeeded(query.instrumental) { instrumental ->
             calculateInstrumentalnessRelevance(album.audioFeatures.instrumentalness, instrumental)
         }
-        val acousticnessRelevance: Float? = calculateAlbumRelevanceCategory(query.acousticness) { acousticness ->
+        val acousticnessRelevance: Float? = calculateRelevanceIfNeeded(query.acousticness) { acousticness ->
             calculateGenericQueryCategoryRelevance(album.audioFeatures.acousticness, acousticness)
         }
-        val valenceRelevance: Float? = calculateAlbumRelevanceCategory(query.valence) { valence ->
+        val valenceRelevance: Float? = calculateRelevanceIfNeeded(query.valence) { valence ->
             calculateGenericQueryCategoryRelevance(album.audioFeatures.valence, valence)
         }
-        val energyRelevance: Float? = calculateAlbumRelevanceCategory(query.energy) { energy ->
+        val energyRelevance: Float? = calculateRelevanceIfNeeded(query.energy) { energy ->
             calculateGenericQueryCategoryRelevance(album.audioFeatures.energy, energy)
         }
-        val danceabilityRelevance: Float? = calculateAlbumRelevanceCategory(query.danceability) { danceability ->
+        val danceabilityRelevance: Float? = calculateRelevanceIfNeeded(query.danceability) { danceability ->
             calculateGenericQueryCategoryRelevance(album.audioFeatures.danceability, danceability)
         }
 
