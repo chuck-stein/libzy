@@ -1,22 +1,23 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'androidx.navigation.safeargs'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlinx-serialization'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-parcelize'
+    id 'kotlin-kapt'
+    id 'kotlinx-serialization'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
+}
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "29.0.3"
+    compileSdk 30
 
     defaultConfig {
         applicationId "io.libzy"
-        minSdkVersion 26
-        targetSdkVersion 30
-        versionCode 4
-        versionName "0.1.3-haneul-fix"
+        minSdk 26
+        targetSdk 30
+        versionCode 5
+        versionName "0.2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -73,10 +74,20 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-        freeCompilerArgs = ["-XXLanguage:+NewInference", "-Xopt-in=kotlin.time.ExperimentalTime"]
+        jvmTarget = '1.8'
+        useIR = true
+        freeCompilerArgs = ["-Xopt-in=kotlin.time.ExperimentalTime"]
     }
 
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion compose_version
+    }
+
+    // Required for conflicts with adamint's Spotify API wrapper
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/LICENSE'
@@ -95,11 +106,8 @@ android {
 
 repositories {
     mavenCentral()
-    google() // For Glide
-    jcenter() // For adamint Spotify API wrapper
-    flatDir {
-        dirs 'libs'
-    }
+    google()
+    jcenter() // temporarily required for the latest version of adamint's Spotify API wrapper
 }
 
 dependencies {
@@ -111,40 +119,49 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     // Android
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.core:core-ktx:1.5.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.google.android.material:material:1.5.0-alpha01'
 
     // Lifecycle
-    def lifecycle_version = "2.3.0"
+    def lifecycle_version = "2.4.0-alpha02"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
     // Navigation
-    def navigation_version = "2.3.4"
-    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
-    implementation "androidx.navigation:navigation-dynamic-features-fragment:$navigation_version"
-    androidTestImplementation "androidx.navigation:navigation-testing:$navigation_version"
+    implementation "androidx.navigation:navigation-compose:2.4.0-alpha04"
+    androidTestImplementation "androidx.navigation:navigation-testing:2.3.5"
 
     // WorkManager
     def work_version = "2.5.0"
     implementation "androidx.work:work-runtime-ktx:$work_version"
     androidTestImplementation "androidx.work:work-testing:$work_version"
 
-    // Android UI
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.fragment:fragment-ktx:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0-alpha01'
+    // Compose
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling:$compose_version"
+    implementation "androidx.compose.foundation:foundation:$compose_version"
+    implementation "androidx.compose.material:material:$compose_version"
+    implementation "androidx.compose.material:material-icons-core:$compose_version"
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
+    implementation "androidx.activity:activity-compose:1.3.0-rc02"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-beta01"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
 
-    // UI
-    implementation 'com.facebook.shimmer:shimmer:0.5.0'
-    implementation 'com.airbnb.android:paris:1.4.0'
+    // Accompanist
+    def accompanist_version = "0.13.0"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
+
+    // Glide
     def glide_version = "4.11.0"
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
@@ -156,14 +173,14 @@ dependencies {
     implementation 'com.adamratzman:spotify-api-kotlin-core:3.8.0'
 
     // Database
-    def room_version = "2.2.6"
+    def room_version = "2.3.0"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     testImplementation "androidx.room:room-testing:$room_version"
 
     // Dependency Injection
-    def dagger_version = "2.27"
+    def dagger_version = "2.37"
     implementation "com.google.dagger:dagger:$dagger_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
@@ -180,9 +197,9 @@ dependencies {
     implementation 'com.amplitude:android-sdk:2.23.2'
     
     // Testing
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support:support-annotations:28.0.0'
 

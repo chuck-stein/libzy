@@ -5,7 +5,7 @@ import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import io.libzy.R
-import io.libzy.database.UserLibraryDatabase
+import io.libzy.persistence.database.UserLibraryDatabase
 import javax.inject.Singleton
 
 @Module

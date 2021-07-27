@@ -3,12 +3,12 @@ package io.libzy.repository
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
 import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.AudioFeatures
-import io.libzy.database.UserLibraryDatabase
-import io.libzy.database.entity.DbAlbum
-import io.libzy.database.entity.DbGenre
-import io.libzy.database.entity.junction.AlbumGenreJunction
-import io.libzy.database.tuple.AudioFeaturesTuple
-import io.libzy.database.tuple.FamiliarityTuple
+import io.libzy.persistence.database.UserLibraryDatabase
+import io.libzy.persistence.database.entity.DbAlbum
+import io.libzy.persistence.database.entity.DbGenre
+import io.libzy.persistence.database.entity.junction.AlbumGenreJunction
+import io.libzy.persistence.database.tuple.AudioFeaturesTuple
+import io.libzy.persistence.database.tuple.FamiliarityTuple
 import io.libzy.spotify.api.SpotifyApiDelegator
 import io.libzy.util.percentageToFloat
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +23,7 @@ class UserLibraryRepository @Inject constructor(
     private val spotifyApi: SpotifyApiDelegator
 ) {
 
-    // TODO: should this initialization be done in a coroutine since it's accessing the db?
-    //  Why is there no warning saying that Room shouldn't be accessed from main thread?
-    val libraryAlbums = database.albumDao.getAllAlbums()
+    val albums = database.albumDao.getAllAlbums()
 
     /**
      * Run a Spotify library sync by requesting the user's latest library data from the Spotify API,
@@ -137,7 +135,7 @@ class UserLibraryRepository @Inject constructor(
             spotifyAlbum.uri.uri,
             spotifyAlbum.name,
             spotifyAlbum.artists.joinToString(", ") { it.name },
-            spotifyAlbum.images.getOrNull(0)?.url,
+            spotifyAlbum.images.firstOrNull()?.url,
             spotifyAlbum.releaseDate.year,
             percentageToFloat(spotifyAlbum.popularity),
             getAlbumAudioFeatures(spotifyAlbum),

@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#6900FF</color>
-    <color name="primary_dark">#370085</color>
-    <color name="primary_darker">#210943</color>
 
-    <color name="bkg_light">#0E0023</color>
-    <color name="bkg_dark">#05000E</color>
+    <!-- Colors defined here should only be used in XML resources such as drawables.
+         Use io.libzy.ui.theme.LibzyColors for all other purposes.
+         If a color defined both here and in LibzyColors is to change, be sure to change it in both places. -->
 
-    <color name="accent">#8063A6</color>
-
-    <color name="white">#FFFFFF</color>
+    <color name="dark_purple_accent">#210943</color>
+    <color name="dark_purple">#0E0023</color>
     <color name="off_white">#CACACA</color>
-    <color name="gray">#808080</color>
     <color name="dark_gray">#272727</color>
-    <color name="black">#000</color>
 
 </resources>

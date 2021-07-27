@@ -1,6 +1,7 @@
 package io.libzy.analytics
 
 import android.app.Application
+import android.content.Context
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ACOUSTICNESS
@@ -37,15 +38,19 @@ import io.libzy.analytics.AnalyticsConstants.Events.PLAY_ALBUM
 import io.libzy.analytics.AnalyticsConstants.Events.RATE_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.Events.SUBMIT_QUERY
 import io.libzy.analytics.AnalyticsConstants.Events.SYNC_LIBRARY_DATA
+import io.libzy.analytics.AnalyticsConstants.Events.VIEW_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_CONNECT_SPOTIFY_SCREEN
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_QUESTION
 import io.libzy.analytics.AnalyticsConstants.UserProperties.DISPLAY_NAME
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRARY
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTED
-import io.libzy.model.AlbumResult
-import io.libzy.model.Query
+import io.libzy.domain.AlbumResult
+import io.libzy.domain.Query
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
+import io.libzy.util.plus
 import io.libzy.util.toString
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -60,15 +65,21 @@ import kotlin.math.roundToInt
  * with any method parameters needed to send along event properties.
  */
 @Singleton
-class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository: UserLibraryRepository) {
-
+class AnalyticsDispatcher @Inject constructor(
+    private val userLibraryRepository: UserLibraryRepository,
+    appContext: Context
+) {
     private val amplitude = Amplitude.getInstance()
+
+    private val sharedPrefs = appContext.getSharedPrefs()
 
     fun initialize(application: Application, apiKey: String) {
         amplitude
             .trackSessionEvents(true)
             .initialize(application, apiKey)
             .enableForegroundTracking(application)
+
+        sharedPrefs.getString(SharedPrefKeys.SPOTIFY_USER_ID, null)?.let { setUserId(it) }
     }
 
     // ~~~~~~~~~~~~~~~~~~ User Properties  ~~~~~~~~~~~~~~~~~~
@@ -111,18 +122,14 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
         sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating))
     }
 
-    fun sendSubmitQueryEvent(query: Query, results: List<AlbumResult>) {
+    fun sendSubmitQueryEvent(query: Query) {
         Identify().increment(NUM_QUERIES_SUBMITTED).updateUserProperties()
 
-        sendEvent(SUBMIT_QUERY, mapOf(
-            FAMILIARITY to query.familiarity?.value,
-            INSTRUMENTAL to query.instrumental,
-            ACOUSTICNESS to query.acousticness?.toString(FLOAT_PRECISION),
-            VALENCE to query.valence?.toString(FLOAT_PRECISION),
-            ENERGY to query.energy?.toString(FLOAT_PRECISION),
-            DANCEABILITY to query.danceability?.toString(FLOAT_PRECISION),
-            GENRES to query.genres,
-            NUM_GENRES to (query.genres?.size ?: 0),
+        sendEvent(SUBMIT_QUERY, query.toEventPropertyMap())
+    }
+
+    fun sendViewAlbumResultsEvent(query: Query, results: List<AlbumResult>) {
+        sendEvent(VIEW_ALBUM_RESULTS, query.toEventPropertyMap().plus(
             ALBUM_RESULTS to results.map { "${it.artists} - ${it.title} (${it.spotifyUri})" },
             NUM_ALBUM_RESULTS to results.size
         ))
@@ -190,6 +197,19 @@ class AnalyticsDispatcher @Inject constructor(private val userLibraryRepository:
     fun sendAuthorizeSpotifyConnectionEvent() {
         sendEvent(AUTHORIZE_SPOTIFY_CONNECTION)
     }
+
+    // ~~~~~~~~~~~~~~~~~~ Helpers ~~~~~~~~~~~~~~~~~~
+
+    private fun Query.toEventPropertyMap() = mapOf(
+        FAMILIARITY to familiarity?.value,
+        INSTRUMENTAL to instrumental,
+        ACOUSTICNESS to acousticness?.toString(FLOAT_PRECISION),
+        VALENCE to valence?.toString(FLOAT_PRECISION),
+        ENERGY to energy?.toString(FLOAT_PRECISION),
+        DANCEABILITY to danceability?.toString(FLOAT_PRECISION),
+        GENRES to genres,
+        NUM_GENRES to (genres?.size ?: 0)
+    )
 }
 
 /**

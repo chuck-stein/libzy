@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Handler
 import android.util.Log
 import androidx.work.*
 import io.libzy.analytics.AnalyticsDispatcher
@@ -13,20 +12,24 @@ import io.libzy.analytics.CrashlyticsTree
 import io.libzy.config.ApiKeys
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
+import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import timber.log.Timber.DebugTree
-import java.time.Duration
 import javax.inject.Inject
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 class LibzyApplication : Application(), Configuration.Provider {
 
     companion object {
-        private val LIBRARY_SYNC_INTERVAL = Duration.ofMinutes(15L) // time to wait between Spotify library syncs
+        private val LIBRARY_SYNC_INTERVAL = Duration.minutes(15) // time to wait between Spotify library syncs
     }
 
     val appComponent: AppComponent by lazy {
@@ -109,7 +112,8 @@ class LibzyApplication : Application(), Configuration.Provider {
 
         fun enqueueWorkRequest() {
             applicationScope.launch {
-                val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
+                val workRequest =
+                    PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL.toJavaDuration()).build()
 
                 WorkManager.getInstance(this@LibzyApplication).enqueueUniquePeriodicWork(
                     LibrarySyncWorker.WORK_NAME,
@@ -119,23 +123,22 @@ class LibzyApplication : Application(), Configuration.Provider {
             }
         }
 
-        val sharedPrefs = getSharedPreferences(getString(R.string.spotify_prefs_name), Context.MODE_PRIVATE)
-        val spotifyConnectedKey = getString(R.string.spotify_connected_key)
-        val spotifyConnected = sharedPrefs.getBoolean(spotifyConnectedKey, false)
+        val sharedPrefs = getSharedPrefs()
+        val spotifyConnected = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 
-        if (spotifyConnected) enqueueWorkRequest()
-        else {
+        if (spotifyConnected) {
+            enqueueWorkRequest()
+        } else {
             sharedPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
-                if (key == spotifyConnectedKey && prefs.getBoolean(key, false)) {
-
-                    // Spotify was just connected, meaning the first library scan just completed,
-                    // so schedule the next one in 15 minutes, which will recur every subsequent 15 minutes
-                    Handler().postDelayed({
+                if (key == SharedPrefKeys.SPOTIFY_CONNECTED && prefs.getBoolean(key, false)) {
+                    applicationScope.launch {
+                        // Spotify was just connected, meaning the first library scan just completed,
+                        // so schedule the next one in 15 minutes, which will recur every subsequent 15 minutes
+                        delay(LIBRARY_SYNC_INTERVAL)
                         enqueueWorkRequest()
-                    }, LIBRARY_SYNC_INTERVAL.toMillis())
-
-                    prefs.unregisterOnSharedPreferenceChangeListener(sharedPrefsListener)
-                    sharedPrefsListener = null
+                        prefs.unregisterOnSharedPreferenceChangeListener(sharedPrefsListener)
+                        sharedPrefsListener = null
+                    }
                 }
             }
             sharedPrefs.registerOnSharedPreferenceChangeListener(sharedPrefsListener)
@@ -143,9 +146,7 @@ class LibzyApplication : Application(), Configuration.Provider {
     }
     
     private fun initLogging() {
-        if (BuildConfig.DEBUG) {
-            Timber.plant(DebugTree())
-        }
+        if (BuildConfig.DEBUG) Timber.plant(DebugTree())
         Timber.plant(CrashlyticsTree())
     }
 }

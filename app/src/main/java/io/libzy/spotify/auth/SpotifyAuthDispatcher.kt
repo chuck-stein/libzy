@@ -1,13 +1,17 @@
 package io.libzy.spotify.auth
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
-import kotlin.time.seconds
 
 /*
 TODO:
@@ -29,7 +33,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                 requestsWaitingForProxy = true
             } else if (proxy != null && requestsWaitingForProxy) {
                 requestsWaitingForProxy = false
-                proxy.initiateAuthRequest(onAuthComplete)
+                proxy.initiateSpotifyAuthRequest(onAuthComplete)
             }
         }
 
@@ -50,7 +54,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
     }
 
     suspend fun requestAuthorization(withTimeout: Boolean = true): SpotifyAccessToken = withContext(Dispatchers.IO) {
-        val timeout = if (withTimeout) AUTH_TIMEOUT.seconds else Duration.INFINITE
+        val timeout = if (withTimeout) Duration.seconds(AUTH_TIMEOUT) else Duration.INFINITE
         withTimeoutOrNull(timeout) {
             suspendCancellableCoroutine { continuation ->
                 // TODO: Reassess which dispatchers we need here.
@@ -80,7 +84,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                     if (pendingAuthCallbacks.size == 1) {
                         authClientProxy.let {
                             if (it == null) requestsWaitingForProxy = true
-                            else it.initiateAuthRequest(onAuthComplete)
+                            else it.initiateSpotifyAuthRequest(onAuthComplete)
                         }
                     }
                 }
