@@ -39,7 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
 import io.libzy.domain.AlbumResult
-import io.libzy.domain.Query
+import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler
@@ -47,6 +47,7 @@ import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
 import io.libzy.ui.common.loadRemoteImage
+import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
@@ -59,9 +60,16 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory, query: Query) {
+fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory) {
     val viewModel: ResultsViewModel = viewModel(factory = viewModelFactory)
     val uiState by viewModel.uiState
+
+    val findAlbumFlowViewModel: FindAlbumFlowViewModel = viewModel(
+        viewModelStoreOwner = navController.getBackStackEntry(Destination.FindAlbumFlow.route),
+        factory = viewModelFactory
+    )
+    val findAlbumFlowUiState by findAlbumFlowViewModel.uiState
+
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
@@ -78,7 +86,7 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
     LifecycleObserver(
         onStart = {
             viewModel.connectSpotifyAppRemote()
-            viewModel.recommendAlbums(query)
+            viewModel.recommendAlbums(findAlbumFlowUiState.query)
         },
         onStop = {
             viewModel.disconnectSpotifyAppRemote()

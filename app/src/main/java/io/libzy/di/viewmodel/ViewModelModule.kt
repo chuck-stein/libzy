@@ -7,6 +7,7 @@ import dagger.Module
 import dagger.multibindings.IntoMap
 import io.libzy.ui.SessionViewModel
 import io.libzy.ui.connect.ConnectSpotifyViewModel
+import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.query.QueryViewModel
 import io.libzy.ui.results.ResultsViewModel
 
@@ -25,6 +26,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(ConnectSpotifyViewModel::class)
     abstract fun bindConnectSpotifyViewModel(viewModel: ConnectSpotifyViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(FindAlbumFlowViewModel::class)
+    abstract fun bindFindAlbumFlowViewModel(viewModel: FindAlbumFlowViewModel): ViewModel
 
     @Binds
     @IntoMap

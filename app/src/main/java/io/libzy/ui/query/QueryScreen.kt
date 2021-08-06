@@ -42,13 +42,14 @@ import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
 import io.libzy.R
 import io.libzy.domain.Query
-import io.libzy.ui.Destination.Results.navigateToResultsScreen
+import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
+import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyDimens.BUTTON_GROUP_HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyDimens.BUTTON_GROUP_SPACING
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
@@ -64,9 +65,19 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
     val viewModel: QueryViewModel = viewModel(factory = viewModelFactory)
     val uiState by viewModel.uiState
 
+    val findAlbumFlowViewModel: FindAlbumFlowViewModel = viewModel(
+        viewModelStoreOwner = navController.getBackStackEntry(Destination.FindAlbumFlow.route),
+        factory = viewModelFactory
+    )
+
+    LaunchedEffect(findAlbumFlowViewModel, uiState.query) {
+        findAlbumFlowViewModel.setQuery(uiState.query)
+    }
+
     EventHandler(viewModel.uiEvents) {
-        when (it) {
-            QueryUiEvent.SUBMIT_QUERY -> navController.navigateToResultsScreen(uiState.query)
+        if (it == QueryUiEvent.SUBMIT_QUERY) {
+            findAlbumFlowViewModel.setQuery(uiState.query)
+            navController.navigate(Destination.Results.route)
         }
     }
 
