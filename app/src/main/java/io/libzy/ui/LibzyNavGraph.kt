@@ -1,14 +1,12 @@
 package io.libzy.ui
 
 import android.net.Uri
-import android.os.Bundle
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NamedNavArgument
@@ -16,7 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
-import io.libzy.domain.Query
+import androidx.navigation.navigation
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.query.QueryScreen
 import io.libzy.ui.results.ResultsScreen
@@ -28,7 +26,7 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnecte
     val navController = rememberNavController()
 
     // define a helper for adding destinations to the graph
-    fun NavGraphBuilder.destination(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
+    fun NavGraphBuilder.screen(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
         composable(destination.route, destination.arguments, destination.deepLinks) { backStackEntry ->
             val redirectToConnectSpotify = remember { destination.requiresSpotifyConnection && !isSpotifyConnected() }
             if (redirectToConnectSpotify) {
@@ -40,19 +38,17 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnecte
     }
 
     // TODO: add transition animations to/from each screen in the nav graph once they are supported (especially Results)
-    NavHost(navController, route = Destination.NavHost.route, startDestination = Destination.Query.route) {
-        destination(Destination.ConnectSpotify) {
+    NavHost(navController, route = Destination.NavHost.route, startDestination = Destination.FindAlbumFlow.route) {
+        screen(Destination.ConnectSpotify) {
             ConnectSpotifyScreen(navController, viewModelFactory, exitApp)
         }
-        destination(Destination.Query) {
-            QueryScreen(navController, viewModelFactory)
-        }
-        destination(Destination.Results) {
-            ResultsScreen(
-                navController,
-                viewModelFactory,
-                navController.previousBackStackEntry?.arguments?.getParcelable(Destination.Results.QUERY_ARG) ?: Query()
-            )
+        navigation(route = Destination.FindAlbumFlow.route, startDestination = Destination.Query.route) {
+            screen(Destination.Query) {
+                QueryScreen(navController, viewModelFactory)
+            }
+            screen(Destination.Results) {
+                ResultsScreen(navController, viewModelFactory)
+            }
         }
     }
 }
@@ -86,21 +82,15 @@ sealed class Destination {
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
         override val requiresSpotifyConnection = false
     }
+    object FindAlbumFlow : Destination() {
+        override val route = "find-album"
+    }
     object Query : Destination() {
         override val route = "query"
         val deepLinkUri = createDeepLinkUri()
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
     object Results : Destination() {
-        const val QUERY_ARG = "query"
         override val route = "results"
-
-        fun NavController.navigateToResultsScreen(query: io.libzy.domain.Query) {
-            // TODO: replace this navigation arg (and its counterpart above) with a shared VM scoped to nested nav graph
-            currentBackStackEntry?.arguments = Bundle().apply {
-                putParcelable(QUERY_ARG, query)
-            }
-            navigate(route)
-        }
     }
 }
