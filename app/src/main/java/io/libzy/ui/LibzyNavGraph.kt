@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavBackStackEntry
@@ -29,11 +30,10 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnecte
     fun NavGraphBuilder.screen(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
         composable(destination.route, destination.arguments, destination.deepLinks) { backStackEntry ->
             val redirectToConnectSpotify = remember { destination.requiresSpotifyConnection && !isSpotifyConnected() }
-            if (redirectToConnectSpotify) {
-                navController.navigate(Destination.ConnectSpotify.route)
-            } else {
-                content(backStackEntry)
+            LaunchedEffect(redirectToConnectSpotify) {
+                if (redirectToConnectSpotify) navController.navigate(Destination.ConnectSpotify.route)
             }
+            if (!redirectToConnectSpotify) content(backStackEntry)
         }
     }
 
