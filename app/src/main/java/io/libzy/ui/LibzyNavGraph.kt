@@ -16,8 +16,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import io.libzy.ui.connect.ConnectSpotifyScreen
-import io.libzy.ui.query.QueryScreen
-import io.libzy.ui.results.ResultsScreen
+import io.libzy.ui.findalbum.query.QueryScreen
+import io.libzy.ui.findalbum.results.ResultsScreen
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi

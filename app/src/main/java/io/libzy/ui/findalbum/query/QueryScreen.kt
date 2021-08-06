@@ -1,4 +1,4 @@
-package io.libzy.ui.query
+package io.libzy.ui.findalbum.query
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes

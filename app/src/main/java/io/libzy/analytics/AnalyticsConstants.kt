@@ -2,8 +2,8 @@ package io.libzy.analytics
 
 import io.libzy.domain.Query.Familiarity
 import io.libzy.ui.connect.ConnectSpotifyScreen
-import io.libzy.ui.query.QueryScreen
-import io.libzy.ui.results.ResultsScreen
+import io.libzy.ui.findalbum.query.QueryScreen
+import io.libzy.ui.findalbum.results.ResultsScreen
 import io.libzy.work.LibrarySyncWorker
 
 /**

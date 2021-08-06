@@ -1,4 +1,4 @@
-package io.libzy.ui.results
+package io.libzy.ui.findalbum.results
 
 import androidx.lifecycle.viewModelScope
 import io.libzy.BuildConfig

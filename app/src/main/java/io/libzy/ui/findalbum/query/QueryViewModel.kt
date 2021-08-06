@@ -1,4 +1,4 @@
-package io.libzy.ui.query
+package io.libzy.ui.findalbum.query
 
 import androidx.lifecycle.viewModelScope
 import io.libzy.analytics.AnalyticsDispatcher

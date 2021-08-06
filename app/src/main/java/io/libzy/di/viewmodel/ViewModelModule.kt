@@ -8,8 +8,8 @@ import dagger.multibindings.IntoMap
 import io.libzy.ui.SessionViewModel
 import io.libzy.ui.connect.ConnectSpotifyViewModel
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
-import io.libzy.ui.query.QueryViewModel
-import io.libzy.ui.results.ResultsViewModel
+import io.libzy.ui.findalbum.query.QueryViewModel
+import io.libzy.ui.findalbum.results.ResultsViewModel
 
 @Module
 abstract class ViewModelModule {

@@ -1,4 +1,4 @@
-package io.libzy.ui.results
+package io.libzy.ui.findalbum.results
 
 import io.libzy.domain.AlbumResult
 
