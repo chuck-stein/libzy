@@ -35,7 +35,7 @@ sealed class Destination {
         override val requiresSpotifyConnection = false
     }
     object FindAlbumFlow : Destination() {
-        override val route = "find-album"
+        override val route = "findAlbum"
     }
     object Query : Destination() {
         override val route = "query"

@@ -63,6 +63,7 @@
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
     <string name="results_rating_text">How are these suggestions?\n Your feedback is much appreciated!</string>
     <string name="no_results_header">Oops! We couldn\'t quite find the vibe right now. Try looking for something else or saving more albums on Spotify.</string>
+    <string name="start_over">Start over</string>
     <string name="cd_album_artwork">Album artwork</string>
     <string name="cd_filled_rating_star">Filled rating star</string>
     <string name="cd_unfilled_rating_star">Unfilled rating star</string>

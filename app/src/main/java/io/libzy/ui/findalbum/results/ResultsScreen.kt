@@ -18,6 +18,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.Text
+import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material.rememberScaffoldState
@@ -44,6 +45,7 @@ import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
+import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
 import io.libzy.ui.common.loadRemoteImage
@@ -107,6 +109,12 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
         scaffoldState = scaffoldState,
         onBackClick = navController::popBackStack,
         onAlbumClick = viewModel::playAlbum,
+        onStartOverClick = {
+            // pop the entire flow off the back stack, removing saved state of previous visit to query screen
+            navController.popBackStack(Destination.FindAlbumFlow.route, inclusive = true, saveState = false)
+            // navigate to query screen with fresh state after removing the previous query screen state from backstack
+            navController.navigate(Destination.Query.route)
+        },
         onRateResults = viewModel::rateResults
     )
 }
@@ -123,6 +131,7 @@ private fun ResultsScreen(
     scaffoldState: ScaffoldState,
     onBackClick: () -> Unit,
     onAlbumClick: (String) -> Unit,
+    onStartOverClick: () -> Unit,
     onRateResults: (Int) -> Unit
 ) {
     LibzyScaffold(
@@ -151,8 +160,20 @@ private fun ResultsScreen(
                         style = MaterialTheme.typography.body1,
                         modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
                     )
-                    RatingBar(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 12.dp))
+                    RatingBar(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 20.dp))
                 }
+                LibzyButton(
+                    R.string.start_over,
+                    Modifier.padding(bottom = 24.dp),
+                    onStartOverClick,
+                    endContent = {
+                        Icon(
+                            imageVector = LibzyIconTheme.RestartAlt,
+                            contentDescription = null, // button text serves as adequate CD already
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                )
             }
         }
     }
@@ -262,27 +283,38 @@ private fun ResultsScreenPreview() {
         ResultsScreen(
             uiState = ResultsUiState(
                 loading = false,
-                albumResults = listOf(
+                albumResults = List(20) {
                     AlbumResult(
-                        "Lateralus",
-                        "Tool",
-                        artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b"
-                    ),
-                    AlbumResult(
-                        "Blast Tyrant",
-                        "Clutch",
-                        artworkUrl = "https://i.scdn.co/image/07c323340e03e25a8e5dd5b9a8ec72b69c50089d"
-                    ),
-                    AlbumResult(
-                        "Yeezus",
-                        "Kanye West",
+                        "Album Title",
+                        "Album Artist",
                         artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0"
                     )
-                )
+                }
             ),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
             onAlbumClick = {},
+            onStartOverClick = {},
+            onRateResults = {}
+        )
+    }
+}
+
+@ExperimentalAnimationApi
+@ExperimentalFoundationApi
+@Preview(device = Devices.PIXEL_4_XL)
+@Composable
+private fun NoResultsScreenPreview() {
+    LibzyContent {
+        ResultsScreen(
+            uiState = ResultsUiState(
+                loading = false,
+                albumResults = emptyList()
+            ),
+            scaffoldState = rememberScaffoldState(),
+            onBackClick = {},
+            onAlbumClick = {},
+            onStartOverClick = {},
             onRateResults = {}
         )
     }
