@@ -42,9 +42,9 @@
     <string name="evening_greeting_text">Good evening!</string>
     <string name="query_instructions_text">What are you in the mood to listen to?</string>
     <string name="no_preference">No preference</string>
-    <string name="a_current_favorite">A current favorite</string>
-    <string name="an_underappreciated_gem">An underappreciated gem</string>
-    <string name="a_reliable_classic">A reliable classic</string>
+    <string name="current_favorite">Current favorite</string>
+    <string name="underappreciated_gem">Underappreciated gem</string>
+    <string name="reliable_classic">Reliable classic</string>
     <string name="positive_emotion">Positive Emotion</string>
     <string name="negative_emotion">Negative Emotion</string>
     <string name="acoustic">Acoustic</string>

@@ -14,14 +14,14 @@ object LibzyColors {
 
     // Material Theme Colors
     val Purple = Color(0xFF7D3C96)
-    val Violet = Color(0xFF4E2E79)
+    val DarkPurple = Color(0xFF462055)
     val Melon = Color(0xFFECA797)
     val LightPink = Color(0xFFF7C1BB)
     val OffWhite = Color(0xFFCACACA)
 
     // Background Gradient Colors
-    val DarkPurple = Color(0xFF0E0023)
-    val VeryDarkPurple = Color(0xFF05000E)
+    val DeepPurple = Color(0xFF0E0023)
+    val VeryDeepPurple = Color(0xFF05000E)
 
     // Other Colors (use sparingly)
     val Gray = Color(0xFF808080)

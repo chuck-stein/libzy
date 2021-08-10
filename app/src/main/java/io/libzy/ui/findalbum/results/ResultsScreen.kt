@@ -164,13 +164,13 @@ private fun ResultsScreen(
                 }
                 LibzyButton(
                     R.string.start_over,
-                    Modifier.padding(bottom = 24.dp),
+                    Modifier.padding(bottom = 16.dp),
                     onStartOverClick,
                     endContent = {
                         Icon(
                             imageVector = LibzyIconTheme.RestartAlt,
                             contentDescription = null, // button text serves as adequate CD already
-                            modifier = Modifier.padding(start = 4.dp)
+                            modifier = Modifier.padding(start = 4.dp).size(20.dp)
                         )
                     }
                 )

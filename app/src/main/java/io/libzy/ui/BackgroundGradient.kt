@@ -34,11 +34,11 @@ fun BackgroundGradient(content: @Composable () -> Unit = {}) {
     // negative color stops begin offscreen, then animate onscreen
     // as the animation progresses, for an infinite ripple/shimmer effect
     val gradient = Brush.linearGradient(
-        -1f + gradientPositionOffset to LibzyColors.VeryDarkPurple,
-        -0.5f + gradientPositionOffset to LibzyColors.DarkPurple,
-        0f + gradientPositionOffset to LibzyColors.VeryDarkPurple,
-        0.5f + gradientPositionOffset to LibzyColors.DarkPurple,
-        1f + gradientPositionOffset to LibzyColors.VeryDarkPurple
+        -1f + gradientPositionOffset to LibzyColors.VeryDeepPurple,
+        -0.5f + gradientPositionOffset to LibzyColors.DeepPurple,
+        0f + gradientPositionOffset to LibzyColors.VeryDeepPurple,
+        0.5f + gradientPositionOffset to LibzyColors.DeepPurple,
+        1f + gradientPositionOffset to LibzyColors.VeryDeepPurple
     )
     Surface(
         modifier = Modifier.fillMaxSize().background(gradient),

@@ -5,6 +5,12 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -21,7 +27,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
+import androidx.compose.material.SliderDefaults.InactiveTrackAlpha
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.MicExternalOn
+import androidx.compose.material.icons.rounded.Piano
+import androidx.compose.material.icons.rounded.SavedSearch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,11 +63,10 @@ import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
+import io.libzy.ui.common.component.SelectableButton
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
-import io.libzy.ui.theme.LibzyDimens.BUTTON_GROUP_HORIZONTAL_INSET
-import io.libzy.ui.theme.LibzyDimens.BUTTON_GROUP_SPACING
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
-import timber.log.Timber
+import io.libzy.ui.theme.LibzyIconTheme
 import java.time.LocalTime
 
 /**
@@ -88,6 +101,7 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
     QueryScreen(
         uiState = uiState,
         onBackClick = viewModel::goToPreviousStep,
+        onContinueClick = viewModel::goToNextStep,
         onNoPreferenceClick = {
             when (uiState.currentStep) {
                 QueryStep.FAMILIARITY -> viewModel.setFamiliarity(null)
@@ -100,44 +114,17 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
             }
             viewModel.goToNextStep()
         },
-        onCurrentFavoriteClick = {
-            viewModel.setFamiliarity(Query.Familiarity.CURRENT_FAVORITE)
-            viewModel.goToNextStep()
-        },
-        onReliableClassicClick = {
-            viewModel.setFamiliarity(Query.Familiarity.RELIABLE_CLASSIC)
-            viewModel.goToNextStep()
-        },
-        onUnderappreciatedGemClick = {
-            viewModel.setFamiliarity(Query.Familiarity.UNDERAPPRECIATED_GEM)
-            viewModel.goToNextStep()
-        },
-        onInstrumentalClick = {
-            viewModel.setInstrumental(true)
-            viewModel.goToNextStep()
-        },
-        onVocalClick = {
-            viewModel.setInstrumental(false)
-            viewModel.goToNextStep()
-        },
-        onContinueClick = { submittedValue ->
-
-            fun logUnexpectedClick() {
-                Timber.w("Continue button was clicked on the ${uiState.currentStep.stringValue} step, where it should not be visible")
-            }
-
-            when (uiState.currentStep) {
-                QueryStep.ACOUSTICNESS -> viewModel.setAcousticness(1 - submittedValue) // lower value = more acoustic
-                QueryStep.VALENCE -> viewModel.setValence(submittedValue)
-                QueryStep.ENERGY -> viewModel.setEnergy(submittedValue)
-                QueryStep.DANCEABILITY -> viewModel.setDanceability(submittedValue)
-                else -> logUnexpectedClick()
-            }
-            viewModel.goToNextStep()
-        },
+        onCurrentFavoriteClick = { viewModel.setFamiliarity(Query.Familiarity.CURRENT_FAVORITE) },
+        onReliableClassicClick = { viewModel.setFamiliarity(Query.Familiarity.RELIABLE_CLASSIC) },
+        onUnderappreciatedGemClick = { viewModel.setFamiliarity(Query.Familiarity.UNDERAPPRECIATED_GEM) },
+        onInstrumentalClick = { viewModel.setInstrumental(true) },
+        onVocalClick = { viewModel.setInstrumental(false) },
+        onAcousticnessChange = { viewModel.setAcousticness(1 - it) }, // lower = more acoustic, so subtracting from 1
+        onValenceChange = { viewModel.setValence(it) },
+        onEnergyChange = {  viewModel.setEnergy(it) },
+        onDanceabilityChange = { viewModel.setDanceability(it) },
         onSelectGenre = viewModel::addGenre,
-        onDeselectGenre = viewModel::removeGenre,
-        onReadyClick = viewModel::goToNextStep
+        onDeselectGenre = viewModel::removeGenre
     )
 }
 
@@ -149,16 +136,19 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
 private fun QueryScreen(
     uiState: QueryUiState,
     onBackClick: () -> Unit,
+    onContinueClick: () -> Unit,
     onNoPreferenceClick: () -> Unit,
     onCurrentFavoriteClick: () -> Unit,
     onReliableClassicClick: () -> Unit,
     onUnderappreciatedGemClick: () -> Unit,
     onInstrumentalClick: () -> Unit,
     onVocalClick: () -> Unit,
-    onContinueClick: (Float) -> Unit,
+    onAcousticnessChange: (Float) -> Unit,
+    onValenceChange: (Float) -> Unit,
+    onEnergyChange: (Float) -> Unit,
+    onDanceabilityChange: (Float) -> Unit,
     onSelectGenre: (String) -> Unit,
-    onDeselectGenre: (String) -> Unit,
-    onReadyClick: () -> Unit
+    onDeselectGenre: (String) -> Unit
 ) {
     val canGoToPreviousQueryStep = uiState.currentStepIndex > 0
     BackHandler(enabled = canGoToPreviousQueryStep, onBack = onBackClick)
@@ -184,17 +174,30 @@ private fun QueryScreen(
                 onUnderappreciatedGemClick,
                 onInstrumentalClick,
                 onVocalClick,
-                onContinueClick,
+                onAcousticnessChange,
+                onValenceChange,
+                onEnergyChange,
+                onDanceabilityChange,
                 onSelectGenre,
                 onDeselectGenre,
-                onReadyClick,
                 modifier = Modifier.weight(1f)
             )
-            LibzyButton(
-                R.string.no_preference,
-                Modifier.padding(bottom = 24.dp, start = HORIZONTAL_INSET.dp, end = HORIZONTAL_INSET.dp),
-                onNoPreferenceClick
-            )
+            val onFinalStep = uiState.currentStepIndex == uiState.querySteps.size - 1
+            val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
+            val continueButtonEnabled = when (uiState.currentStep) {
+                QueryStep.FAMILIARITY -> uiState.query.familiarity != null
+                QueryStep.INSTRUMENTALNESS -> uiState.query.instrumental != null
+                QueryStep.ACOUSTICNESS -> uiState.query.acousticness != null
+                QueryStep.VALENCE -> uiState.query.valence != null
+                QueryStep.ENERGY -> uiState.query.energy != null
+                QueryStep.DANCEABILITY -> uiState.query.danceability != null
+                QueryStep.GENRES -> uiState.query.genres != null
+            }
+            LibzyButton(continueButtonText, Modifier.padding(bottom = 16.dp), onContinueClick, continueButtonEnabled)
+
+            TextButton(onNoPreferenceClick, Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)) {
+                Text(stringResource(R.string.no_preference).uppercase())
+            }
         }
     }
 }
@@ -222,21 +225,18 @@ private fun CurrentQueryStep(
     onUnderappreciatedGemClick: () -> Unit,
     onInstrumentalClick: () -> Unit,
     onVocalClick: () -> Unit,
-    onContinueClick: (Float) -> Unit,
+    onAcousticnessChange: (Float) -> Unit,
+    onValenceChange: (Float) -> Unit,
+    onEnergyChange: (Float) -> Unit,
+    onDanceabilityChange: (Float) -> Unit,
     onSelectGenre: (String) -> Unit,
     onDeselectGenre: (String) -> Unit,
-    onReadyClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    fun Float?.toSliderValue(flipValueDirection: Boolean = false) = when {
-        this == null -> 0.5f
-        flipValueDirection -> 1 - this
-        else -> this
-    }
-
     Box(modifier) {
         QueryStepAnimator(uiState, QueryStep.FAMILIARITY) {
             FamiliarityStep(
+                uiState.query.familiarity,
                 onCurrentFavoriteClick,
                 onReliableClassicClick,
                 onUnderappreciatedGemClick
@@ -244,42 +244,42 @@ private fun CurrentQueryStep(
         }
 
         QueryStepAnimator(uiState, QueryStep.INSTRUMENTALNESS) {
-            InstrumentalnessStep(onInstrumentalClick, onVocalClick)
+            InstrumentalnessStep(uiState.query.instrumental, onInstrumentalClick, onVocalClick)
         }
 
         QueryStepAnimator(uiState, QueryStep.ACOUSTICNESS) {
             SliderQueryStep(
-                initialSliderValue = uiState.query.acousticness.toSliderValue(flipValueDirection = true),
+                initialValue = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
                 leftLabelResId = R.string.acoustic,
                 rightLabelResId = R.string.electric_electronic,
-                onContinueClick = onContinueClick
+                onValueChange = onAcousticnessChange
             )
         }
 
         QueryStepAnimator(uiState, QueryStep.VALENCE) {
             SliderQueryStep(
-                initialSliderValue = uiState.query.valence.toSliderValue(),
+                initialValue = uiState.query.valence,
                 leftLabelResId = R.string.negative_emotion,
                 rightLabelResId = R.string.positive_emotion,
-                onContinueClick = onContinueClick
+                onValueChange = onValenceChange
             )
         }
 
         QueryStepAnimator(uiState, QueryStep.ENERGY) {
             SliderQueryStep(
-                initialSliderValue = uiState.query.energy.toSliderValue(),
+                initialValue = uiState.query.energy,
                 leftLabelResId = R.string.chill,
                 rightLabelResId = R.string.energetic,
-                onContinueClick = onContinueClick
+                onValueChange = onEnergyChange
             )
         }
 
         QueryStepAnimator(uiState, QueryStep.DANCEABILITY) {
             SliderQueryStep(
-                initialSliderValue = uiState.query.danceability.toSliderValue(),
+                initialValue = uiState.query.danceability,
                 leftLabelResId = R.string.arrhythmic,
                 rightLabelResId = R.string.danceable,
-                onContinueClick = onContinueClick
+                onValueChange = onDanceabilityChange
             )
         }
 
@@ -288,8 +288,7 @@ private fun CurrentQueryStep(
                 genreOptions = uiState.recommendedGenres,
                 selectedGenres = uiState.query.genres.orEmpty(),
                 onSelectGenre = onSelectGenre,
-                onDeselectGenre = onDeselectGenre,
-                onReadyClick = onReadyClick
+                onDeselectGenre = onDeselectGenre
             )
         }
     }
@@ -322,58 +321,103 @@ private fun QueryStepAnimator(
 
 @Composable
 private fun ButtonGroupSpacer() {
-    Spacer(modifier = Modifier.height(BUTTON_GROUP_SPACING.dp))
+    Spacer(modifier = Modifier.height(16.dp))
 }
-
-private val BUTTON_IN_GROUP_MODIFIER = Modifier.fillMaxWidth().padding(horizontal = BUTTON_GROUP_HORIZONTAL_INSET.dp)
 
 @Composable
 private fun FamiliarityStep(
+    selectedFamiliarity: Query.Familiarity?,
     onCurrentFavoriteClick: () -> Unit,
     onReliableClassicClick: () -> Unit,
     onUnderappreciatedGemClick: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        LibzyButton(R.string.a_current_favorite, BUTTON_IN_GROUP_MODIFIER, onCurrentFavoriteClick)
+        SelectableButton(
+            textResId = R.string.current_favorite,
+            image = LibzyIconTheme.History,
+            selected = selectedFamiliarity == Query.Familiarity.CURRENT_FAVORITE,
+            onClick = onCurrentFavoriteClick
+        )
 
         ButtonGroupSpacer()
 
-        LibzyButton(R.string.a_reliable_classic, BUTTON_IN_GROUP_MODIFIER, onReliableClassicClick)
+        SelectableButton(
+            textResId = R.string.reliable_classic,
+            image = LibzyIconTheme.Favorite,
+            selected = selectedFamiliarity == Query.Familiarity.RELIABLE_CLASSIC,
+            onClick = onReliableClassicClick
+        )
 
         ButtonGroupSpacer()
 
-        LibzyButton(R.string.an_underappreciated_gem, BUTTON_IN_GROUP_MODIFIER, onUnderappreciatedGemClick)
+        SelectableButton(
+            textResId = R.string.underappreciated_gem,
+            image = LibzyIconTheme.SavedSearch,
+            selected = selectedFamiliarity == Query.Familiarity.UNDERAPPRECIATED_GEM,
+            onClick = onUnderappreciatedGemClick
+        )
     }
 }
 
 @Composable
-private fun InstrumentalnessStep(onInstrumentalClick: () -> Unit, onVocalClick: () -> Unit) {
+private fun InstrumentalnessStep(
+    selectedInstrumentalness: Boolean?,
+    onInstrumentalClick: () -> Unit,
+    onVocalClick: () -> Unit
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        LibzyButton(R.string.instrumental, BUTTON_IN_GROUP_MODIFIER, onInstrumentalClick)
+        SelectableButton(
+            textResId = R.string.instrumental,
+            image = LibzyIconTheme.Piano,
+            selected = selectedInstrumentalness == true,
+            onClick = onInstrumentalClick
+        )
 
         ButtonGroupSpacer()
 
-        LibzyButton(R.string.vocal, BUTTON_IN_GROUP_MODIFIER, onVocalClick)
+        SelectableButton(
+            textResId = R.string.vocal,
+            image = LibzyIconTheme.MicExternalOn,
+            selected = selectedInstrumentalness == false,
+            onClick = onVocalClick
+        )
     }
 }
 
 @Composable
 private fun SliderQueryStep(
-    initialSliderValue: Float,
+    initialValue: Float?,
     @StringRes leftLabelResId: Int,
     @StringRes rightLabelResId: Int,
-    onContinueClick: (Float) -> Unit
+    onValueChange: (Float) -> Unit
 ) {
-    var sliderValue by remember { mutableStateOf(initialSliderValue) }
+    var currentValue by remember { mutableStateOf(initialValue) }
+    val sliderColor = if (currentValue != null) {
+        MaterialTheme.colors.primary
+    } else {
+        rememberInfiniteTransition().animateColor(
+            initialValue = MaterialTheme.colors.primaryVariant,
+            targetValue = MaterialTheme.colors.primary,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 700, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            )
+        ).value
+    }
     val horizontalSpacing = 8.dp
-    val verticalSpacing = 24.dp
-
+    
     ConstraintLayout {
-        val (leftLabel, rightLabel, slider, continueButton) = createRefs()
+        val (leftLabel, rightLabel, slider) = createRefs()
 
         Slider(
-            value = sliderValue,
-            onValueChange = { sliderValue = it },
+            value = currentValue ?: 0.5f,
+            onValueChange = { currentValue = it },
+            onValueChangeFinished = { currentValue?.let { onValueChange(it) } },
+            colors = SliderDefaults.colors(
+                thumbColor = sliderColor,
+                activeTrackColor = sliderColor,
+                inactiveTrackColor = sliderColor.copy(alpha = InactiveTrackAlpha),
+            ),
             modifier = Modifier.width(150.dp).constrainAs(slider) {
                 centerTo(parent)
             }
@@ -398,15 +442,6 @@ private fun SliderQueryStep(
                 width = Dimension.preferredWrapContent
             }
         )
-        LibzyButton(
-            textResId = R.string.continue_button,
-            onClick = { onContinueClick(sliderValue) },
-            modifier = Modifier.constrainAs(continueButton) {
-                centerHorizontallyTo(parent)
-                top.linkTo(slider.bottom, margin = verticalSpacing)
-                bottom.linkTo(parent.bottom, margin = verticalSpacing)
-            }
-        )
     }
 }
 
@@ -415,26 +450,21 @@ private fun GenresStep(
     genreOptions: List<String>,
     selectedGenres: Set<String>,
     onSelectGenre: (String) -> Unit,
-    onDeselectGenre: (String) -> Unit,
-    onReadyClick: () -> Unit
+    onDeselectGenre: (String) -> Unit
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // TODO: add visual scroll bar when it is supported
-        FlowRow(
-            modifier = Modifier.padding(vertical = 24.dp).verticalScroll(rememberScrollState()).weight(1f),
-            mainAxisSpacing = 10.dp,
-            crossAxisSpacing = 16.dp,
-        ) {
-            // TODO: remove magic number
-            genreOptions.take(30).forEach { genre ->
-                val selected = selectedGenres.contains(genre)
-                Chip(selected = selected, text = genre, onClick = {
-                    if (selected) onDeselectGenre(genre) else onSelectGenre(genre)
-                })
-            }
+    // TODO: add visual scroll bar when it is supported
+    FlowRow(
+        modifier = Modifier.fillMaxSize().padding(vertical = 24.dp).verticalScroll(rememberScrollState()),
+        mainAxisSpacing = 10.dp,
+        crossAxisSpacing = 16.dp,
+    ) {
+        // TODO: remove magic number
+        genreOptions.take(30).forEach { genre ->
+            val selected = selectedGenres.contains(genre)
+            Chip(selected = selected, text = genre, onClick = {
+                if (selected) onDeselectGenre(genre) else onSelectGenre(genre)
+            })
         }
-
-        LibzyButton(R.string.ready_button, Modifier.padding(bottom = 16.dp), onReadyClick)
     }
 }
 
@@ -448,16 +478,19 @@ private fun AcousticnessQueryScreen() {
                 copy(currentStepIndex = querySteps.indexOf(QueryStep.ACOUSTICNESS))
             },
             onBackClick = {},
+            onContinueClick = {},
             onNoPreferenceClick = {},
             onCurrentFavoriteClick = {},
             onReliableClassicClick = {},
             onUnderappreciatedGemClick = {},
             onInstrumentalClick = {},
             onVocalClick = {},
-            onContinueClick = {},
+            onAcousticnessChange = {},
+            onValenceChange = {},
+            onEnergyChange = {},
+            onDanceabilityChange = {},
             onSelectGenre = {},
-            onDeselectGenre = {},
-            onReadyClick = {}
+            onDeselectGenre = {}
         )
     }
 }
@@ -472,16 +505,19 @@ private fun GenresQueryScreen() {
                 copy(currentStepIndex = querySteps.indexOf(QueryStep.GENRES))
             },
             onBackClick = {},
+            onContinueClick = {},
             onNoPreferenceClick = {},
             onCurrentFavoriteClick = {},
             onReliableClassicClick = {},
             onUnderappreciatedGemClick = {},
             onInstrumentalClick = {},
             onVocalClick = {},
-            onContinueClick = {},
+            onAcousticnessChange = {},
+            onValenceChange = {},
+            onEnergyChange = {},
+            onDanceabilityChange = {},
             onSelectGenre = {},
-            onDeselectGenre = {},
-            onReadyClick = {}
+            onDeselectGenre = {}
         )
     }
 }
