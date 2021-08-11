@@ -5,12 +5,6 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -392,18 +386,7 @@ private fun SliderQueryStep(
     onValueChange: (Float) -> Unit
 ) {
     var currentValue by remember { mutableStateOf(initialValue) }
-    val sliderColor = if (currentValue != null) {
-        MaterialTheme.colors.primary
-    } else {
-        rememberInfiniteTransition().animateColor(
-            initialValue = MaterialTheme.colors.primaryVariant,
-            targetValue = MaterialTheme.colors.primary,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 700, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            )
-        ).value
-    }
+    val sliderColor = if (currentValue != null) MaterialTheme.colors.primary else MaterialTheme.colors.secondary
     val horizontalSpacing = 8.dp
     
     ConstraintLayout {

@@ -24,7 +24,7 @@ fun LibzyTheme(content: @Composable () -> Unit) {
 private val DarkColors = darkColors(
     primary = LibzyColors.Purple,
     primaryVariant = LibzyColors.DarkPurple,
-    secondary = LibzyColors.Melon,
+    secondary = LibzyColors.PinkGray,
     secondaryVariant = LibzyColors.LightPink,
     error = Color.Red,
     surface = LibzyColors.OffWhite,
