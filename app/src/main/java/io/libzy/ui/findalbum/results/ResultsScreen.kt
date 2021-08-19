@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -147,13 +148,12 @@ private fun ResultsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
             ) {
-                val headerResId = if (uiState.albumResults.isNotEmpty()) R.string.results_header else R.string.no_results_header
-                Text(
-                    stringResource(headerResId),
-                    style = MaterialTheme.typography.h6,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
                 if (uiState.albumResults.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.results_header),
+                        style = MaterialTheme.typography.h6,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
                     AlbumResultsGrid(uiState.albumResults, onAlbumClick, Modifier.weight(1f))
                     Text(
                         stringResource(R.string.results_rating_text),
@@ -161,6 +161,10 @@ private fun ResultsScreen(
                         modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
                     )
                     RatingBar(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 20.dp))
+                } else {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.no_results_header), style = MaterialTheme.typography.h6)
+                    }
                 }
                 LibzyButton(
                     R.string.start_over,
