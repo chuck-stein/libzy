@@ -238,17 +238,20 @@ private fun AlbumArtwork(artworkUrl: String?) {
     val artworkContentDescription = stringResource(R.string.cd_album_artwork)
     val artworkModifier = Modifier.size(100.dp)
 
-    loadRemoteImage(artworkUrl).value?.let { artworkBitmap ->
+    val artworkBitmap = loadRemoteImage(artworkUrl)
+    if (artworkBitmap != null) {
         Image(
             bitmap = artworkBitmap,
             contentDescription = artworkContentDescription,
             modifier = artworkModifier
         )
-    } ?: Image(
-        painter = painterResource(R.drawable.placeholder_album_art),
-        contentDescription = artworkContentDescription,
-        modifier = artworkModifier
-    )
+    } else {
+        Image(
+            painter = painterResource(R.drawable.placeholder_album_art),
+            contentDescription = artworkContentDescription,
+            modifier = artworkModifier
+        )
+    }
 }
 
 @Composable
