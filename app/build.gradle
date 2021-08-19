@@ -156,7 +156,7 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
 
     // Accompanist
-    def accompanist_version = "0.13.0"
+    def accompanist_version = "0.16.1"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
     implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
