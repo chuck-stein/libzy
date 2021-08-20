@@ -2,14 +2,14 @@ package io.libzy.ui.findalbum.query
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentScope.SlideDirection
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -348,93 +348,60 @@ private fun CurrentQueryStep(
     modifier: Modifier = Modifier
 ) {
     Box(modifier) {
-        QueryStepAnimator(uiState, QueryStep.Type.FAMILIARITY) {
-            FamiliarityStep(
-                uiState.query.familiarity,
-                onCurrentFavoriteClick,
-                onReliableClassicClick,
-                onUnderappreciatedGemClick
-            )
-        }
-
-        QueryStepAnimator(uiState, QueryStep.Type.INSTRUMENTALNESS) {
-            InstrumentalnessStep(uiState.query.instrumental, onInstrumentalClick, onVocalClick)
-        }
-
-        QueryStepAnimator(uiState, QueryStep.Type.ACOUSTICNESS) {
-            SliderQueryStep(
-                initialValue = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
-                leftLabelResId = R.string.acoustic,
-                rightLabelResId = R.string.electric_electronic,
-                onValueChange = onAcousticnessChange
-            )
-        }
-
-        QueryStepAnimator(uiState, QueryStep.Type.VALENCE) {
-            SliderQueryStep(
-                initialValue = uiState.query.valence,
-                leftLabelResId = R.string.negative_emotion,
-                rightLabelResId = R.string.positive_emotion,
-                onValueChange = onValenceChange
-            )
-        }
-
-        QueryStepAnimator(uiState, QueryStep.Type.ENERGY) {
-            SliderQueryStep(
-                initialValue = uiState.query.energy,
-                leftLabelResId = R.string.chill,
-                rightLabelResId = R.string.energetic,
-                onValueChange = onEnergyChange
-            )
-        }
-
-        QueryStepAnimator(uiState, QueryStep.Type.DANCEABILITY) {
-            SliderQueryStep(
-                initialValue = uiState.query.danceability,
-                leftLabelResId = R.string.arrhythmic,
-                rightLabelResId = R.string.danceable,
-                onValueChange = onDanceabilityChange
-            )
-        }
-
-        QueryStepAnimator(uiState, QueryStep.Type.GENRES) {
-            val genresStepState = rememberAndRecalculateIf(uiState.currentStep is QueryStep.Genres) {
-                uiState.currentStep as? QueryStep.Genres
+        AnimatedContent(
+            targetState = uiState.currentStep,
+            transitionSpec = {
+                val slideForward = with(uiState) { previousStepIndex == null || previousStepIndex <= currentStepIndex }
+                val slideDirection = if (slideForward) SlideDirection.Left else SlideDirection.Right
+                slideIntoContainer(slideDirection) with slideOutOfContainer(slideDirection)
             }
-            if (genresStepState != null) {
-                GenresStep(
-                    genresStepState = genresStepState,
-                    selectedGenres = uiState.query.genres.orEmpty(),
-                    onSelectGenre = onSelectGenre,
-                    onDeselectGenre = onDeselectGenre,
-                    onSearchGenresClick = onSearchGenresClick,
-                )
+        ) { currentStep ->
+            Box(Modifier.fillMaxSize().padding(horizontal = HORIZONTAL_INSET.dp), contentAlignment = Alignment.Center) {
+                when (currentStep) {
+                    is QueryStep.Familiarity -> FamiliarityStep(
+                        uiState.query.familiarity,
+                        onCurrentFavoriteClick,
+                        onReliableClassicClick,
+                        onUnderappreciatedGemClick
+                    )
+                    is QueryStep.Instrumentalness -> InstrumentalnessStep(
+                        uiState.query.instrumental,
+                        onInstrumentalClick,
+                        onVocalClick
+                    )
+                    is QueryStep.Acousticness -> SliderQueryStep(
+                        initialValue = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
+                        leftLabelResId = R.string.acoustic,
+                        rightLabelResId = R.string.electric_electronic,
+                        onValueChange = onAcousticnessChange
+                    )
+                    is QueryStep.Valence -> SliderQueryStep(
+                        initialValue = uiState.query.valence,
+                        leftLabelResId = R.string.negative_emotion,
+                        rightLabelResId = R.string.positive_emotion,
+                        onValueChange = onValenceChange
+                    )
+                    is QueryStep.Energy -> SliderQueryStep(
+                        initialValue = uiState.query.energy,
+                        leftLabelResId = R.string.chill,
+                        rightLabelResId = R.string.energetic,
+                        onValueChange = onEnergyChange
+                    )
+                    is QueryStep.Danceability -> SliderQueryStep(
+                        initialValue = uiState.query.danceability,
+                        leftLabelResId = R.string.arrhythmic,
+                        rightLabelResId = R.string.danceable,
+                        onValueChange = onDanceabilityChange
+                    )
+                    is QueryStep.Genres -> GenresStep(
+                        genresStepState = currentStep,
+                        selectedGenres = uiState.query.genres.orEmpty(),
+                        onSelectGenre = onSelectGenre,
+                        onDeselectGenre = onDeselectGenre,
+                        onSearchGenresClick = onSearchGenresClick,
+                    )
+                }
             }
-        }
-    }
-}
-
-@ExperimentalAnimationApi
-@Composable
-private fun QueryStepAnimator(
-    uiState: QueryUiState,
-    stepToAnimate: QueryStep.Type,
-    stepContent: @Composable AnimatedVisibilityScope.() -> Unit
-) {
-    val slideOppositeDirection = with(uiState) { previousStepIndex != null && previousStepIndex > currentStepIndex }
-    val slideOffsetMultiplier = if (slideOppositeDirection) -1 else 1
-
-    AnimatedVisibility(
-        visible = uiState.currentStep.type == stepToAnimate,
-        enter = slideInHorizontally(
-            initialOffsetX = { contentWidth -> contentWidth * slideOffsetMultiplier }
-        ),
-        exit = slideOutHorizontally(
-            targetOffsetX = { contentWidth -> -contentWidth * slideOffsetMultiplier }
-        )
-    ) {
-        Box(Modifier.fillMaxSize().padding(horizontal = HORIZONTAL_INSET.dp), contentAlignment = Alignment.Center) {
-            stepContent()
         }
     }
 }
