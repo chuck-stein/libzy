@@ -57,6 +57,9 @@
     <string name="arrhythmic">Arrhythmic</string>
     <string name="continue_button">Continue</string>
     <string name="ready_button">Ready, show me some albums!</string>
+    <string name="search_genres">Search genres</string>
+    <string name="cd_clear_search_query">Clear search query</string>
+    <string name="no_genre_results">There are no genres from your library matching \"%s\".</string>
 
     <!-- Results Screen -->
     <string name="results_header">Here are some suggested albums from your library:</string>

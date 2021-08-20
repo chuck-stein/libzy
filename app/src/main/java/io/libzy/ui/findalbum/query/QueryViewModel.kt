@@ -16,16 +16,39 @@ class QueryViewModel @Inject constructor(
     private val analyticsDispatcher: AnalyticsDispatcher
 ) : LibzyViewModel<QueryUiState, QueryUiEvent>() {
 
-    override val initialUiState = QueryUiState()
+    override val initialUiState = QueryUiState.DEFAULT_STEP_ORDER.let { stepOrder ->
+        QueryUiState(
+            stepOrder = stepOrder,
+            currentStep = stepOrder.first().asDefaultQueryStep()
+        )
+    }
 
     private val libraryAlbums = userLibraryRepository.albums.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private fun QueryStep.Type.asDefaultQueryStep() = when (this) {
+        QueryStep.Type.FAMILIARITY -> QueryStep.Familiarity
+        QueryStep.Type.INSTRUMENTALNESS -> QueryStep.Instrumentalness
+        QueryStep.Type.ACOUSTICNESS -> QueryStep.Acousticness
+        QueryStep.Type.VALENCE -> QueryStep.Valence
+        QueryStep.Type.ENERGY -> QueryStep.Energy
+        QueryStep.Type.DANCEABILITY -> QueryStep.Danceability
+        QueryStep.Type.GENRES -> QueryStep.Genres.Recommendations(genreOptions = recommendGenres())
+    }
+
+    private fun recommendGenres() = recommendationService.recommendGenres(uiState.value.query, libraryAlbums.value)
+
+    fun initCurrentStep() {
+        updateUiState {
+            copy(currentStep = currentStep.type.asDefaultQueryStep())
+        }
+    }
 
     fun sendQuestionViewAnalyticsEvent() {
         with(uiState.value) {
             analyticsDispatcher.sendViewQuestionEvent(
-                questionName = currentStep.stringValue,
+                questionName = currentStep.type.stringValue,
                 questionNum = currentStepIndex + 1,
-                totalQuestions = querySteps.size
+                totalQuestions = stepOrder.size
             )
         }
     }
@@ -37,7 +60,7 @@ class QueryViewModel @Inject constructor(
     fun goToNextStep() {
         with(uiState.value) {
             val newStepIndex = currentStepIndex + 1
-            if (newStepIndex == querySteps.size) {
+            if (newStepIndex == stepOrder.size) {
                 analyticsDispatcher.sendSubmitQueryEvent(query)
                 produceUiEvent(QueryUiEvent.SUBMIT_QUERY)
             } else {
@@ -50,28 +73,52 @@ class QueryViewModel @Inject constructor(
         updateUiState {
             copy(
                 previousStepIndex = currentStepIndex,
-                currentStepIndex = newStepIndex.coerceIn(querySteps.indices)
-            ).withUpdatedGenresIfNecessary()
+                currentStep = stepOrder[newStepIndex.coerceIn(stepOrder.indices)].asDefaultQueryStep(),
+            )
         }
         sendQuestionViewAnalyticsEvent()
     }
 
-    private fun QueryUiState.withUpdatedGenresIfNecessary() =
-        when (currentStep) {
-            QueryStep.GENRES -> {
-                val recommendedGenres = recommendationService.recommendGenres(query, libraryAlbums.value)
-                copy(
-                    recommendedGenres = recommendedGenres,
-                    query = query.copy(
-                        genres = query.genres
-                            .orEmpty()
-                            .intersect(recommendedGenres.take(30)) // TODO: remove magic number
-                            .takeUnless { it.isEmpty() }
+    fun startGenreSearch() {
+        uiState.value.currentStep.let { currentStep ->
+            if (currentStep is QueryStep.Genres.Recommendations) {
+                updateUiState {
+                    copy(
+                        currentStep = QueryStep.Genres.Search(
+                            searchQuery = "",
+                            genreOptions = currentStep.genreOptions // show recommendations when search query is blank
+                        )
                     )
-                )
+                }
             }
-            else -> this
         }
+    }
+
+    fun stopGenreSearch() {
+        if (uiState.value.currentStep is QueryStep.Genres.Search) {
+            updateUiState {
+                copy(currentStep = QueryStep.Genres.Recommendations(genreOptions = recommendGenres()) )
+            }
+        }
+    }
+
+    fun searchGenres(searchQuery: String) {
+        uiState.value.currentStep.let { currentStep ->
+            if (currentStep is QueryStep.Genres.Search) {
+                updateUiState {
+                    copy(
+                        currentStep = currentStep.copy(
+                            searchQuery = searchQuery,
+                            genreOptions = when {
+                                searchQuery.isBlank() -> recommendGenres()
+                                else -> recommendGenres().filter { it.contains(searchQuery, ignoreCase = true) }
+                            }
+                        )
+                    )
+                }
+            }
+        }
+    }
 
     fun setFamiliarity(familiarity: Query.Familiarity?) {
         updateUiState {

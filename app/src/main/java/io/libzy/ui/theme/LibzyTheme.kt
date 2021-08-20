@@ -25,7 +25,7 @@ private val DarkColors = darkColors(
     primary = LibzyColors.Purple,
     primaryVariant = LibzyColors.DarkPurple,
     secondary = LibzyColors.PinkGray,
-    secondaryVariant = LibzyColors.LightPink,
+    secondaryVariant = LibzyColors.DarkPinkGray,
     error = Color.Red,
     surface = LibzyColors.OffWhite,
     onSurface = Color.Black
@@ -71,6 +71,11 @@ private val LibzyTypography = Typography(
     body2 = TextStyle(
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
+        textAlign = TextAlign.Center
+    ),
+    subtitle1 = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 18.sp,
         textAlign = TextAlign.Center
     ),
     button = TextStyle(

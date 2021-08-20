@@ -20,15 +20,9 @@ class RecommendationService @Inject constructor() {
 
         // calculate album relevance to recommend genres based on all non-genre parameters of the given query
         val albumsToRelevance = calculateRelevanceOfAlbums(libraryAlbums, query.copy(genres = null))
-        val relevantAlbums = libraryAlbums.filter { albumIsRelevant(it, albumsToRelevance) }
-        for (album in relevantAlbums) {
-            albumsToRelevance[album]?.let { albumRelevance ->
-                for (genre in album.genres) {
-                    genresToRelevance[genre].let { genreRelevance ->
-                        if (genreRelevance == null) genresToRelevance[genre] = albumRelevance
-                        else genresToRelevance[genre] = genreRelevance + albumRelevance
-                    }
-                }
+        albumsToRelevance.forEach { (album, albumRelevance) ->
+            album.genres.forEach { genre ->
+                genresToRelevance[genre] = genresToRelevance.getOrPut(genre, defaultValue = { 0f }) + albumRelevance
             }
         }
         return genresToRelevance.keys.sortedByDescending { genresToRelevance[it] }

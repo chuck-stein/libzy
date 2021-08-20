@@ -16,7 +16,7 @@ object LibzyColors {
     val Purple = Color(0xFF7D3C96)
     val DarkPurple = Color(0xFF462055)
     val PinkGray = Color(0xFF7B5B86)
-    val LightPink = Color(0xFFF7C1BB)
+    val DarkPinkGray = Color(0xFF3E2E44)
     val OffWhite = Color(0xFFCACACA)
 
     // Background Gradient Colors
