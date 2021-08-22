@@ -7,6 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
+/**
+ * Return and remember the value produced by [calculation]. Subsequent recompositions will return the same remembered
+ * value, unless the given [predicate] is true, in which case produce and remember a new value by calling [calculation].
+ */
 @Composable
 inline fun <T> rememberAndRecalculateIf(predicate: Boolean, calculation: @DisallowComposableCalls () -> T): T {
     var recalculationKey by remember { mutableStateOf(false) }

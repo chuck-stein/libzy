@@ -2,13 +2,17 @@ package io.libzy.ui.findalbum.query
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope.SlideDirection
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +51,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -72,19 +77,34 @@ import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
+import io.libzy.ui.common.AnimatedContent
+import io.libzy.ui.common.StatefulAnimatedVisibility
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.SelectableButton
-import io.libzy.ui.common.rememberAndRecalculateIf
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import java.time.LocalTime
+
+private const val GENRE_SEARCH_CHARACTER_LIMIT = 40
+
+// When starting a genre search, the animation consists of two parts:
+//    1. shrinking out the "greeting text", which brings the search button up to just below where the search bar appears
+//    2. shrinking out the search button and making the search bar slide up from where the search button was
+//
+// These two parts must share the same timing, even though they involve components
+// across different levels of the compose tree, so top-level constants are used.
+private const val SEARCH_TRANSITION_PT_1_DURATION_MILLIS = 100
+private const val SEARCH_TRANSITION_PT_2_DURATION_MILLIS = 50
+private const val SEARCH_TRANSITION_DURATION_MILLIS =
+    SEARCH_TRANSITION_PT_1_DURATION_MILLIS + SEARCH_TRANSITION_PT_2_DURATION_MILLIS
 
 /**
  * **Stateful** Query Screen, displaying a series of questions about what the user is in the mood to listen to.
@@ -158,7 +178,7 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
         onVocalClick = { viewModel.setInstrumental(false) },
         onAcousticnessChange = { viewModel.setAcousticness(1 - it) }, // lower = more acoustic, so subtracting from 1
         onValenceChange = { viewModel.setValence(it) },
-        onEnergyChange = {  viewModel.setEnergy(it) },
+        onEnergyChange = { viewModel.setEnergy(it) },
         onDanceabilityChange = { viewModel.setDanceability(it) },
         onSelectGenre = viewModel::addGenre,
         onDeselectGenre = viewModel::removeGenre,
@@ -194,25 +214,53 @@ private fun QueryScreen(
     val canGoToPreviousQueryStep = uiState.currentStepIndex > 0
     BackHandler(enabled = canGoToPreviousQueryStep, onBack = onBackClick)
 
-    Crossfade(targetState = uiState.currentStep is QueryStep.Genres.Search) { searchingGenres ->
-        LibzyScaffold(
-            navigationIcon = {
-                AnimatedVisibility(visible = canGoToPreviousQueryStep, enter = fadeIn(), exit = fadeOut()) {
-                    BackIcon(onBackClick, enabled = canGoToPreviousQueryStep)
-                }
-            },
-            title = {
-                val searchQuery = rememberAndRecalculateIf(uiState.currentStep is QueryStep.Genres.Search) {
-                    (uiState.currentStep as? QueryStep.Genres.Search)?.searchQuery ?: ""
-                }
-                if (searchingGenres) {
-                    GenreSearchBar(searchQuery, onGenreSearchQueryChange)
-                }
+    LibzyScaffold(
+        navigationIcon = {
+            AnimatedVisibility(visible = canGoToPreviousQueryStep, enter = fadeIn(), exit = fadeOut()) {
+                BackIcon(onBackClick, enabled = canGoToPreviousQueryStep)
             }
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
-
-                if (!searchingGenres) {
+        },
+        title = {
+            StatefulAnimatedVisibility(
+                visible = uiState.currentStep is QueryStep.Genres.Search,
+                stateToRemember = (uiState.currentStep as? QueryStep.Genres.Search)?.searchQuery ?: "",
+                enter = fadeIn(
+                    animationSpec = tween(
+                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                        delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                        easing = LinearOutSlowInEasing
+                    )
+                ) + slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(
+                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                        delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                        easing = LinearOutSlowInEasing
+                    )
+                ),
+                exit = fadeOut()
+            ) { searchQuery ->
+                GenreSearchBar(searchQuery, onGenreSearchQueryChange)
+            }
+        }
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
+            AnimatedVisibility(
+                visible = uiState.currentStep !is QueryStep.Genres.Search,
+                enter = fadeIn(),
+                exit = fadeOut(
+                    animationSpec = tween(
+                        durationMillis = SEARCH_TRANSITION_DURATION_MILLIS,
+                        easing = FastOutLinearInEasing
+                    )
+                ) + shrinkVertically(
+                    animationSpec = tween(
+                        durationMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                        easing = LinearEasing
+                    )
+                ),
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     GreetingText()
                     Text(
                         text = stringResource(R.string.query_instructions_text),
@@ -220,48 +268,46 @@ private fun QueryScreen(
                         modifier = Modifier.padding(top = 24.dp, start = HORIZONTAL_INSET.dp, end = HORIZONTAL_INSET.dp)
                     )
                 }
+            }
 
-                CurrentQueryStep(
-                    uiState,
-                    onCurrentFavoriteClick,
-                    onReliableClassicClick,
-                    onUnderappreciatedGemClick,
-                    onInstrumentalClick,
-                    onVocalClick,
-                    onAcousticnessChange,
-                    onValenceChange,
-                    onEnergyChange,
-                    onDanceabilityChange,
-                    onSelectGenre,
-                    onDeselectGenre,
-                    onSearchGenresClick,
-                    modifier = Modifier.weight(1f)
-                )
-                val onFinalStep = uiState.currentStepIndex == uiState.stepOrder.size - 1
-                val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
-                val continueButtonEnabled = when (uiState.currentStep) {
-                    is QueryStep.Familiarity -> uiState.query.familiarity != null
-                    is QueryStep.Instrumentalness -> uiState.query.instrumental != null
-                    is QueryStep.Acousticness -> uiState.query.acousticness != null
-                    is QueryStep.Valence -> uiState.query.valence != null
-                    is QueryStep.Energy -> uiState.query.energy != null
-                    is QueryStep.Danceability -> uiState.query.danceability != null
-                    is QueryStep.Genres -> uiState.query.genres != null
-                }
-                LibzyButton(continueButtonText, Modifier.padding(bottom = 16.dp), onContinueClick, continueButtonEnabled)
+            CurrentQueryStep(
+                uiState,
+                onCurrentFavoriteClick,
+                onReliableClassicClick,
+                onUnderappreciatedGemClick,
+                onInstrumentalClick,
+                onVocalClick,
+                onAcousticnessChange,
+                onValenceChange,
+                onEnergyChange,
+                onDanceabilityChange,
+                onSelectGenre,
+                onDeselectGenre,
+                onSearchGenresClick,
+                modifier = Modifier.weight(1f)
+            )
+            val onFinalStep = uiState.currentStepIndex == uiState.stepOrder.size - 1
+            val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
+            val continueButtonEnabled = when (uiState.currentStep) {
+                is QueryStep.Familiarity -> uiState.query.familiarity != null
+                is QueryStep.Instrumentalness -> uiState.query.instrumental != null
+                is QueryStep.Acousticness -> uiState.query.acousticness != null
+                is QueryStep.Valence -> uiState.query.valence != null
+                is QueryStep.Energy -> uiState.query.energy != null
+                is QueryStep.Danceability -> uiState.query.danceability != null
+                is QueryStep.Genres -> uiState.query.genres != null
+            }
+            LibzyButton(continueButtonText, Modifier.padding(bottom = 16.dp), onContinueClick, continueButtonEnabled)
 
-                TextButton(
-                    onNoPreferenceClick,
-                    Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)
-                ) {
-                    Text(stringResource(R.string.no_preference).uppercase())
-                }
+            TextButton(
+                onNoPreferenceClick,
+                Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)
+            ) {
+                Text(stringResource(R.string.no_preference).uppercase())
             }
         }
     }
 }
-
-private const val GENRE_SEARCH_CHARACTER_LIMIT = 40
 
 @ExperimentalAnimationApi
 @Composable
@@ -350,6 +396,7 @@ private fun CurrentQueryStep(
     Box(modifier) {
         AnimatedContent(
             targetState = uiState.currentStep,
+            key = uiState.currentStep.type,
             transitionSpec = {
                 val slideForward = with(uiState) { previousStepIndex == null || previousStepIndex <= currentStepIndex }
                 val slideDirection = if (slideForward) SlideDirection.Left else SlideDirection.Right
@@ -398,7 +445,7 @@ private fun CurrentQueryStep(
                         selectedGenres = uiState.query.genres.orEmpty(),
                         onSelectGenre = onSelectGenre,
                         onDeselectGenre = onDeselectGenre,
-                        onSearchGenresClick = onSearchGenresClick,
+                        onSearchGenresClick = onSearchGenresClick
                     )
                 }
             }
@@ -481,7 +528,7 @@ private fun SliderQueryStep(
     var currentValue by remember { mutableStateOf(initialValue) }
     val sliderColor = if (currentValue != null) MaterialTheme.colors.primary else MaterialTheme.colors.secondary
     val horizontalSpacing = 8.dp
-    
+
     ConstraintLayout {
         val (leftLabel, rightLabel, slider) = createRefs()
 
@@ -521,6 +568,7 @@ private fun SliderQueryStep(
     }
 }
 
+@ExperimentalAnimationApi
 @Composable
 private fun GenresStep(
     genresStepState: QueryStep.Genres,
@@ -532,6 +580,7 @@ private fun GenresStep(
     val focusManager = LocalFocusManager.current
     val keyboard = LocalWindowInsets.current.ime
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(scrollState, keyboard) {
         snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
@@ -540,8 +589,31 @@ private fun GenresStep(
     }
 
     Column {
-        if (genresStepState is QueryStep.Genres.Recommendations) {
-            SearchGenresButton(onSearchGenresClick, Modifier.padding(top = 24.dp, bottom = 6.dp))
+        AnimatedVisibility(
+            visible = genresStepState is QueryStep.Genres.Recommendations,
+            enter = fadeIn(),
+            exit = fadeOut(
+                animationSpec = tween(
+                    durationMillis = SEARCH_TRANSITION_DURATION_MILLIS,
+                    easing = FastOutLinearInEasing
+                )
+            ) + shrinkVertically(
+                animationSpec = tween(
+                    durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                    delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                    easing = LinearEasing
+                )
+            )
+        ) {
+            SearchGenresButton(
+                onSearchGenresClick = {
+                    coroutineScope.launch {
+                        scrollState.animateScrollTo(0)
+                    }
+                    onSearchGenresClick()
+                },
+                modifier = Modifier.padding(top = 24.dp, bottom = 6.dp)
+            )
         }
 
         val indicatingNoResults = genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()
@@ -570,7 +642,8 @@ private fun GenresStep(
         if (genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()) {
             Text(
                 stringResource(R.string.no_genre_results, genresStepState.searchQuery),
-                style = MaterialTheme.typography.h6
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
     }
