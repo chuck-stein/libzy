@@ -93,19 +93,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
-private const val GENRE_SEARCH_CHARACTER_LIMIT = 40
-
-// When starting a genre search, the animation consists of two parts:
-//    1. shrinking out the "greeting text", which brings the search button up to just below where the search bar appears
-//    2. shrinking out the search button and making the search bar slide up from where the search button was
-//
-// These two parts must share the same timing, even though they involve components
-// across different levels of the compose tree, so top-level constants are used.
-private const val SEARCH_TRANSITION_PT_1_DURATION_MILLIS = 100
-private const val SEARCH_TRANSITION_PT_2_DURATION_MILLIS = 50
-private const val SEARCH_TRANSITION_DURATION_MILLIS =
-    SEARCH_TRANSITION_PT_1_DURATION_MILLIS + SEARCH_TRANSITION_PT_2_DURATION_MILLIS
-
 /**
  * **Stateful** Query Screen, displaying a series of questions about what the user is in the mood to listen to.
  */
@@ -752,3 +739,16 @@ private fun GenresQueryScreen() {
         )
     }
 }
+
+private const val GENRE_SEARCH_CHARACTER_LIMIT = 40
+
+// When starting a genre search, the animation consists of two parts:
+//    1. shrinking out the "greeting text", which brings the search button up to just below where the search bar appears
+//    2. shrinking out the search button and making the search bar slide up from where the search button was
+//
+// These two parts must share the same timing, even though they involve components
+// across different levels of the compose tree, so top-level constants are used.
+private const val SEARCH_TRANSITION_PT_1_DURATION_MILLIS = 100
+private const val SEARCH_TRANSITION_PT_2_DURATION_MILLIS = 50
+private const val SEARCH_TRANSITION_DURATION_MILLIS =
+    SEARCH_TRANSITION_PT_1_DURATION_MILLIS + SEARCH_TRANSITION_PT_2_DURATION_MILLIS
