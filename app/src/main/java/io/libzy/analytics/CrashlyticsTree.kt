@@ -1,6 +1,10 @@
 package io.libzy.analytics
 
-import android.util.Log.*
+import android.util.Log.DEBUG
+import android.util.Log.ERROR
+import android.util.Log.INFO
+import android.util.Log.VERBOSE
+import android.util.Log.WARN
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import timber.log.Timber
@@ -8,8 +12,6 @@ import timber.log.Timber
 /**
  * A logging [Timber.Tree] which logs INFO, WARN, and ERROR level messages to Firebase Crashlytics,
  * along with any exceptions the log contains. Ignores DEBUG and VERBOSE level logs.
- * 
- * This should be used for release builds.
  */
 class CrashlyticsTree : Timber.Tree() {
     

@@ -91,6 +91,7 @@ import io.libzy.ui.theme.LibzyIconTheme
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalTime
 
 /**
@@ -130,6 +131,7 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
     if (!initializedCurrentStep) {
         viewModel.initCurrentStep()
         initializedCurrentStep = true
+        Timber.d("Logging this value to suppress 'unused' warning: $initializedCurrentStep")
     }
 
     val focusManager = LocalFocusManager.current
