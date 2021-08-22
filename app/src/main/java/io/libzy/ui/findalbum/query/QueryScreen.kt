@@ -211,6 +211,18 @@ private fun QueryScreen(
     onSearchGenresClick: () -> Unit,
     onGenreSearchQueryChange: (String) -> Unit
 ) {
+    val onFinalStep = uiState.currentStepIndex == uiState.stepOrder.size - 1
+    val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
+    val continueButtonEnabled = when (uiState.currentStep) {
+        is QueryStep.Familiarity -> uiState.query.familiarity != null
+        is QueryStep.Instrumentalness -> uiState.query.instrumental != null
+        is QueryStep.Acousticness -> uiState.query.acousticness != null
+        is QueryStep.Valence -> uiState.query.valence != null
+        is QueryStep.Energy -> uiState.query.energy != null
+        is QueryStep.Danceability -> uiState.query.danceability != null
+        is QueryStep.Genres -> uiState.query.genres != null
+    }
+
     val canGoToPreviousQueryStep = uiState.currentStepIndex > 0
     BackHandler(enabled = canGoToPreviousQueryStep, onBack = onBackClick)
 
@@ -226,15 +238,15 @@ private fun QueryScreen(
                 stateToRemember = (uiState.currentStep as? QueryStep.Genres.Search)?.searchQuery ?: "",
                 enter = fadeIn(
                     animationSpec = tween(
-                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
                         delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
                         easing = LinearOutSlowInEasing
                     )
                 ) + slideInVertically(
                     initialOffsetY = { fullHeight -> fullHeight },
                     animationSpec = tween(
-                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
                         delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
                         easing = LinearOutSlowInEasing
                     )
                 ),
@@ -245,30 +257,7 @@ private fun QueryScreen(
         }
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
-            AnimatedVisibility(
-                visible = uiState.currentStep !is QueryStep.Genres.Search,
-                enter = fadeIn(),
-                exit = fadeOut(
-                    animationSpec = tween(
-                        durationMillis = SEARCH_TRANSITION_DURATION_MILLIS,
-                        easing = FastOutLinearInEasing
-                    )
-                ) + shrinkVertically(
-                    animationSpec = tween(
-                        durationMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
-                        easing = LinearEasing
-                    )
-                ),
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    GreetingText()
-                    Text(
-                        text = stringResource(R.string.query_instructions_text),
-                        style = MaterialTheme.typography.h6,
-                        modifier = Modifier.padding(top = 24.dp, start = HORIZONTAL_INSET.dp, end = HORIZONTAL_INSET.dp)
-                    )
-                }
-            }
+            QueryScreenHeaders(visible = uiState.currentStep !is QueryStep.Genres.Search)
 
             CurrentQueryStep(
                 uiState,
@@ -286,23 +275,10 @@ private fun QueryScreen(
                 onSearchGenresClick,
                 modifier = Modifier.weight(1f)
             )
-            val onFinalStep = uiState.currentStepIndex == uiState.stepOrder.size - 1
-            val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
-            val continueButtonEnabled = when (uiState.currentStep) {
-                is QueryStep.Familiarity -> uiState.query.familiarity != null
-                is QueryStep.Instrumentalness -> uiState.query.instrumental != null
-                is QueryStep.Acousticness -> uiState.query.acousticness != null
-                is QueryStep.Valence -> uiState.query.valence != null
-                is QueryStep.Energy -> uiState.query.energy != null
-                is QueryStep.Danceability -> uiState.query.danceability != null
-                is QueryStep.Genres -> uiState.query.genres != null
-            }
+
             LibzyButton(continueButtonText, Modifier.padding(bottom = 16.dp), onContinueClick, continueButtonEnabled)
 
-            TextButton(
-                onNoPreferenceClick,
-                Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)
-            ) {
+            TextButton(onNoPreferenceClick,  Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)) {
                 Text(stringResource(R.string.no_preference).uppercase())
             }
         }
@@ -357,22 +333,50 @@ private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) ->
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester)
     )
 }
 
+@ExperimentalAnimationApi
 @Composable
-private fun GreetingText() {
+private fun QueryScreenHeaders(visible: Boolean) {
+
     val greetingResId = when (LocalTime.now().hour) {
         in 4..11 -> R.string.morning_greeting_text
         in 12..16 -> R.string.afternoon_greeting_text
         else -> R.string.evening_greeting_text
     }
-    Text(
-        stringResource(greetingResId),
-        style = MaterialTheme.typography.h3,
-        modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
-    )
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut(
+            animationSpec = tween(
+                durationMillis = SEARCH_TRANSITION_DURATION_MILLIS,
+                easing = FastOutLinearInEasing
+            )
+        ) + shrinkVertically(
+            animationSpec = tween(
+                durationMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                easing = LinearEasing
+            )
+        ),
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                stringResource(greetingResId),
+                style = MaterialTheme.typography.h3,
+                modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
+            )
+            Text(
+                text = stringResource(R.string.query_instructions_text),
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier.padding(top = 24.dp, start = HORIZONTAL_INSET.dp, end = HORIZONTAL_INSET.dp)
+            )
+        }
+    }
 }
 
 @ExperimentalAnimationApi
@@ -403,7 +407,10 @@ private fun CurrentQueryStep(
                 slideIntoContainer(slideDirection) with slideOutOfContainer(slideDirection)
             }
         ) { currentStep ->
-            Box(Modifier.fillMaxSize().padding(horizontal = HORIZONTAL_INSET.dp), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = HORIZONTAL_INSET.dp), contentAlignment = Alignment.Center) {
                 when (currentStep) {
                     is QueryStep.Familiarity -> FamiliarityStep(
                         uiState.query.familiarity,
@@ -581,6 +588,9 @@ private fun GenresStep(
     val keyboard = LocalWindowInsets.current.ime
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
+    val indicatingNoResults = genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()
+    // TODO: calculate numGenreOptionsToShow based on screen size rather than magic numbers
+    val numGenreOptionsToShow = if (genresStepState is QueryStep.Genres.Search) 50 else 28
 
     LaunchedEffect(scrollState, keyboard) {
         snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
@@ -589,34 +599,17 @@ private fun GenresStep(
     }
 
     Column {
-        AnimatedVisibility(
+        SearchGenresButton(
             visible = genresStepState is QueryStep.Genres.Recommendations,
-            enter = fadeIn(),
-            exit = fadeOut(
-                animationSpec = tween(
-                    durationMillis = SEARCH_TRANSITION_DURATION_MILLIS,
-                    easing = FastOutLinearInEasing
-                )
-            ) + shrinkVertically(
-                animationSpec = tween(
-                    durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
-                    delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
-                    easing = LinearEasing
-                )
-            )
-        ) {
-            SearchGenresButton(
-                onSearchGenresClick = {
-                    coroutineScope.launch {
-                        scrollState.animateScrollTo(0)
-                    }
-                    onSearchGenresClick()
-                },
-                modifier = Modifier.padding(top = 24.dp, bottom = 6.dp)
-            )
-        }
+            onSearchGenresClick = {
+                coroutineScope.launch {
+                    scrollState.animateScrollTo(0)
+                }
+                onSearchGenresClick()
+            },
+            modifier = Modifier.padding(top = 24.dp, bottom = 6.dp)
+        )
 
-        val indicatingNoResults = genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()
         if (!indicatingNoResults) {
             // TODO: add visual scroll bar when it is supported
             FlowRow(
@@ -628,8 +621,6 @@ private fun GenresStep(
                 mainAxisSpacing = 10.dp,
                 crossAxisSpacing = 16.dp,
             ) {
-                // TODO: calculate numGenreOptionsToShow based on screen size rather than magic numbers
-                val numGenreOptionsToShow = if (genresStepState is QueryStep.Genres.Search) 50 else 28
                 genresStepState.genreOptions.take(numGenreOptionsToShow).toSet().plus(selectedGenres).forEach { genre ->
                     val selected = selectedGenres.contains(genre)
                     Chip(selected = selected, text = genre, onClick = {
@@ -649,24 +640,42 @@ private fun GenresStep(
     }
 }
 
+@ExperimentalAnimationApi
 @Composable
-private fun SearchGenresButton(onSearchGenresClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(
-        onClick = onSearchGenresClick,
-        shape = RoundedCornerShape(18.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = MaterialTheme.colors.secondaryVariant,
-            contentColor = Color.Gray
-        ),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Icon(
-            imageVector = LibzyIconTheme.Search,
-            contentDescription = null, // "Search genres" text suffices as CD
-            modifier = Modifier.padding(end = 10.dp)
+private fun SearchGenresButton(visible: Boolean, onSearchGenresClick: () -> Unit, modifier: Modifier = Modifier) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut(
+            animationSpec = tween(
+                durationMillis = SEARCH_TRANSITION_DURATION_MILLIS,
+                easing = FastOutLinearInEasing
+            )
+        ) + shrinkVertically(
+            animationSpec = tween(
+                delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                easing = LinearEasing
+            )
         )
-        Text(stringResource(R.string.search_genres))
-        Spacer(modifier = Modifier.weight(1f))
+    ) {
+        Button(
+            onClick = onSearchGenresClick,
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.secondaryVariant,
+                contentColor = Color.Gray
+            ),
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = LibzyIconTheme.Search,
+                contentDescription = null, // "Search genres" text suffices as CD
+                modifier = Modifier.padding(end = 10.dp)
+            )
+            Text(stringResource(R.string.search_genres))
+            Spacer(modifier = Modifier.weight(1f))
+        }
     }
 }
 
