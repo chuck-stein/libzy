@@ -313,7 +313,7 @@ private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) ->
         onValueChange = { onSearchQueryChange(it.take(GENRE_SEARCH_CHARACTER_LIMIT)) },
         placeholder = { Text(stringResource(R.string.search_genres), style = textStyle) },
         trailingIcon = {
-            AnimatedVisibility(visible = searchQuery.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(visible = searchQuery.isNotEmpty(), Modifier.padding(start = 30.dp), fadeIn(), fadeOut()) {
                 IconButton(onClick = {
                     onSearchQueryChange("")
                     focusRequester.requestFocus()
