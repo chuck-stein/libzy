@@ -71,8 +71,17 @@ sealed class QueryStep(val type: Type) {
 
     sealed class Genres : QueryStep(Type.GENRES) {
         abstract val genreOptions: List<String>
+        abstract val recentlyRemovedGenres: Set<String>
 
-        data class Recommendations(override val genreOptions: List<String>) : Genres()
-        data class Search(val searchQuery: String, override val genreOptions: List<String>) : Genres()
+        data class Recommendations(
+            override val genreOptions: List<String>,
+            override val recentlyRemovedGenres: Set<String> = emptySet()
+        ) : Genres()
+
+        data class Search(
+            val searchQuery: String,
+            override val genreOptions: List<String>,
+            override val recentlyRemovedGenres: Set<String> = emptySet()
+        ) : Genres()
     }
 }

@@ -107,7 +107,7 @@ class QueryViewModel @Inject constructor(
             if (currentStep is QueryStep.Genres.Search) {
                 updateUiState {
                     copy(
-                        currentStep = currentStep.copy(
+                        currentStep = QueryStep.Genres.Search(
                             searchQuery = searchQuery,
                             genreOptions = when {
                                 searchQuery.isBlank() -> recommendGenres()
@@ -158,7 +158,19 @@ class QueryViewModel @Inject constructor(
 
     fun setGenres(genres: Set<String>?) {
         updateUiState {
-            copy(query = query.copy(genres = genres?.takeUnless { it.isEmpty() }))
+            val previousGenres = query.genres
+            val newGenres = genres?.takeUnless { it.isEmpty() }
+            val removedGenres = previousGenres?.minus(newGenres ?: emptySet()) ?: emptySet()
+            val newCurrentStep = when (currentStep) {
+                is QueryStep.Genres.Recommendations -> {
+                    currentStep.copy(recentlyRemovedGenres = currentStep.recentlyRemovedGenres.plus(removedGenres))
+                }
+                is QueryStep.Genres.Search -> {
+                    currentStep.copy(recentlyRemovedGenres = currentStep.recentlyRemovedGenres.plus(removedGenres))
+                }
+                else -> currentStep
+            }
+            copy(query = query.copy(genres = newGenres), currentStep = newCurrentStep)
         }
     }
 

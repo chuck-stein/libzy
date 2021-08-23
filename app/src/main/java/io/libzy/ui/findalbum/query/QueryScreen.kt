@@ -583,6 +583,8 @@ private fun GenresStep(
     val coroutineScope = rememberCoroutineScope()
     // TODO: calculate numGenreOptionsToShow based on screen size rather than magic numbers
     val numGenreOptionsToShow = if (genresStepState is QueryStep.Genres.Search) 50 else 28
+    val selectedAndDeselectedGenres = selectedGenres.plus(genresStepState.recentlyRemovedGenres).sorted()
+    val genres = genresStepState.genreOptions.take(numGenreOptionsToShow).toSet().plus(selectedAndDeselectedGenres)
 
     LaunchedEffect(scrollState, keyboard) {
         snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
@@ -619,7 +621,7 @@ private fun GenresStep(
                 mainAxisSpacing = 10.dp,
                 crossAxisSpacing = 16.dp,
             ) {
-                genresStepState.genreOptions.take(numGenreOptionsToShow).toSet().plus(selectedGenres).forEach { genre ->
+                genres.forEach { genre ->
                     val selected = selectedGenres.contains(genre)
                     Chip(selected = selected, text = genre, onClick = {
                         if (selected) onDeselectGenre(genre) else onSelectGenre(genre)
