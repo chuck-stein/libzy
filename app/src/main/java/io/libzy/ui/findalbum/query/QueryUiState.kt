@@ -1,5 +1,6 @@
 package io.libzy.ui.findalbum.query
 
+import io.libzy.R
 import io.libzy.domain.Query
 
 data class QueryUiState(
@@ -9,7 +10,20 @@ data class QueryUiState(
     val query: Query = Query()
 ) {
     val currentStepIndex = stepOrder.indexOfFirst { it == currentStep.type }
-    val startOverButtonVisible = currentStep !is QueryStep.Genres.Search && currentStepIndex > 0
+    private val onFinalStep = currentStepIndex == stepOrder.size - 1
+    val pastFirstStep = currentStepIndex > 0
+    val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
+    val continueButtonEnabled = when (currentStep) {
+        is QueryStep.Familiarity -> query.familiarity != null
+        is QueryStep.Instrumentalness -> query.instrumental != null
+        is QueryStep.Acousticness -> query.acousticness != null
+        is QueryStep.Valence -> query.valence != null
+        is QueryStep.Energy -> query.energy != null
+        is QueryStep.Danceability -> query.danceability != null
+        is QueryStep.Genres -> query.genres != null
+    }
+    val startOverButtonVisible = currentStep !is QueryStep.Genres.Search && pastFirstStep
+    val navigatingForward = previousStepIndex == null || previousStepIndex <= currentStepIndex
 
     init {
         require(currentStepIndex in stepOrder.indices && previousStepIndex?.let { it in stepOrder.indices } ?: true) {

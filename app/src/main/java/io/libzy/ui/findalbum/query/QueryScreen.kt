@@ -205,25 +205,12 @@ private fun QueryScreen(
     onSearchGenresClick: () -> Unit,
     onGenreSearchQueryChange: (String) -> Unit
 ) {
-    val onFinalStep = uiState.currentStepIndex == uiState.stepOrder.size - 1
-    val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
-    val continueButtonEnabled = when (uiState.currentStep) {
-        is QueryStep.Familiarity -> uiState.query.familiarity != null
-        is QueryStep.Instrumentalness -> uiState.query.instrumental != null
-        is QueryStep.Acousticness -> uiState.query.acousticness != null
-        is QueryStep.Valence -> uiState.query.valence != null
-        is QueryStep.Energy -> uiState.query.energy != null
-        is QueryStep.Danceability -> uiState.query.danceability != null
-        is QueryStep.Genres -> uiState.query.genres != null
-    }
-
-    val canGoToPreviousQueryStep = uiState.currentStepIndex > 0
-    BackHandler(enabled = canGoToPreviousQueryStep, onBack = onBackClick)
+    BackHandler(enabled = uiState.pastFirstStep, onBack = onBackClick)
 
     LibzyScaffold(
         navigationIcon = {
-            AnimatedVisibility(visible = canGoToPreviousQueryStep, enter = fadeIn(), exit = fadeOut()) {
-                BackIcon(onBackClick, enabled = canGoToPreviousQueryStep)
+            AnimatedVisibility(visible = uiState.pastFirstStep, enter = fadeIn(), exit = fadeOut()) {
+                BackIcon(onBackClick, enabled = uiState.pastFirstStep)
             }
         },
         actionIcons = {
@@ -277,7 +264,7 @@ private fun QueryScreen(
                 modifier = Modifier.weight(1f)
             )
 
-            LibzyButton(continueButtonText, Modifier.padding(bottom = 16.dp), onContinueClick, continueButtonEnabled)
+            LibzyButton(uiState.continueButtonText, Modifier.padding(bottom = 16.dp), onContinueClick, uiState.continueButtonEnabled)
 
             TextButton(onNoPreferenceClick,  Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)) {
                 Text(stringResource(R.string.no_preference).uppercase())
@@ -409,8 +396,7 @@ private fun CurrentQueryStep(
             targetState = uiState.currentStep,
             key = uiState.currentStep.type,
             transitionSpec = {
-                val slideForward = with(uiState) { previousStepIndex == null || previousStepIndex <= currentStepIndex }
-                val slideDirection = if (slideForward) SlideDirection.Left else SlideDirection.Right
+                val slideDirection = if (uiState.navigatingForward) SlideDirection.Left else SlideDirection.Right
                 slideIntoContainer(slideDirection) with slideOutOfContainer(slideDirection)
             }
         ) { currentStep ->
@@ -595,7 +581,6 @@ private fun GenresStep(
     val keyboard = LocalWindowInsets.current.ime
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
-    val indicatingNoResults = genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()
     // TODO: calculate numGenreOptionsToShow based on screen size rather than magic numbers
     val numGenreOptionsToShow = if (genresStepState is QueryStep.Genres.Search) 50 else 28
 
@@ -617,7 +602,13 @@ private fun GenresStep(
             modifier = Modifier.padding(top = 24.dp, bottom = 6.dp)
         )
 
-        if (!indicatingNoResults) {
+        if (genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()) {
+            Text(
+                stringResource(R.string.no_genre_results, genresStepState.searchQuery),
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        } else {
             // TODO: add visual scroll bar when it is supported
             FlowRow(
                 modifier = Modifier
@@ -635,14 +626,6 @@ private fun GenresStep(
                     })
                 }
             }
-        }
-
-        if (genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()) {
-            Text(
-                stringResource(R.string.no_genre_results, genresStepState.searchQuery),
-                style = MaterialTheme.typography.h6,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
         }
     }
 }
