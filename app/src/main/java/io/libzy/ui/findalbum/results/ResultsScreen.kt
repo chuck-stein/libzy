@@ -236,17 +236,9 @@ private fun AlbumArtwork(artworkUrl: String?) {
 
     val artworkBitmap = loadRemoteImage(artworkUrl)
     if (artworkBitmap != null) {
-        Image(
-            bitmap = artworkBitmap,
-            contentDescription = artworkContentDescription,
-            modifier = artworkModifier
-        )
+        Image(artworkBitmap, artworkContentDescription, artworkModifier)
     } else {
-        Image(
-            painter = painterResource(R.drawable.placeholder_album_art),
-            contentDescription = artworkContentDescription,
-            modifier = artworkModifier
-        )
+        Image(painterResource(R.drawable.placeholder_album_art), artworkContentDescription, artworkModifier)
     }
 }
 

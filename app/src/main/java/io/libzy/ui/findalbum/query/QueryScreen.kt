@@ -205,7 +205,6 @@ private fun QueryScreen(
     onSearchGenresClick: () -> Unit,
     onGenreSearchQueryChange: (String) -> Unit
 ) {
-    val startOverButtonCd = stringResource(R.string.start_over)
     val onFinalStep = uiState.currentStepIndex == uiState.stepOrder.size - 1
     val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
     val continueButtonEnabled = when (uiState.currentStep) {
@@ -230,7 +229,7 @@ private fun QueryScreen(
         actionIcons = {
             AnimatedVisibility(visible = uiState.startOverButtonVisible, enter = fadeIn(), exit = fadeOut()) {
                 IconButton(onStartOverClick) {
-                    LibzyIcon(LibzyIconTheme.RestartAlt,  contentDescription = startOverButtonCd)
+                    LibzyIcon(LibzyIconTheme.RestartAlt,  contentDescription = stringResource(R.string.start_over))
                 }
             }
         },
@@ -294,7 +293,6 @@ private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) ->
     val focusManager = LocalFocusManager.current
     val keyboard = LocalWindowInsets.current.ime
     val textStyle = MaterialTheme.typography.subtitle1.copy(textAlign = TextAlign.Start)
-    val clearSearchQueryCd = stringResource(R.string.cd_clear_search_query)
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus() // TextField should be focused when search begins
@@ -326,7 +324,7 @@ private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) ->
                         onSearchQueryChange("")
                         focusRequester.requestFocus()
                     }) {
-                        LibzyIcon(LibzyIconTheme.Close, contentDescription = clearSearchQueryCd)
+                        LibzyIcon(LibzyIconTheme.Close, stringResource(R.string.cd_clear_search_query))
                     }
                 }
             }
