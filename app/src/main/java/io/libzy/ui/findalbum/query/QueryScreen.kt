@@ -254,7 +254,7 @@ private fun QueryScreen(
                 ),
                 exit = fadeOut()
             ) { searchQuery ->
-                GenreSearchBar(searchQuery, onGenreSearchQueryChange)
+                GenreSearchBar(searchQuery, onGenreSearchQueryChange, enableTrailingIcon = !uiState.startOverButtonVisible)
             }
         }
     ) {
@@ -289,7 +289,7 @@ private fun QueryScreen(
 
 @ExperimentalAnimationApi
 @Composable
-private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) -> Unit) {
+private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) -> Unit, enableTrailingIcon: Boolean) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboard = LocalWindowInsets.current.ime
@@ -315,12 +315,19 @@ private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) ->
         onValueChange = { onSearchQueryChange(it.take(GENRE_SEARCH_CHARACTER_LIMIT)) },
         placeholder = { Text(stringResource(R.string.search_genres), style = textStyle) },
         trailingIcon = {
-            AnimatedVisibility(visible = searchQuery.isNotEmpty(), Modifier.padding(start = 30.dp), fadeIn(), fadeOut()) {
-                IconButton(onClick = {
-                    onSearchQueryChange("")
-                    focusRequester.requestFocus()
-                }) {
-                    Icon(LibzyIconTheme.Close, contentDescription = clearSearchQueryCd, tint = Color.White)
+            if (enableTrailingIcon) {
+                AnimatedVisibility(
+                    visible = searchQuery.isNotEmpty(),
+                    modifier = Modifier.padding(start = 30.dp),
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    IconButton(onClick = {
+                        onSearchQueryChange("")
+                        focusRequester.requestFocus()
+                    }) {
+                        LibzyIcon(LibzyIconTheme.Close, contentDescription = clearSearchQueryCd)
+                    }
                 }
             }
         },
