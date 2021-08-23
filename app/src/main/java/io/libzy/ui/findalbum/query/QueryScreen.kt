@@ -53,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -441,7 +442,7 @@ private fun CurrentQueryStep(
                         onValueChange = onDanceabilityChange
                     )
                     is QueryStep.Genres -> GenresStep(
-                        genresStepState = currentStep,
+                        genresStep = currentStep,
                         selectedGenres = uiState.query.genres.orEmpty(),
                         onSelectGenre = onSelectGenre,
                         onDeselectGenre = onDeselectGenre,
@@ -571,7 +572,7 @@ private fun SliderQueryStep(
 @ExperimentalAnimationApi
 @Composable
 private fun GenresStep(
-    genresStepState: QueryStep.Genres,
+    genresStep: QueryStep.Genres,
     selectedGenres: Set<String>,
     onSelectGenre: (String) -> Unit,
     onDeselectGenre: (String) -> Unit,
@@ -582,9 +583,9 @@ private fun GenresStep(
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     // TODO: calculate numGenreOptionsToShow based on screen size rather than magic numbers
-    val numGenreOptionsToShow = if (genresStepState is QueryStep.Genres.Search) 50 else 28
-    val selectedAndDeselectedGenres = selectedGenres.plus(genresStepState.recentlyRemovedGenres).sorted()
-    val genres = genresStepState.genreOptions.take(numGenreOptionsToShow).toSet().plus(selectedAndDeselectedGenres)
+    val numGenreOptionsToShow = if (genresStep is QueryStep.Genres.Search) 50 else 28
+    val selectedAndDeselectedGenres = selectedGenres.plus(genresStep.recentlyRemovedGenres).sorted()
+    val genres = genresStep.genreOptions.take(numGenreOptionsToShow).toSet().plus(selectedAndDeselectedGenres)
 
     LaunchedEffect(scrollState, keyboard) {
         snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
@@ -592,9 +593,18 @@ private fun GenresStep(
         }
     }
 
+    // wrapping genresStep in State so that LaunchedEffect can reference its most recent value without relaunching
+    val genresStepState = rememberUpdatedState(genresStep)
+    LaunchedEffect(scrollState, genresStepState) {
+        snapshotFlow { (genresStepState.value as? QueryStep.Genres.Search)?.searchQuery ?: "" }.collect {
+            // if the search query changes, ensure the scroll position is at the top of the new search results
+            scrollState.scrollTo(0)
+        }
+    }
+
     Column {
         SearchGenresButton(
-            visible = genresStepState is QueryStep.Genres.Recommendations,
+            visible = genresStep is QueryStep.Genres.Recommendations,
             onSearchGenresClick = {
                 coroutineScope.launch {
                     scrollState.animateScrollTo(0)
@@ -604,9 +614,9 @@ private fun GenresStep(
             modifier = Modifier.padding(top = 24.dp, bottom = 6.dp)
         )
 
-        if (genresStepState is QueryStep.Genres.Search && genresStepState.genreOptions.isEmpty()) {
+        if (genresStep is QueryStep.Genres.Search && genresStep.genreOptions.isEmpty()) {
             Text(
-                stringResource(R.string.no_genre_results, genresStepState.searchQuery),
+                stringResource(R.string.no_genre_results, genresStep.searchQuery),
                 style = MaterialTheme.typography.h6,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
