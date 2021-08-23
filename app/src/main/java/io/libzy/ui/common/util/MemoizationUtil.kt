@@ -1,4 +1,4 @@
-package io.libzy.ui.common
+package io.libzy.ui.common.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls

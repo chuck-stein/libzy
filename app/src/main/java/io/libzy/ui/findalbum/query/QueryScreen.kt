@@ -78,8 +78,6 @@ import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
-import io.libzy.ui.common.AnimatedContent
-import io.libzy.ui.common.StatefulAnimatedVisibility
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
@@ -87,7 +85,9 @@ import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.SelectableButton
-import io.libzy.ui.common.restartFindAlbumFlow
+import io.libzy.ui.common.util.AnimatedContent
+import io.libzy.ui.common.util.StatefulAnimatedVisibility
+import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme

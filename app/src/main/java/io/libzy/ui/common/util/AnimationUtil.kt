@@ -1,4 +1,4 @@
-package io.libzy.ui.common
+package io.libzy.ui.common.util
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope

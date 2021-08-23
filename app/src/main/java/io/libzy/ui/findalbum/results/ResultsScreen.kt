@@ -49,8 +49,8 @@ import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
-import io.libzy.ui.common.loadRemoteImage
-import io.libzy.ui.common.restartFindAlbumFlow
+import io.libzy.ui.common.util.loadRemoteImage
+import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET

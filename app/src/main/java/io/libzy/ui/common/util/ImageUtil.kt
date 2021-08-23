@@ -1,4 +1,4 @@
-package io.libzy.ui.common
+package io.libzy.ui.common.util
 
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
