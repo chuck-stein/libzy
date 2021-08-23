@@ -44,6 +44,7 @@ import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.MicExternalOn
 import androidx.compose.material.icons.rounded.Piano
+import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.SavedSearch
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
@@ -83,8 +84,10 @@ import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.LibzyButton
+import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.SelectableButton
+import io.libzy.ui.common.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
@@ -147,6 +150,7 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
                 viewModel.goToPreviousStep()
             }
         },
+        onStartOverClick = navController::restartFindAlbumFlow,
         onContinueClick = viewModel::goToNextStep,
         onNoPreferenceClick = {
             when (uiState.currentStep) {
@@ -184,6 +188,7 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
 private fun QueryScreen(
     uiState: QueryUiState,
     onBackClick: () -> Unit,
+    onStartOverClick: () -> Unit,
     onContinueClick: () -> Unit,
     onNoPreferenceClick: () -> Unit,
     onCurrentFavoriteClick: () -> Unit,
@@ -200,6 +205,7 @@ private fun QueryScreen(
     onSearchGenresClick: () -> Unit,
     onGenreSearchQueryChange: (String) -> Unit
 ) {
+    val startOverButtonCd = stringResource(R.string.start_over)
     val onFinalStep = uiState.currentStepIndex == uiState.stepOrder.size - 1
     val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
     val continueButtonEnabled = when (uiState.currentStep) {
@@ -219,6 +225,13 @@ private fun QueryScreen(
         navigationIcon = {
             AnimatedVisibility(visible = canGoToPreviousQueryStep, enter = fadeIn(), exit = fadeOut()) {
                 BackIcon(onBackClick, enabled = canGoToPreviousQueryStep)
+            }
+        },
+        actionIcons = {
+            AnimatedVisibility(visible = uiState.startOverButtonVisible, enter = fadeIn(), exit = fadeOut()) {
+                IconButton(onStartOverClick) {
+                    LibzyIcon(LibzyIconTheme.RestartAlt,  contentDescription = startOverButtonCd)
+                }
             }
         },
         title = {
@@ -676,6 +689,7 @@ private fun AcousticnessQueryScreen() {
         QueryScreen(
             uiState = QueryUiState(stepOrder = QueryUiState.DEFAULT_STEP_ORDER, currentStep = QueryStep.Acousticness),
             onBackClick = {},
+            onStartOverClick = {},
             onContinueClick = {},
             onNoPreferenceClick = {},
             onCurrentFavoriteClick = {},
@@ -723,6 +737,7 @@ private fun GenresQueryScreen() {
                 )
             ),
             onBackClick = {},
+            onStartOverClick = {},
             onContinueClick = {},
             onNoPreferenceClick = {},
             onCurrentFavoriteClick = {},

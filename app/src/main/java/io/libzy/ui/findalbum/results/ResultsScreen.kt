@@ -50,6 +50,7 @@ import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
 import io.libzy.ui.common.loadRemoteImage
+import io.libzy.ui.common.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
@@ -110,12 +111,7 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
         scaffoldState = scaffoldState,
         onBackClick = navController::popBackStack,
         onAlbumClick = viewModel::playAlbum,
-        onStartOverClick = {
-            // pop the entire flow off the back stack, removing saved state of previous visit to query screen
-            navController.popBackStack(Destination.FindAlbumFlow.route, inclusive = true, saveState = false)
-            // navigate to query screen with fresh state after removing the previous query screen state from backstack
-            navController.navigate(Destination.Query.route)
-        },
+        onStartOverClick = navController::restartFindAlbumFlow,
         onRateResults = viewModel::rateResults
     )
 }

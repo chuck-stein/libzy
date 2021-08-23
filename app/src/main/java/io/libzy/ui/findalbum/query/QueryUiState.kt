@@ -9,6 +9,7 @@ data class QueryUiState(
     val query: Query = Query()
 ) {
     val currentStepIndex = stepOrder.indexOfFirst { it == currentStep.type }
+    val startOverButtonVisible = currentStep !is QueryStep.Genres.Search && currentStepIndex > 0
 
     init {
         require(currentStepIndex in stepOrder.indices && previousStepIndex?.let { it in stepOrder.indices } ?: true) {

@@ -2,6 +2,7 @@ package io.libzy.ui.common.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +42,7 @@ fun LibzyScaffold(
     scaffoldState: ScaffoldState = rememberScaffoldState(),
     title: @Composable () -> Unit = {},
     navigationIcon: @Composable (() -> Unit)? = null,
+    actionIcons: @Composable RowScope.() -> Unit = {},
     content: @Composable (BoxScope) -> Unit
 ) {
     Scaffold(
@@ -49,6 +51,7 @@ fun LibzyScaffold(
             TopAppBar(
                 title = title,
                 navigationIcon = navigationIcon,
+                actions = actionIcons,
                 backgroundColor = Color.Transparent,
                 elevation = 0.dp,
                 contentPadding = rememberInsetsPaddingValues(
