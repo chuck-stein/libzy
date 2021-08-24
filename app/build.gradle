@@ -107,7 +107,6 @@ android {
 repositories {
     mavenCentral()
     google()
-    jcenter() // temporarily required for the latest version of adamint's Spotify API wrapper
 }
 
 dependencies {
@@ -171,7 +170,7 @@ dependencies {
     implementation 'com.spotify.android:auth:1.2.3'
     implementation project(':spotify-app-remote')
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.adamratzman:spotify-api-kotlin-core:3.8.0'
+    implementation 'com.adamratzman:spotify-api-kotlin-core:3.8.1'
 
     // Database
     def room_version = "2.3.0"
