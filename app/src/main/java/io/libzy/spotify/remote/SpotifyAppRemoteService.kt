@@ -5,64 +5,85 @@ import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
 import io.libzy.R
+import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
 import javax.inject.Inject
 
+// TODO: test extensively -- lots of edge cases: https://chilipot.atlassian.net/browse/LIB-275
 class SpotifyAppRemoteService @Inject constructor(private val context: Context) {
 
+    sealed interface RemoteState {
+        object Inactive : RemoteState
+        data class Connecting(val onFailure: () -> Unit = {}, val pendingSpotifyUri: String? = null) : RemoteState
+        data class Connected(val appRemote: SpotifyAppRemote) : RemoteState
+        data class ConnectionFailed(val failure: Throwable) : RemoteState
+    }
+
+    private val remoteState = MutableStateFlow<RemoteState>(RemoteState.Inactive)
+
+    // TODO: get these values from ApiKeys class: https://chilipot.atlassian.net/browse/LIB-278
     private val connectionParams =
         ConnectionParams.Builder(context.getString(R.string.spotify_client_id))
             .setRedirectUri(context.getString(R.string.spotify_auth_redirect_uri))
             .build()
 
-    private var appRemote: SpotifyAppRemote? = null
+    fun connect(onFailure: () -> Unit = {}, pendingSpotifyUri: String? = null) {
+        if (remoteState.value is RemoteState.Connecting) return
+        (remoteState.value as? RemoteState.Connected)?.let { SpotifyAppRemote.disconnect(it.appRemote) }
+        remoteState.value = RemoteState.Connecting(onFailure, pendingSpotifyUri)
 
-    private var remoteInUse = false
-
-    fun connect(onFailure: () -> Unit) {
-        remoteInUse = true
-        SpotifyAppRemote.disconnect(appRemote)
         SpotifyAppRemote.connect(context, connectionParams, object : Connector.ConnectionListener {
 
             override fun onConnected(remote: SpotifyAppRemote) {
-                if (remoteInUse) {
-                    appRemote = remote
-                    // TODO: ensure subscription isn't garbage collected when this function loses scope
-                    // TODO: handle subscription errors/lifecycle in UI
-                    remote.playerApi.subscribeToPlayerState().setEventCallback {
-                        // TODO: update a StateFlow<PlayerState> if we ever wish to react to player state
-                        Timber.d("Spotify switched player state: $it")
-                    }
-                    remote.playerApi.subscribeToPlayerContext().setEventCallback {
-                        // TODO: update a StateFlow<PlayerContext> if we ever wish to react to player context
-                        Timber.d("Spotify switched player context: $it")
-                    }
+                (remoteState.value as? RemoteState.Connecting)?.let { connectingRemoteState ->
+                    remoteState.value = RemoteState.Connected(remote)
+                    connectingRemoteState.pendingSpotifyUri?.let { playAlbum(it, connectingRemoteState.onFailure) }
                 }
             }
 
-            override fun onFailure(exception: Throwable) {
-                Timber.e(exception, "Failed to connect Spotify app remote!")
-                onFailure()
+            override fun onFailure(failure: Throwable) {
+                Timber.e(failure, "Failed to connect Spotify app remote!")
+                (remoteState.value as? RemoteState.Connecting)?.let {
+                    it.onFailure()
+                    remoteState.value = RemoteState.ConnectionFailed(failure)
+                }
             }
-
         })
     }
 
     fun disconnect() {
-        remoteInUse = false
-        SpotifyAppRemote.disconnect(appRemote)
+        (remoteState.value as? RemoteState.Connected)?.let {
+            SpotifyAppRemote.disconnect(it.appRemote)
+        }
+        remoteState.value = RemoteState.Inactive
     }
 
-    fun playAlbum(spotifyUri: String) {
-        requireRemote().playerApi.setShuffle(false)
-        requireRemote().playerApi.play(spotifyUri)
-    }
-
-    private fun requireRemote(): SpotifyAppRemote {
-        appRemote.let { remote ->
-            if (remote?.isConnected == true) return remote
-            else throw IllegalStateException("Spotify app remote not connected!")
+    fun playAlbum(spotifyUri: String, onFailure: () -> Unit) {
+        remoteState.value.let {
+            when (it) {
+                is RemoteState.Inactive -> {
+                    // no-op
+                }
+                is RemoteState.Connecting -> {
+                    remoteState.value = RemoteState.Connecting(onFailure, pendingSpotifyUri = spotifyUri)
+                }
+                is RemoteState.ConnectionFailed -> {
+                    connect(onFailure, pendingSpotifyUri = spotifyUri)
+                }
+                is RemoteState.Connected -> {
+                    with(it.appRemote) {
+                        if (!isConnected) {
+                            Timber.e("Spotify app remote is not connected when it should be!")
+                            onFailure()
+                        }
+                        playerApi.setShuffle(false)
+                        playerApi.play(spotifyUri).setErrorCallback { err ->
+                            Timber.e(err, "Spotify app remote's 'play' operation failed!")
+                            onFailure()
+                        }
+                    }
+                }
+            }
         }
     }
-
 }

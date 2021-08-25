@@ -53,9 +53,7 @@ class ResultsViewModel @Inject constructor(
     }
 
     fun connectSpotifyAppRemote() {
-        spotifyAppRemoteService.connect {
-            // TODO: handle connection failure: https://chilipot.atlassian.net/browse/LIB-253
-        }
+        spotifyAppRemoteService.connect()
     }
 
     fun disconnectSpotifyAppRemote() {
@@ -67,12 +65,10 @@ class ResultsViewModel @Inject constructor(
 
         if (BuildConfig.DEBUG) logAlbumDetails(spotifyUri)
 
-        try {
-            spotifyAppRemoteService.playAlbum(spotifyUri)
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to play album remotely")
+        spotifyAppRemoteService.playAlbum(spotifyUri, onFailure = {
+            Timber.e("Failed to play album remotely")
             produceUiEvent(ResultsUiEvent.SPOTIFY_REMOTE_FAILURE)
-        }
+        })
     }
 
     private fun logAlbumDetails(spotifyUri: String) {
