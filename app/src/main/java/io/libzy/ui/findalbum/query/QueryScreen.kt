@@ -52,7 +52,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -94,7 +93,6 @@ import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalTime
 
@@ -595,9 +593,18 @@ private fun GenresStep(
     val focusManager = LocalFocusManager.current
     val keyboard = LocalWindowInsets.current.ime
     val scrollState = rememberScrollState()
-    val coroutineScope = rememberCoroutineScope()
-    val selectedAndDeselectedGenres = selectedGenres.plus(genresStep.recentlyRemovedGenres).sorted()
-    val genres = genresStep.genreOptions.take(genresStep.numGenreOptionsToShow).toSet().plus(selectedAndDeselectedGenres)
+    val genresToDisplay = genresStep.genreOptions.take(genresStep.numGenreOptionsToShow).let { genreOptions ->
+        when (genresStep) {
+            is QueryStep.Genres.Recommendations -> {
+                // If we're not searching, then we should display all selected genres,
+                // even if they aren't part of genreOptions, and keep them displayed if they were just deselected.
+                // Sort them to preserve order across recompositions.
+                val selectedAndDeselectedGenres = selectedGenres.plus(genresStep.recentlyRemovedGenres).sorted()
+                genreOptions.toSet().plus(selectedAndDeselectedGenres)
+            }
+            else -> genreOptions
+        }
+    }
 
     LaunchedEffect(scrollState, keyboard) {
         snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
@@ -608,21 +615,21 @@ private fun GenresStep(
     // wrapping genresStep in State so that LaunchedEffect can reference its most recent value without relaunching
     val genresStepState = rememberUpdatedState(genresStep)
     LaunchedEffect(scrollState, genresStepState) {
-        snapshotFlow { (genresStepState.value as? QueryStep.Genres.Search)?.searchQuery ?: "" }.collect {
-            // if the search query changes, ensure the scroll position is at the top of the new search results
-            scrollState.scrollTo(0)
+        var previousSearchQuery: String? = null
+        snapshotFlow { (genresStepState.value as? QueryStep.Genres.Search)?.searchQuery }.collect { newSearchQuery ->
+            // If the search query changes, ensure the scroll position is at the top of the new search results.
+            // Likewise, if the search query changes to/from null (indicating leaving or entering the search screen),
+            // ensure the scroll position is at the top of the new screen's displayed genres.
+            val startingSearch = previousSearchQuery == null
+            if (startingSearch) scrollState.animateScrollTo(0) else scrollState.scrollTo(0)
+            previousSearchQuery = newSearchQuery
         }
     }
 
     Column {
         SearchGenresButton(
             visible = genresStep is QueryStep.Genres.Recommendations,
-            onSearchGenresClick = {
-                coroutineScope.launch {
-                    scrollState.animateScrollTo(0)
-                }
-                onSearchGenresClick()
-            },
+            onSearchGenresClick = onSearchGenresClick,
             modifier = Modifier.padding(top = 24.dp, bottom = 6.dp)
         )
 
@@ -643,7 +650,7 @@ private fun GenresStep(
                 mainAxisSpacing = 10.dp,
                 crossAxisSpacing = 16.dp,
             ) {
-                genres.forEach { genre ->
+                genresToDisplay.forEach { genre ->
                     val selected = selectedGenres.contains(genre)
                     Chip(selected = selected, text = genre, onClick = {
                         if (selected) onDeselectGenre(genre) else onSelectGenre(genre)

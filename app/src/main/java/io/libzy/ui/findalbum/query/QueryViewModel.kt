@@ -164,14 +164,11 @@ class QueryViewModel @Inject constructor(
 
     fun setGenres(genres: Set<String>?) {
         updateUiState {
-            val previousGenres = query.genres
             val newGenres = genres?.takeUnless { it.isEmpty() }
-            val removedGenres = previousGenres?.minus(newGenres ?: emptySet()) ?: emptySet()
             val newCurrentStep = when (currentStep) {
                 is QueryStep.Genres.Recommendations -> {
-                    currentStep.copy(recentlyRemovedGenres = currentStep.recentlyRemovedGenres.plus(removedGenres))
-                }
-                is QueryStep.Genres.Search -> {
+                    val previousGenres = query.genres
+                    val removedGenres = previousGenres?.minus(newGenres ?: emptySet()) ?: emptySet()
                     currentStep.copy(recentlyRemovedGenres = currentStep.recentlyRemovedGenres.plus(removedGenres))
                 }
                 else -> currentStep
