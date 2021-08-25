@@ -151,7 +151,10 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
                 viewModel.goToPreviousStep()
             }
         },
-        onStartOverClick = navController::restartFindAlbumFlow,
+        onStartOverClick = {
+            navController.restartFindAlbumFlow()
+            findAlbumFlowViewModel.sendClickStartOverAnalyticsEvent()
+        },
         onContinueClick = viewModel::goToNextStep,
         onNoPreferenceClick = {
             when (uiState.currentStep) {
@@ -177,7 +180,8 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
         onSelectGenre = viewModel::addGenre,
         onDeselectGenre = viewModel::removeGenre,
         onSearchGenresClick = viewModel::startGenreSearch,
-        onGenreSearchQueryChange = viewModel::searchGenres
+        onGenreSearchQueryChange = viewModel::searchGenres,
+        onDismissKeyboard = viewModel::sendDismissKeyboardAnalyticsEvent
     )
 }
 
@@ -204,7 +208,8 @@ private fun QueryScreen(
     onSelectGenre: (String) -> Unit,
     onDeselectGenre: (String) -> Unit,
     onSearchGenresClick: () -> Unit,
-    onGenreSearchQueryChange: (String) -> Unit
+    onGenreSearchQueryChange: (String) -> Unit,
+    onDismissKeyboard: () -> Unit
 ) {
     BackHandler(enabled = uiState.pastFirstStep, onBack = onBackClick)
 
@@ -241,7 +246,12 @@ private fun QueryScreen(
                 ),
                 exit = fadeOut()
             ) { searchQuery ->
-                GenreSearchBar(searchQuery, onGenreSearchQueryChange, enableTrailingIcon = !uiState.startOverButtonVisible)
+                GenreSearchBar(
+                    searchQuery = searchQuery,
+                    enableTrailingIcon = !uiState.startOverButtonVisible,
+                    onSearchQueryChange = onGenreSearchQueryChange,
+                    onDismissKeyboard = onDismissKeyboard
+                )
             }
         }
     ) {
@@ -276,7 +286,12 @@ private fun QueryScreen(
 
 @ExperimentalAnimationApi
 @Composable
-private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) -> Unit, enableTrailingIcon: Boolean) {
+private fun GenreSearchBar(
+    searchQuery: String,
+    enableTrailingIcon: Boolean,
+    onSearchQueryChange: (String) -> Unit,
+    onDismissKeyboard: () -> Unit,
+) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboard = LocalWindowInsets.current.ime
@@ -291,6 +306,7 @@ private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) ->
         snapshotFlow { keyboard.isVisible }.collect { keyboardNowVisible ->
             if (keyboardPreviouslyVisible && !keyboardNowVisible) {
                 focusManager.clearFocus() // TextField should be unfocused when keyboard is dismissed
+                onDismissKeyboard()
             }
             keyboardPreviouslyVisible = keyboardNowVisible
         }
@@ -328,9 +344,7 @@ private fun GenreSearchBar(searchQuery: String, onSearchQueryChange: (String) ->
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester)
+        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
     )
 }
 
@@ -582,10 +596,8 @@ private fun GenresStep(
     val keyboard = LocalWindowInsets.current.ime
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
-    // TODO: calculate numGenreOptionsToShow based on screen size rather than magic numbers
-    val numGenreOptionsToShow = if (genresStep is QueryStep.Genres.Search) 50 else 28
     val selectedAndDeselectedGenres = selectedGenres.plus(genresStep.recentlyRemovedGenres).sorted()
-    val genres = genresStep.genreOptions.take(numGenreOptionsToShow).toSet().plus(selectedAndDeselectedGenres)
+    val genres = genresStep.genreOptions.take(genresStep.numGenreOptionsToShow).toSet().plus(selectedAndDeselectedGenres)
 
     LaunchedEffect(scrollState, keyboard) {
         snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
@@ -704,7 +716,8 @@ private fun AcousticnessQueryScreen() {
             onSelectGenre = {},
             onDeselectGenre = {},
             onSearchGenresClick = {},
-            onGenreSearchQueryChange = {}
+            onGenreSearchQueryChange = {},
+            onDismissKeyboard = {}
         )
     }
 }
@@ -752,7 +765,8 @@ private fun GenresQueryScreen() {
             onSelectGenre = {},
             onDeselectGenre = {},
             onSearchGenresClick = {},
-            onGenreSearchQueryChange = {}
+            onGenreSearchQueryChange = {},
+            onDismissKeyboard = {}
         )
     }
 }

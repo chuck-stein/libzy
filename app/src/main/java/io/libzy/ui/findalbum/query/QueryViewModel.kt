@@ -53,6 +53,10 @@ class QueryViewModel @Inject constructor(
         }
     }
 
+    fun sendDismissKeyboardAnalyticsEvent() {
+        analyticsDispatcher.sendDismissKeyboardEvent(currentSearchQuery ?: "", currentlySelectedGenres)
+    }
+
     fun goToPreviousStep() {
         goToStep(uiState.value.currentStepIndex - 1)
     }
@@ -90,6 +94,7 @@ class QueryViewModel @Inject constructor(
                         )
                     )
                 }
+                analyticsDispatcher.sendStartGenreSearchEvent(currentlySelectedGenres)
             }
         }
     }
@@ -99,6 +104,7 @@ class QueryViewModel @Inject constructor(
             updateUiState {
                 copy(currentStep = QueryStep.Genres.Recommendations(genreOptions = recommendGenres()) )
             }
+            analyticsDispatcher.sendStopGenreSearchEvent(currentlySelectedGenres)
         }
     }
 
@@ -175,12 +181,44 @@ class QueryViewModel @Inject constructor(
     }
 
     fun addGenre(genre: String) {
-        setGenres(uiState.value.query.genres.orEmpty().plus(genre))
+        val selectedGenres = currentlySelectedGenres.plus(genre)
+        setGenres(selectedGenres)
+
+        analyticsDispatcher.sendSelectGenreEvent(
+            genre = genre,
+            fromCurrentOptions = genreInCurrentOptions(genre),
+            currentlySearching = currentlySearchingGenres,
+            currentSearchQuery = currentSearchQuery,
+            currentlySelectedGenres = selectedGenres
+        )
     }
 
     fun removeGenre(genre: String) {
         uiState.value.query.genres?.let {
-            setGenres(it.minus(genre))
+            val selectedGenres = it.minus(genre)
+            setGenres(selectedGenres)
+
+            analyticsDispatcher.sendDeselectGenreEvent(
+                genre = genre,
+                fromCurrentOptions = genreInCurrentOptions(genre),
+                currentlySearching = currentlySearchingGenres,
+                currentSearchQuery = currentSearchQuery,
+                currentlySelectedGenres = selectedGenres
+            )
         }
     }
+
+    private fun genreInCurrentOptions(genre: String) =
+        (uiState.value.currentStep as? QueryStep.Genres)?.run {
+            genreOptions.take(numGenreOptionsToShow).contains(genre)
+        } ?: false
+
+    private val currentlySearchingGenres: Boolean
+        get() = uiState.value.currentStep is QueryStep.Genres.Search
+
+    private val currentSearchQuery: String?
+        get() = (uiState.value.currentStep as? QueryStep.Genres.Search)?.searchQuery
+
+    private val currentlySelectedGenres: Set<String>
+        get() = uiState.value.query.genres.orEmpty()
 }

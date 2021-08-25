@@ -1,5 +1,6 @@
 package io.libzy.ui.findalbum
 
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.domain.Query
 import io.libzy.ui.Destination
 import io.libzy.ui.common.StateOnlyViewModel
@@ -13,12 +14,18 @@ import javax.inject.Inject
  * The query must be accessible from both [QueryScreen] and [ResultsScreen], so this ViewModel should be scoped to
  * [Destination.FindAlbumFlow], a nested nav graph which encapsulates those two screens.
  */
-class FindAlbumFlowViewModel @Inject constructor() : StateOnlyViewModel<FindAlbumFlowUiState>() {
+class FindAlbumFlowViewModel @Inject constructor(private val analyticsDispatcher: AnalyticsDispatcher) :
+    StateOnlyViewModel<FindAlbumFlowUiState>() {
+
     override val initialUiState = FindAlbumFlowUiState()
 
     fun setQuery(query: Query) {
         updateUiState {
             copy(query = query)
         }
+    }
+
+    fun sendClickStartOverAnalyticsEvent() {
+        analyticsDispatcher.sendClickStartOverEvent()
     }
 }

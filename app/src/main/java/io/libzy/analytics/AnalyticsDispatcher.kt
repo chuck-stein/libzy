@@ -8,9 +8,14 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.ACOUSTICNESS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ARTIST
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_CONNECTED_USER_ID
+import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_SEARCHING
+import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_SELECTED_GENRES
+import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENT_SEARCH_QUERY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.DANCEABILITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ENERGY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FAMILIARITY
+import io.libzy.analytics.AnalyticsConstants.EventProperties.FROM_CURRENT_OPTIONS
+import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.INSTRUMENTAL
 import io.libzy.analytics.AnalyticsConstants.EventProperties.INSTRUMENTALNESS
@@ -34,8 +39,14 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.TOTAL_QUESTIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.VALENCE
 import io.libzy.analytics.AnalyticsConstants.Events.AUTHORIZE_SPOTIFY_CONNECTION
 import io.libzy.analytics.AnalyticsConstants.Events.CLICK_CONNECT_SPOTIFY
+import io.libzy.analytics.AnalyticsConstants.Events.CLICK_START_OVER
+import io.libzy.analytics.AnalyticsConstants.Events.DESELECT_GENRE
+import io.libzy.analytics.AnalyticsConstants.Events.DISMISS_KEYBOARD
 import io.libzy.analytics.AnalyticsConstants.Events.PLAY_ALBUM
 import io.libzy.analytics.AnalyticsConstants.Events.RATE_ALBUM_RESULTS
+import io.libzy.analytics.AnalyticsConstants.Events.SELECT_GENRE
+import io.libzy.analytics.AnalyticsConstants.Events.START_GENRE_SEARCH
+import io.libzy.analytics.AnalyticsConstants.Events.STOP_GENRE_SEARCH
 import io.libzy.analytics.AnalyticsConstants.Events.SUBMIT_QUERY
 import io.libzy.analytics.AnalyticsConstants.Events.SYNC_LIBRARY_DATA
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_ALBUM_RESULTS
@@ -196,6 +207,57 @@ class AnalyticsDispatcher @Inject constructor(
 
     fun sendAuthorizeSpotifyConnectionEvent() {
         sendEvent(AUTHORIZE_SPOTIFY_CONNECTION)
+    }
+
+    fun sendStartGenreSearchEvent(currentlySelectedGenres: Set<String>) {
+        sendEvent(START_GENRE_SEARCH, mapOf(CURRENTLY_SELECTED_GENRES to currentlySelectedGenres))
+    }
+
+    fun sendStopGenreSearchEvent(currentlySelectedGenres: Set<String>) {
+        sendEvent(STOP_GENRE_SEARCH, mapOf(CURRENTLY_SELECTED_GENRES to currentlySelectedGenres))
+    }
+
+    fun sendSelectGenreEvent(
+        genre: String,
+        fromCurrentOptions: Boolean,
+        currentlySearching: Boolean,
+        currentSearchQuery: String?,
+        currentlySelectedGenres: Set<String>
+    ) {
+        sendEvent(SELECT_GENRE, mapOf(
+            GENRE to genre,
+            FROM_CURRENT_OPTIONS to fromCurrentOptions,
+            CURRENTLY_SEARCHING to currentlySearching,
+            CURRENT_SEARCH_QUERY to currentSearchQuery,
+            CURRENTLY_SELECTED_GENRES to currentlySelectedGenres
+        ))
+    }
+
+    fun sendDeselectGenreEvent(
+        genre: String,
+        fromCurrentOptions: Boolean,
+        currentlySearching: Boolean,
+        currentSearchQuery: String?,
+        currentlySelectedGenres: Set<String>
+    ) {
+        sendEvent(DESELECT_GENRE, mapOf(
+            GENRE to genre,
+            FROM_CURRENT_OPTIONS to fromCurrentOptions,
+            CURRENTLY_SEARCHING to currentlySearching,
+            CURRENT_SEARCH_QUERY to currentSearchQuery,
+            CURRENTLY_SELECTED_GENRES to currentlySelectedGenres
+        ))
+    }
+
+    fun sendDismissKeyboardEvent(currentSearchQuery: String, currentlySelectedGenres: Set<String>) {
+        sendEvent(DISMISS_KEYBOARD, mapOf(
+            CURRENT_SEARCH_QUERY to currentSearchQuery,
+            CURRENTLY_SELECTED_GENRES to currentlySelectedGenres
+        ))
+    }
+
+    fun sendClickStartOverEvent() {
+        sendEvent(CLICK_START_OVER)
     }
 
     // ~~~~~~~~~~~~~~~~~~ Helpers ~~~~~~~~~~~~~~~~~~

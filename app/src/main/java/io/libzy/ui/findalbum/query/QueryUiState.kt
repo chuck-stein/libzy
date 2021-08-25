@@ -73,15 +73,22 @@ sealed class QueryStep(val type: Type) {
         abstract val genreOptions: List<String>
         abstract val recentlyRemovedGenres: Set<String>
 
+        // TODO: calculate this based on screen size rather than magic numbers: https://chilipot.atlassian.net/browse/LIB-272
+        abstract val numGenreOptionsToShow: Int
+
         data class Recommendations(
             override val genreOptions: List<String>,
             override val recentlyRemovedGenres: Set<String> = emptySet()
-        ) : Genres()
+        ) : Genres() {
+            override val numGenreOptionsToShow = 28
+        }
 
         data class Search(
             val searchQuery: String,
             override val genreOptions: List<String>,
             override val recentlyRemovedGenres: Set<String> = emptySet()
-        ) : Genres()
+        ) : Genres() {
+            override val numGenreOptionsToShow = 50
+        }
     }
 }

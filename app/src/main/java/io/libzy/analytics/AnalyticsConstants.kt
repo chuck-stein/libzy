@@ -56,6 +56,37 @@ object AnalyticsConstants {
          * When the user authorizes Libzy to connect to their Spotify account.
          */
         const val AUTHORIZE_SPOTIFY_CONNECTION = "authorize spotify connection"
+
+        /**
+         * When the user starts searching genres on [QueryScreen].
+         */
+        const val START_GENRE_SEARCH = "start genre search"
+
+        /**
+         * When the user stops searching genres on [QueryScreen].
+         */
+        const val STOP_GENRE_SEARCH = "stop genre search"
+
+        /**
+         * When the user selects a genre on [QueryScreen].
+         */
+        const val SELECT_GENRE = "select genre"
+
+        /**
+         * When the user deselects a genre on [QueryScreen].
+         */
+        const val DESELECT_GENRE = "deselect genre"
+
+        /**
+         * When the user dismisses the keyboard while searching genres on [QueryScreen].
+         */
+        const val DISMISS_KEYBOARD = "dismiss keyboard"
+
+        /**
+         * When the user clicks the "start over" button on [QueryScreen] or [ResultsScreen] to restart the
+         * "find album" flow.
+         */
+        const val CLICK_START_OVER = "click start over"
     }
 
     object EventProperties {
@@ -234,6 +265,38 @@ object AnalyticsConstants {
          * [Events.CLICK_CONNECT_SPOTIFY]. Null if no Spotify account is currently connected.
          */
         const val CURRENTLY_CONNECTED_USER_ID = "currently connected user id"
+
+        /**
+         * A [Set] property representing the genres the user currently has selected for [Events.START_GENRE_SEARCH],
+         * [Events.STOP_GENRE_SEARCH], [Events.SELECT_GENRE], [Events.DESELECT_GENRE], or [Events.DISMISS_KEYBOARD].
+         */
+        const val CURRENTLY_SELECTED_GENRES = "currently selected genres"
+
+        /**
+         * A [String] property representing the genre that has just been selected or deselected for
+         * [Events.SELECT_GENRE] or [Events.DESELECT_GENRE].
+         */
+        const val GENRE = "genre"
+
+        /**
+         * A [String] property representing the genre search query currently entered at the time of
+         * [Events.SELECT_GENRE], [Events.DESELECT_GENRE], [Events.DISMISS_KEYBOARD], or null if not currently searching.
+         */
+        const val CURRENT_SEARCH_QUERY = "current search query"
+
+        /**
+         * A [Boolean] property representing whether the user is currently searching genres
+         * (or false if just viewing recommendations) for [Events.SELECT_GENRE] or [Events.DESELECT_GENRE].
+         */
+        const val CURRENTLY_SEARCHING = "currently searching"
+
+        /**
+         * A [Boolean] property representing whether the genre that has just been selected or deselected for
+         * [Events.SELECT_GENRE] or [Events.DESELECT_GENRE] was part of the current recommendations / search results.
+         * False if it is only on-screen because it was already selected at the time the current
+         * recommendations / search results were populated.
+         */
+        const val FROM_CURRENT_OPTIONS = "from current options"
     }
     
     object UserProperties {

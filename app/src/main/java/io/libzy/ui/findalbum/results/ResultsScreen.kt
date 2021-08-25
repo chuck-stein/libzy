@@ -111,7 +111,10 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
         scaffoldState = scaffoldState,
         onBackClick = navController::popBackStack,
         onAlbumClick = viewModel::playAlbum,
-        onStartOverClick = navController::restartFindAlbumFlow,
+        onStartOverClick = {
+            navController.restartFindAlbumFlow()
+            findAlbumFlowViewModel.sendClickStartOverAnalyticsEvent()
+        },
         onRateResults = viewModel::rateResults
     )
 }
