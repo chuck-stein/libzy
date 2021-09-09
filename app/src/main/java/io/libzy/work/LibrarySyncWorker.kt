@@ -15,6 +15,7 @@ import com.adamratzman.spotify.SpotifyException
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
+import io.libzy.config.NotificationIds
 import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
@@ -139,12 +140,10 @@ class LibrarySyncWorker(
             .setTicker(notificationTitle)
             .build()
 
-        val notificationId = currentTimeSeconds()
-
         return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            ForegroundInfo(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            ForegroundInfo(NotificationIds.initialScanProgress, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         } else {
-            ForegroundInfo(notificationId, notification)
+            ForegroundInfo(NotificationIds.initialScanProgress, notification)
         }
     }
 
@@ -171,8 +170,7 @@ class LibrarySyncWorker(
 
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notificationId = currentTimeSeconds()
-        notificationManager.notify(notificationId, notification)
+        notificationManager.notify(NotificationIds.initialScanEnd, notification)
     }
 
     class Factory(
