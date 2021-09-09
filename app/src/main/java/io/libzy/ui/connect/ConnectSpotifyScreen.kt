@@ -1,6 +1,7 @@
 package io.libzy.ui.connect
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -87,10 +88,12 @@ private fun ConnectSpotifyScreen(
     onConnectSpotifyClick: () -> Unit
 ) {
     LibzyScaffold(scaffoldState = scaffoldState) {
-        if (!uiState.libraryScanInProgress) {
-            ConnectSpotifyButton(onConnectSpotifyClick)
-        } else {
-            LibraryScanProgress()
+        Crossfade(targetState = uiState.libraryScanInProgress) { libraryScanInProgress ->
+            if (!libraryScanInProgress) {
+                ConnectSpotifyButton(onConnectSpotifyClick)
+            } else {
+                LibraryScanProgress()
+            }
         }
     }
 }
