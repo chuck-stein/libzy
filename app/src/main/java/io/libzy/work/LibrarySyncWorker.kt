@@ -47,7 +47,7 @@ class LibrarySyncWorker(
     private val sharedPrefs = applicationContext.getSharedPrefs()
 
     override suspend fun doWork(): Result {
-        val accessTokenExpiration = sharedPrefs.getInt(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, 0)
+        val accessTokenExpiration = sharedPrefs.getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, 0)
         if (currentTimeSeconds() > accessTokenExpiration && !appInForeground()) {
             // If auth has expired and the app is in the background,
             // retry the library sync later since we need to be in the foreground to refresh auth

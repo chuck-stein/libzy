@@ -83,7 +83,7 @@ class SessionViewModel @Inject constructor(
     private fun saveSpotifyAccessToken(accessToken: SpotifyAccessToken) {
         sharedPrefs.edit {
             putString(SharedPrefKeys.SPOTIFY_AUTH_TOKEN, accessToken.token)
-            putInt(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, currentTimeSeconds() + accessToken.expiresIn)
+            putLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, currentTimeSeconds() + accessToken.expiresIn)
         }
     }
 
