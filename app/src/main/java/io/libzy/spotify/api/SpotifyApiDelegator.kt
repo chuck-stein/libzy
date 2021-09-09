@@ -60,8 +60,8 @@ class SpotifyApiDelegator @Inject constructor(
     private suspend fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
         with(context.getSharedPrefs()) {
             val savedAccessToken = getString(SharedPrefKeys.SPOTIFY_AUTH_TOKEN, null)
-            val savedTokenExpiration = getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION, 0)
-            if (savedAccessToken != null && currentTimeSeconds() < savedTokenExpiration) {
+            val tokenExpirationTimestamp = getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
+            if (savedAccessToken != null && currentTimeSeconds() < tokenExpirationTimestamp) {
                 _apiDelegate = createApiDelegate(savedAccessToken)
             }
         }
