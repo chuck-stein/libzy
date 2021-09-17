@@ -54,6 +54,7 @@ import io.libzy.ui.common.util.loadRemoteImage
 import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyColors
+import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
 import kotlinx.coroutines.launch
@@ -141,7 +142,7 @@ private fun ResultsScreen(
     ) {
         if (uiState.loading) {
             Frame {
-                CircularProgressIndicator(Modifier.size(60.dp))
+                CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
             }
         } else {
             Column(

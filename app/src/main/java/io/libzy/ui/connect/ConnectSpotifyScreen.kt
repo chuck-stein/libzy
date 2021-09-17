@@ -30,6 +30,7 @@ import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
+import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import kotlinx.coroutines.launch
 
@@ -119,7 +120,7 @@ private fun LibraryScanProgress() {
             modifier = Modifier.weight(0.45f)
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(0.55f)) {
-            CircularProgressIndicator(Modifier.size(60.dp))
+            CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
             Spacer(Modifier.height(36.dp))
             Text(stringResource(R.string.scanning_library_subheading), style = MaterialTheme.typography.h6)
         }

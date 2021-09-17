@@ -8,4 +8,6 @@ object LibzyDimens {
 
     /** The typical margin to apply to the left and right side of a screen */
     const val HORIZONTAL_INSET = 16
+
+    const val CIRCULAR_PROGRESS_INDICATOR_SIZE = 60
 }
