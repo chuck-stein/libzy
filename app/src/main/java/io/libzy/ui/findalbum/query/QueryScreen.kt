@@ -407,7 +407,7 @@ private fun CurrentQueryStep(
     Box(modifier) {
         AnimatedContent(
             targetState = uiState.currentStep,
-            key = uiState.currentStep.type,
+            key = uiState.currentStep.parameterType,
             transitionSpec = {
                 val slideDirection = if (uiState.navigatingForward) SlideDirection.Left else SlideDirection.Right
                 slideIntoContainer(slideDirection) with slideOutOfContainer(slideDirection)

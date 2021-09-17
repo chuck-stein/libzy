@@ -30,9 +30,10 @@ class ResultsViewModel @Inject constructor(
         albumRecommendationJob = viewModelScope.launch {
             userLibraryRepository.albums.collect { albums ->
                 updateUiState {
-                    copy(albumResults = recommendationService.recommendAlbums(query, albums), loading = false)
+                    copy(recommendationCategories = recommendationService.recommendAlbums(query, albums), loading = false)
                 }
-                analyticsDispatcher.sendViewAlbumResultsEvent(query, uiState.value.albumResults)
+                // TODO: create new corresponding analytics event for receiving recommendation categories
+//                analyticsDispatcher.sendViewAlbumResultsEvent(query, uiState.value.albumResults)
             }
         }
     }

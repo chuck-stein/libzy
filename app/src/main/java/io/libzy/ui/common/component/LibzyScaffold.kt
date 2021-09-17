@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.FabPosition
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Snackbar
@@ -32,10 +33,6 @@ import io.libzy.ui.LibzyContent
  * A custom [Scaffold] implementation which takes care of creating a common [TopAppBar] and [SnackbarHost],
  * adding padding for the system status bar and navigation bar so that they do not overlap screen content,
  * and making the background transparent so that content appears over the [BackgroundGradient] from [LibzyContent].
- *
- * @param title The title for the [TopAppBar].
- * @param navigationIcon The primary nav icon, to place in the top-left corner of the screen inside the [TopAppBar],
- *                       or null for no top-left nav icon.
  */
 @Composable
 fun LibzyScaffold(
@@ -43,6 +40,8 @@ fun LibzyScaffold(
     title: @Composable () -> Unit = {},
     navigationIcon: @Composable (() -> Unit)? = null,
     actionIcons: @Composable RowScope.() -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
     content: @Composable (BoxScope) -> Unit
 ) {
     Scaffold(
@@ -60,9 +59,9 @@ fun LibzyScaffold(
                 )
             )
         },
-        bottomBar = {
-            Spacer(Modifier.navigationBarsHeight().fillMaxWidth())
-        },
+        bottomBar = { Spacer(Modifier.navigationBarsHeight().fillMaxWidth()) },
+        floatingActionButton = floatingActionButton,
+        floatingActionButtonPosition = floatingActionButtonPosition,
         snackbarHost = { LibzySnackbarHost(it) },
         backgroundColor = Color.Transparent
     ) { contentPadding ->

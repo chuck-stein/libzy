@@ -25,28 +25,28 @@ class QueryViewModel @Inject constructor(
 
     private val libraryAlbums = userLibraryRepository.albums.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    private fun QueryStep.Type.asDefaultQueryStep() = when (this) {
-        QueryStep.Type.FAMILIARITY -> QueryStep.Familiarity
-        QueryStep.Type.INSTRUMENTALNESS -> QueryStep.Instrumentalness
-        QueryStep.Type.ACOUSTICNESS -> QueryStep.Acousticness
-        QueryStep.Type.VALENCE -> QueryStep.Valence
-        QueryStep.Type.ENERGY -> QueryStep.Energy
-        QueryStep.Type.DANCEABILITY -> QueryStep.Danceability
-        QueryStep.Type.GENRES -> QueryStep.Genres.Recommendations(genreOptions = recommendGenres())
+    private fun Query.Parameter.asDefaultQueryStep() = when (this) {
+        Query.Parameter.FAMILIARITY -> QueryStep.Familiarity
+        Query.Parameter.INSTRUMENTALNESS -> QueryStep.Instrumentalness
+        Query.Parameter.ACOUSTICNESS -> QueryStep.Acousticness
+        Query.Parameter.VALENCE -> QueryStep.Valence
+        Query.Parameter.ENERGY -> QueryStep.Energy
+        Query.Parameter.DANCEABILITY -> QueryStep.Danceability
+        Query.Parameter.GENRES -> QueryStep.Genres.Recommendations(genreOptions = recommendGenres())
     }
 
     private fun recommendGenres() = recommendationService.recommendGenres(uiState.value.query, libraryAlbums.value)
 
     fun initCurrentStep() {
         updateUiState {
-            copy(currentStep = currentStep.type.asDefaultQueryStep())
+            copy(currentStep = currentStep.parameterType.asDefaultQueryStep())
         }
     }
 
     fun sendQuestionViewAnalyticsEvent() {
         with(uiState.value) {
             analyticsDispatcher.sendViewQuestionEvent(
-                questionName = currentStep.type.stringValue,
+                questionName = currentStep.parameterType.stringValue,
                 questionNum = currentStepIndex + 1,
                 totalQuestions = stepOrder.size
             )

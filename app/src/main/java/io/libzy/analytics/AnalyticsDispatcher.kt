@@ -263,7 +263,7 @@ class AnalyticsDispatcher @Inject constructor(
     // ~~~~~~~~~~~~~~~~~~ Helpers ~~~~~~~~~~~~~~~~~~
 
     private fun Query.toEventPropertyMap() = mapOf(
-        FAMILIARITY to familiarity?.value,
+        FAMILIARITY to familiarity?.stringValue,
         INSTRUMENTAL to instrumental,
         ACOUSTICNESS to acousticness?.toString(FLOAT_PRECISION),
         VALENCE to valence?.toString(FLOAT_PRECISION),

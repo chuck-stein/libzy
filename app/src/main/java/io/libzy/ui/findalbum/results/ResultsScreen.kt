@@ -8,16 +8,25 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExtendedFloatingActionButton
+import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.StarBorder
@@ -30,9 +39,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,12 +58,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
 import io.libzy.domain.AlbumResult
+import io.libzy.domain.RecommendationCategory
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
-import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
 import io.libzy.ui.common.util.loadRemoteImage
@@ -137,48 +153,110 @@ private fun ResultsScreen(
     onRateResults: (Int) -> Unit
 ) {
     LibzyScaffold(
+        title = {
+            if (!uiState.loading && uiState.recommendationCategories.isNotEmpty()) {
+                Text(stringResource(R.string.recommended_albums_title))
+            }
+        },
         scaffoldState = scaffoldState,
         navigationIcon = { BackIcon(onBackClick) },
+        floatingActionButton = {
+            if (!uiState.loading) {
+                ExtendedFloatingActionButton(
+                    text = { Text(stringResource(R.string.start_over).uppercase()) },
+                    onClick = onStartOverClick,
+                    icon = {
+                        Icon(
+                            imageVector = LibzyIconTheme.RestartAlt,
+                            contentDescription = null, // button text serves as adequate CD already
+                        )
+                    }
+                )
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center
     ) {
         if (uiState.loading) {
             Frame {
                 CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
             }
         } else {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = Modifier.fillMaxSize()
             ) {
-                if (uiState.albumResults.isNotEmpty()) {
-                    Text(
-                        stringResource(R.string.results_header),
-                        style = MaterialTheme.typography.h6,
-                        modifier = Modifier.padding(bottom = 24.dp)
+                if (uiState.recommendationCategories.isNotEmpty()) {
+                    AlbumResults(
+                        uiState.recommendationCategories,
+                        onAlbumClick,
+                        Modifier
+                            .graphicsLayer { alpha = 0.99f } // workaround to enable alpha compositing
+                            .drawWithContent {
+                                drawContent()
+                                drawRect( // gradient to fade out top of recommendation list
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, Color.Black),
+                                        endY = RECOMMENDATION_LIST_TOP_PADDING.dp.toPx(),
+                                    ),
+                                    blendMode = BlendMode.DstIn,
+                                )
+                                drawRect( // gradient to fade out bottom of recommendation list
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Black,
+                                            Color.Black.copy(alpha = 0.4f),
+                                            Color.Black.copy(alpha = 0.1f),
+                                            Color.Transparent
+                                        ),
+                                        startY = size.height - RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT.dp.toPx()
+                                    ),
+                                    blendMode = BlendMode.DstIn,
+                                )
+                            }
                     )
-                    AlbumResultsGrid(uiState.albumResults, onAlbumClick, Modifier.weight(1f))
-                    Text(
-                        stringResource(R.string.results_rating_text),
-                        style = MaterialTheme.typography.body1,
-                        modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
-                    )
-                    RatingBar(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 20.dp))
+                    // TODO: show grid if there's only one category (best match). If there's only one category and it's different, then we should probably add a title to it
+//                    AlbumResultsGrid(uiState.albumResults, onAlbumClick, Modifier.weight(1f))
+                    // TODO: decide how to incorporate rating UX
+//                    RatingBox(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 16.dp).align(Alignment.BottomCenter))
                 } else {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.no_results_header), style = MaterialTheme.typography.h6)
+                    Text(
+                        stringResource(R.string.no_results_header),
+                        style = MaterialTheme.typography.h6,
+                        modifier = Modifier.align(Alignment.Center).padding(horizontal = HORIZONTAL_INSET.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// TODO: naming (could be AlbumResults, AlbumResultsList, Recommendations, RecommendationCategories, ResultCategories, etc) -- also make sure it makes sense with a corresponding name for AlbumResultsGrid, which will still exist for instance if everything is a "perfect match"
+@ExperimentalAnimationApi
+@Composable
+fun AlbumResults(
+    recommendationCategories: List<RecommendationCategory>,
+    onAlbumClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(modifier, contentPadding = PaddingValues(
+        top = RECOMMENDATION_LIST_TOP_PADDING.dp, bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp
+    )) {
+        items(recommendationCategories.size) { categoryIndex ->
+            val category = recommendationCategories[categoryIndex]
+            Column(modifier = Modifier.padding(bottom = RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp)) {
+                Text(
+                    category.title.uppercase(),
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.subtitle1,
+                    modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
+                )
+                LazyRow(contentPadding = PaddingValues(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp)) {
+                    items(category.albumResults.size) { albumIndex ->
+                        val albumResult = category.albumResults[albumIndex]
+                        AlbumResultListItem(albumResult, onAlbumClick)
                     }
                 }
-                LibzyButton(
-                    R.string.start_over,
-                    Modifier.padding(bottom = 16.dp),
-                    onStartOverClick,
-                    endContent = {
-                        Icon(
-                            imageVector = LibzyIconTheme.RestartAlt,
-                            contentDescription = null, // button text serves as adequate CD already
-                            modifier = Modifier.padding(start = 4.dp).size(20.dp)
-                        )
-                    }
-                )
             }
         }
     }
@@ -188,43 +266,42 @@ private fun ResultsScreen(
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-private fun AlbumResultsGrid(albumResults: List<AlbumResult>, onAlbumClick: (String) -> Unit, modifier: Modifier = Modifier) {
-    LazyVerticalGrid(cells = GridCells.Adaptive(110.dp), modifier = modifier) {
+private fun AlbumResultsGrid(
+    albumResults: List<AlbumResult>,
+    onAlbumClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        cells = GridCells.Adaptive(ALBUM_RESULT_WIDTH.dp),
+        modifier = modifier.padding(horizontal = HORIZONTAL_INSET.dp)
+    ) {
         items(albumResults.size) { index ->
             val albumResult = albumResults[index]
-            AlbumResultListItem(
-                title = albumResult.title,
-                artists = albumResult.artists,
-                artworkUrl = albumResult.artworkUrl,
-                modifier = if (albumResult.spotifyUri != null) {
-                    Modifier.clickable { onAlbumClick(albumResult.spotifyUri) }
-                } else {
-                    Modifier
-                }
-            )
+            AlbumResultListItem(albumResult, onAlbumClick)
         }
     }
 }
 
 @ExperimentalAnimationApi
 @Composable
-private fun AlbumResultListItem(
-    title: String,
-    artists: String,
-    modifier: Modifier = Modifier,
-    artworkUrl: String? = null
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(8.dp)) {
-        AlbumArtwork(artworkUrl)
+private fun AlbumResultListItem(albumResult: AlbumResult, onAlbumClick: (String) -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(ALBUM_RESULT_WIDTH.dp)
+            .clickable { onAlbumClick(albumResult.spotifyUri) }
+            .padding(ALBUM_RESULT_PADDING.dp)
+    ) {
+        AlbumArtwork(albumResult.artworkUrl)
         Text(
-            text = title,
+            text = albumResult.title,
             style = MaterialTheme.typography.body2,
             maxLines = 3,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 5.dp)
+            modifier = Modifier.padding(top = 6.dp)
         )
         Text(
-            text = artists,
+            text = albumResult.artists,
             style = MaterialTheme.typography.body2,
             maxLines = 3,
             overflow = TextOverflow.Ellipsis,
@@ -237,7 +314,7 @@ private fun AlbumResultListItem(
 @Composable
 private fun AlbumArtwork(artworkUrl: String?) {
     val artworkContentDescription = stringResource(R.string.cd_album_artwork)
-    val artworkModifier = Modifier.size(100.dp)
+    val artworkModifier = Modifier.size(ALBUM_ARTWORK_SIZE.dp)
 
     val artworkBitmap = loadRemoteImage(artworkUrl)
     if (artworkBitmap != null) {
@@ -247,6 +324,23 @@ private fun AlbumArtwork(artworkUrl: String?) {
     }
 }
 
+// TODO: determine how to incorporate this into new UX
+// TODO: if we use this, add horizontal inset
+@Composable
+fun RatingBox(resultsRating: Int?, onRateResults: (Int) -> Unit, modifier: Modifier = Modifier) {
+    Surface(color = MaterialTheme.colors.secondaryVariant, shape = RoundedCornerShape(16.dp), elevation = 100.dp, modifier = modifier) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                stringResource(R.string.results_rating_text),
+                style = MaterialTheme.typography.body1,
+                modifier = Modifier.padding(vertical = 10.dp)
+            )
+            RatingBar(resultsRating, onRateResults, Modifier.padding(bottom = 10.dp))
+        }
+    }
+}
+
+// TODO: if we use this without RatingBox, add horizontal inset
 @Composable
 private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifier = Modifier, numStars: Int = 5) {
     Row(
@@ -283,11 +377,17 @@ private fun ResultsScreenPreview() {
         ResultsScreen(
             uiState = ResultsUiState(
                 loading = false,
-                albumResults = List(20) {
-                    AlbumResult(
-                        "Album Title",
-                        "Album Artist",
-                        artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0"
+                recommendationCategories = List(4) { index ->
+                    RecommendationCategory(
+                        title = "Category $index",
+                        albumResults = List(5) {
+                            AlbumResult(
+                                "Album Title",
+                                "Album Artist",
+                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+                                spotifyUri = ""
+                            )
+                        }
                     )
                 }
             ),
@@ -309,7 +409,7 @@ private fun NoResultsScreenPreview() {
         ResultsScreen(
             uiState = ResultsUiState(
                 loading = false,
-                albumResults = emptyList()
+                recommendationCategories = emptyList()
             ),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
@@ -319,3 +419,15 @@ private fun NoResultsScreenPreview() {
         )
     }
 }
+
+// all in DP
+const val FLOATING_ACTION_BUTTON_HEIGHT = 48
+const val FLOATING_ACTION_BUTTON_BOTTOM_PADDING = 16
+const val RECOMMENDATION_CATEGORY_BOTTOM_PADDING = 28
+const val RECOMMENDATION_LIST_TOP_PADDING = 16
+const val RECOMMENDATION_LIST_BOTTOM_PADDING = FLOATING_ACTION_BUTTON_HEIGHT + FLOATING_ACTION_BUTTON_BOTTOM_PADDING
+const val RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT =
+    RECOMMENDATION_LIST_BOTTOM_PADDING + RECOMMENDATION_CATEGORY_BOTTOM_PADDING
+const val ALBUM_RESULT_PADDING = 8
+const val ALBUM_RESULT_WIDTH = 130
+const val ALBUM_ARTWORK_SIZE = ALBUM_RESULT_WIDTH - (ALBUM_RESULT_PADDING * 2)
