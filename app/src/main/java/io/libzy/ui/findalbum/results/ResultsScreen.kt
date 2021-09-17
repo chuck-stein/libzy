@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -72,7 +73,7 @@ fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvi
         viewModelStoreOwner = navController.getBackStackEntry(Destination.FindAlbumFlow.route),
         factory = viewModelFactory
     )
-    val findAlbumFlowUiState by findAlbumFlowViewModel.uiState
+    val findAlbumFlowUiState by rememberSaveable(findAlbumFlowViewModel.uiState) { findAlbumFlowViewModel.uiState }
 
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
