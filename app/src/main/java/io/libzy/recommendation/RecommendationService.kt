@@ -81,6 +81,24 @@ class RecommendationService @Inject constructor() {
         )
     )
 
+    private fun LibraryAlbum.matchesFamiliarity(preferredFamiliarity: Query.Familiarity) =
+        when (preferredFamiliarity) {
+            Query.Familiarity.CURRENT_FAVORITE -> familiarity.recentlyPlayed || familiarity.shortTermFavorite || familiarity.mediumTermFavorite
+            Query.Familiarity.RELIABLE_CLASSIC -> familiarity.longTermFavorite
+            Query.Familiarity.UNDERAPPRECIATED_GEM -> familiarity.isLowFamiliarity()
+        }
+
+    private fun LibraryAlbum.instrumentalnessRelevance(prefersInstrumental: Boolean) =
+        if (prefersInstrumental) {
+            audioFeatures.instrumentalness
+        } else {
+            SPECTRUM_BASED_PARAM_MAX_VAL - audioFeatures.instrumentalness
+        }
+
+    private fun LibraryAlbum.genresMatching(preferredGenres: Set<String>) = genres.filter { it in preferredGenres }.toSet()
+
+    private fun Float.relevanceTo(preferredValue: Float) = 1 - abs(preferredValue - this)
+
     private fun createBestMatchCategory(
         possibleAlbums: MutableSet<PossibleAlbumRecommendation>,
         recommendationCategories: MutableList<RecommendationCategory>
@@ -270,6 +288,12 @@ class RecommendationService @Inject constructor() {
         return possibleCategories
     }
 
+    private val Float.isLowParam: Boolean
+        get() = this < SPECTRUM_BASED_PARAM_MAX_VAL - SPECTRUM_BASED_PARAM_RELEVANCE_THRESHOLD
+
+    private val Float.isHighParam: Boolean
+        get() = this > SPECTRUM_BASED_PARAM_RELEVANCE_THRESHOLD
+
     /**
      * Add categories to the given list of [recommendationCategories] from the given list of [possibleCategories],
      * in order of most to least relevant, ensuring any albums in a selected category are removed from the other
@@ -313,30 +337,6 @@ class RecommendationService @Inject constructor() {
             }
         } while (chosenCategory != null)
     }
-
-    private fun LibraryAlbum.matchesFamiliarity(preferredFamiliarity: Query.Familiarity) =
-        when (preferredFamiliarity) {
-            Query.Familiarity.CURRENT_FAVORITE -> familiarity.recentlyPlayed || familiarity.shortTermFavorite || familiarity.mediumTermFavorite
-            Query.Familiarity.RELIABLE_CLASSIC -> familiarity.longTermFavorite
-            Query.Familiarity.UNDERAPPRECIATED_GEM -> familiarity.isLowFamiliarity()
-        }
-
-    private fun LibraryAlbum.instrumentalnessRelevance(prefersInstrumental: Boolean) =
-        if (prefersInstrumental) {
-            audioFeatures.instrumentalness
-        } else {
-            SPECTRUM_BASED_PARAM_MAX_VAL - audioFeatures.instrumentalness
-        }
-
-    private fun LibraryAlbum.genresMatching(preferredGenres: Set<String>) = genres.filter { it in preferredGenres }.toSet()
-
-    private fun Float.relevanceTo(preferredValue: Float) = 1 - abs(preferredValue - this)
-
-    private val Float.isLowParam: Boolean
-        get() = this < SPECTRUM_BASED_PARAM_MAX_VAL - SPECTRUM_BASED_PARAM_RELEVANCE_THRESHOLD
-
-    private val Float.isHighParam: Boolean
-        get() = this > SPECTRUM_BASED_PARAM_RELEVANCE_THRESHOLD
 }
 
 /**
