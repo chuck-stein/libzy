@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +59,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
 import io.libzy.domain.AlbumResult
+import io.libzy.domain.Query.Familiarity.CURRENT_FAVORITE
+import io.libzy.domain.Query.Familiarity.RELIABLE_CLASSIC
+import io.libzy.domain.Query.Familiarity.UNDERAPPRECIATED_GEM
 import io.libzy.domain.RecommendationCategory
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
@@ -73,6 +77,8 @@ import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
+import io.libzy.util.capitalizeAllWords
+import io.libzy.util.joinToUserFriendlyString
 import kotlinx.coroutines.launch
 
 /**
@@ -154,17 +160,18 @@ private fun ResultsScreen(
 ) {
     LibzyScaffold(
         title = {
-            if (!uiState.loading && uiState.recommendationCategories.isNotEmpty()) {
+            if (uiState is ResultsUiState.Loaded) {
                 Text(stringResource(R.string.recommended_albums_title))
             }
         },
         scaffoldState = scaffoldState,
         navigationIcon = { BackIcon(onBackClick) },
         floatingActionButton = {
-            if (!uiState.loading) {
+            if (uiState is ResultsUiState.Loaded) {
                 ExtendedFloatingActionButton(
                     text = { Text(stringResource(R.string.start_over).uppercase()) },
                     onClick = onStartOverClick,
+                    backgroundColor = MaterialTheme.colors.primary,
                     icon = {
                         Icon(
                             imageVector = LibzyIconTheme.RestartAlt,
@@ -176,64 +183,74 @@ private fun ResultsScreen(
         },
         floatingActionButtonPosition = FabPosition.Center
     ) {
-        if (uiState.loading) {
-            Frame {
-                CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
+
+        when (uiState) {
+            is ResultsUiState.Loading -> {
+                Frame {
+                    CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
+                }
             }
-        } else {
-            Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (uiState.recommendationCategories.isNotEmpty()) {
-                    AlbumResults(
-                        uiState.recommendationCategories,
-                        onAlbumClick,
-                        Modifier
-                            .graphicsLayer { alpha = 0.99f } // workaround to enable alpha compositing
-                            .drawWithContent {
-                                drawContent()
-                                drawRect( // gradient to fade out top of recommendation list
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(Color.Transparent, Color.Black),
-                                        endY = RECOMMENDATION_LIST_TOP_PADDING.dp.toPx(),
-                                    ),
-                                    blendMode = BlendMode.DstIn,
-                                )
-                                drawRect( // gradient to fade out bottom of recommendation list
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Black,
-                                            Color.Black.copy(alpha = 0.4f),
-                                            Color.Black.copy(alpha = 0.1f),
-                                            Color.Transparent
-                                        ),
-                                        startY = size.height - RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT.dp.toPx()
-                                    ),
-                                    blendMode = BlendMode.DstIn,
-                                )
-                            }
-                    )
-                    // TODO: show grid if there's only one category (best match). If there's only one category and it's different, then we should probably add a title to it
-//                    AlbumResultsGrid(uiState.albumResults, onAlbumClick, Modifier.weight(1f))
-                    // TODO: decide how to incorporate rating UX
-//                    RatingBox(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 16.dp).align(Alignment.BottomCenter))
-                } else {
-                    Text(
-                        stringResource(R.string.no_results_header),
-                        style = MaterialTheme.typography.h6,
-                        modifier = Modifier.align(Alignment.Center).padding(horizontal = HORIZONTAL_INSET.dp)
-                    )
+            is ResultsUiState.Loaded -> {
+                Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
+                    when (uiState.recommendationCategories.size) {
+                        0 -> {
+                            Text(
+                                stringResource(R.string.no_results_header),
+                                style = MaterialTheme.typography.h6,
+                                modifier = Modifier.align(Alignment.Center).padding(horizontal = HORIZONTAL_INSET.dp)
+                            )
+                        }
+                        1 -> {
+                            // TODO: if the one category is a partial match, indicate that somehow (since we won't have a category title)
+                            AlbumResultsGrid(
+                                uiState.recommendationCategories.first().albumResults,
+                                onAlbumClick,
+                                Modifier.resultsGradient()
+                            )
+                        }
+                        else -> {
+                            AlbumResultsCategories(
+                                uiState.recommendationCategories, onAlbumClick, Modifier.resultsGradient()
+                            )
+                        }
+                        // TODO: decide how to incorporate rating UX
+                        // RatingBox(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 16.dp).align(Alignment.BottomCenter))
+                    }
                 }
             }
         }
     }
 }
 
+private fun Modifier.resultsGradient() = this
+    .graphicsLayer { alpha = 0.99f } // workaround to enable alpha compositing
+    .drawWithContent {
+        drawContent()
+        drawRect( // gradient to fade out top of recommendation list
+            brush = Brush.verticalGradient(
+                colors = listOf(Color.Transparent, Color.Black),
+                endY = RECOMMENDATION_LIST_TOP_PADDING.dp.toPx(),
+            ),
+            blendMode = BlendMode.DstIn,
+        )
+        drawRect( // gradient to fade out bottom of recommendation list
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    Color.Black,
+                    Color.Black.copy(alpha = 0.4f),
+                    Color.Black.copy(alpha = 0.1f),
+                    Color.Transparent
+                ),
+                startY = size.height - RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT.dp.toPx()
+            ),
+            blendMode = BlendMode.DstIn,
+        )
+    }
+
 // TODO: naming (could be AlbumResults, AlbumResultsList, Recommendations, RecommendationCategories, ResultCategories, etc) -- also make sure it makes sense with a corresponding name for AlbumResultsGrid, which will still exist for instance if everything is a "perfect match"
 @ExperimentalAnimationApi
 @Composable
-fun AlbumResults(
+private fun AlbumResultsCategories(
     recommendationCategories: List<RecommendationCategory>,
     onAlbumClick: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -245,7 +262,7 @@ fun AlbumResults(
             val category = recommendationCategories[categoryIndex]
             Column(modifier = Modifier.padding(bottom = RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp)) {
                 Text(
-                    category.title.uppercase(),
+                    category.title().uppercase(),
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.ExtraBold,
                     style = MaterialTheme.typography.subtitle1,
@@ -262,6 +279,32 @@ fun AlbumResults(
     }
 }
 
+@Composable
+private fun RecommendationCategory.title() = when (relevance) {
+    is RecommendationCategory.Relevance.Full -> stringResource(R.string.full_match_category_title)
+    is RecommendationCategory.Relevance.Partial -> {
+        val adjectiveString = relevance.adjectives.map { stringResource(it) }.joinToUserFriendlyString()
+        val capitalizedGenre = relevance.genre?.capitalizeAllWords()
+        val nounString = when (relevance.familiarity) {
+            CURRENT_FAVORITE -> capitalizedGenre?.let { stringResource(R.string.current_genre_favorites, it) }
+                ?: stringResource(R.string.current_favorites)
+            RELIABLE_CLASSIC -> capitalizedGenre?.let { stringResource(R.string.reliable_genre_classics, it) }
+                ?: stringResource(R.string.reliable_classics)
+            UNDERAPPRECIATED_GEM -> capitalizedGenre?.let { stringResource(R.string.underappreciated_genre, it) }
+                ?: stringResource(R.string.underappreciated_gems)
+            null -> capitalizedGenre.orEmpty()
+        }
+
+        buildString {
+            append(adjectiveString)
+            if (adjectiveString.isNotEmpty() && nounString.isNotEmpty()) {
+                append(" ")
+            }
+            append(nounString)
+        }
+    }
+}
+
 // TODO: handle rotation by maintaining position such that still looking at albums that were previously on screen
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
@@ -271,28 +314,35 @@ private fun AlbumResultsGrid(
     onAlbumClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val gridWidth = LocalConfiguration.current.screenWidthDp - (HORIZONTAL_INSET * 2) + (ALBUM_RESULT_PADDING * 2)
+    val numColumns = maxOf((gridWidth / MIN_ALBUM_RESULT_WIDTH), 1)
+
     LazyVerticalGrid(
-        cells = GridCells.Adaptive(ALBUM_RESULT_WIDTH.dp),
-        modifier = modifier.padding(horizontal = HORIZONTAL_INSET.dp)
+        cells = GridCells.Fixed(numColumns),
+        modifier = modifier.padding(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp)
     ) {
         items(albumResults.size) { index ->
             val albumResult = albumResults[index]
-            AlbumResultListItem(albumResult, onAlbumClick)
+            AlbumResultListItem(albumResult, onAlbumClick, width = gridWidth / numColumns)
         }
     }
 }
 
 @ExperimentalAnimationApi
 @Composable
-private fun AlbumResultListItem(albumResult: AlbumResult, onAlbumClick: (String) -> Unit) {
+private fun AlbumResultListItem(
+    albumResult: AlbumResult,
+    onAlbumClick: (String) -> Unit,
+    width: Int = DEFAULT_ALBUM_RESULT_WIDTH
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(ALBUM_RESULT_WIDTH.dp)
+            .width(width.dp)
             .clickable { onAlbumClick(albumResult.spotifyUri) }
             .padding(ALBUM_RESULT_PADDING.dp)
     ) {
-        AlbumArtwork(albumResult.artworkUrl)
+        AlbumArtwork(albumResult.artworkUrl, size = width - (ALBUM_RESULT_PADDING * 2))
         Text(
             text = albumResult.title,
             style = MaterialTheme.typography.body2,
@@ -312,9 +362,9 @@ private fun AlbumResultListItem(albumResult: AlbumResult, onAlbumClick: (String)
 
 @ExperimentalAnimationApi
 @Composable
-private fun AlbumArtwork(artworkUrl: String?) {
+private fun AlbumArtwork(artworkUrl: String?, size: Int) {
     val artworkContentDescription = stringResource(R.string.cd_album_artwork)
-    val artworkModifier = Modifier.size(ALBUM_ARTWORK_SIZE.dp)
+    val artworkModifier = Modifier.size(size.dp)
 
     val artworkBitmap = loadRemoteImage(artworkUrl)
     if (artworkBitmap != null) {
@@ -324,10 +374,9 @@ private fun AlbumArtwork(artworkUrl: String?) {
     }
 }
 
-// TODO: determine how to incorporate this into new UX
-// TODO: if we use this, add horizontal inset
+// TODO: determine how to incorporate this into new results UX, or remove it altogether
 @Composable
-fun RatingBox(resultsRating: Int?, onRateResults: (Int) -> Unit, modifier: Modifier = Modifier) {
+private fun RatingBox(resultsRating: Int?, onRateResults: (Int) -> Unit, modifier: Modifier = Modifier) {
     Surface(color = MaterialTheme.colors.secondaryVariant, shape = RoundedCornerShape(16.dp), elevation = 100.dp, modifier = modifier) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -358,11 +407,13 @@ private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifi
                 imageVector = starImage,
                 contentDescription = stringResource(starCdResId),
                 tint = MaterialTheme.colors.primary,
-                modifier = Modifier.size(40.dp).pointerInput(onStarPress, starIndex) {
-                    detectTapGestures(
-                        onPress = { onStarPress(starNum) }
-                    )
-                }
+                modifier = Modifier
+                    .size(40.dp)
+                    .pointerInput(onStarPress, starIndex) {
+                        detectTapGestures(
+                            onPress = { onStarPress(starNum) }
+                        )
+                    }
             )
         }
     }
@@ -375,11 +426,10 @@ private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifi
 private fun ResultsScreenPreview() {
     LibzyContent {
         ResultsScreen(
-            uiState = ResultsUiState(
-                loading = false,
+            uiState = ResultsUiState.Loaded(
                 recommendationCategories = List(4) { index ->
                     RecommendationCategory(
-                        title = "Category $index",
+                        relevance = RecommendationCategory.Relevance.Partial(genre = "Genre $index"),
                         albumResults = List(5) {
                             AlbumResult(
                                 "Album Title",
@@ -407,9 +457,132 @@ private fun ResultsScreenPreview() {
 private fun NoResultsScreenPreview() {
     LibzyContent {
         ResultsScreen(
-            uiState = ResultsUiState(
-                loading = false,
+            uiState = ResultsUiState.Loaded(
                 recommendationCategories = emptyList()
+            ),
+            scaffoldState = rememberScaffoldState(),
+            onBackClick = {},
+            onAlbumClick = {},
+            onStartOverClick = {},
+            onRateResults = {}
+        )
+    }
+}
+
+@ExperimentalFoundationApi
+@ExperimentalAnimationApi
+@Preview(device = Devices.PIXEL_4_XL)
+@Composable
+private fun ResultsScreenOneCategoryPixel4XlPreview() {
+    LibzyContent {
+        ResultsScreen(
+            uiState = ResultsUiState.Loaded(
+                recommendationCategories = listOf(
+                    RecommendationCategory(
+                        relevance = RecommendationCategory.Relevance.Full,
+                        albumResults = List(20) {
+                            AlbumResult(
+                                "Album Title",
+                                "Album Artist",
+                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+                                spotifyUri = ""
+                            )
+                        }
+                    )
+                )
+            ),
+            scaffoldState = rememberScaffoldState(),
+            onBackClick = {},
+            onAlbumClick = {},
+            onStartOverClick = {},
+            onRateResults = {}
+        )
+    }
+}
+
+@ExperimentalFoundationApi
+@ExperimentalAnimationApi
+@Preview(device = Devices.PIXEL_C)
+@Composable
+private fun ResultsScreenOneCategoryPixelCPreview() {
+    LibzyContent {
+        ResultsScreen(
+            uiState = ResultsUiState.Loaded(
+                recommendationCategories = listOf(
+                    RecommendationCategory(
+                        relevance = RecommendationCategory.Relevance.Full,
+                        albumResults = List(20) {
+                            AlbumResult(
+                                "Album Title",
+                                "Album Artist",
+                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+                                spotifyUri = ""
+                            )
+                        }
+                    )
+                )
+            ),
+            scaffoldState = rememberScaffoldState(),
+            onBackClick = {},
+            onAlbumClick = {},
+            onStartOverClick = {},
+            onRateResults = {}
+        )
+    }
+}
+
+@ExperimentalFoundationApi
+@ExperimentalAnimationApi
+@Preview(device = Devices.PIXEL_3A)
+@Composable
+private fun ResultsScreenOneCategoryPixel3APreview() {
+    LibzyContent {
+        ResultsScreen(
+            uiState = ResultsUiState.Loaded(
+                recommendationCategories = listOf(
+                    RecommendationCategory(
+                        relevance = RecommendationCategory.Relevance.Full,
+                        albumResults = List(20) {
+                            AlbumResult(
+                                "Album Title",
+                                "Album Artist",
+                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+                                spotifyUri = ""
+                            )
+                        }
+                    )
+                )
+            ),
+            scaffoldState = rememberScaffoldState(),
+            onBackClick = {},
+            onAlbumClick = {},
+            onStartOverClick = {},
+            onRateResults = {}
+        )
+    }
+}
+
+@ExperimentalFoundationApi
+@ExperimentalAnimationApi
+@Preview(device = Devices.NEXUS_5)
+@Composable
+private fun ResultsScreenOneCategoryNexus5Preview() {
+    LibzyContent {
+        ResultsScreen(
+            uiState = ResultsUiState.Loaded(
+                recommendationCategories = listOf(
+                    RecommendationCategory(
+                        relevance = RecommendationCategory.Relevance.Full,
+                        albumResults = List(20) {
+                            AlbumResult(
+                                "Album Title",
+                                "Album Artist",
+                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+                                spotifyUri = ""
+                            )
+                        }
+                    )
+                )
             ),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
@@ -428,6 +601,6 @@ const val RECOMMENDATION_LIST_TOP_PADDING = 16
 const val RECOMMENDATION_LIST_BOTTOM_PADDING = FLOATING_ACTION_BUTTON_HEIGHT + FLOATING_ACTION_BUTTON_BOTTOM_PADDING
 const val RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT =
     RECOMMENDATION_LIST_BOTTOM_PADDING + RECOMMENDATION_CATEGORY_BOTTOM_PADDING
-const val ALBUM_RESULT_PADDING = 8
-const val ALBUM_RESULT_WIDTH = 130
-const val ALBUM_ARTWORK_SIZE = ALBUM_RESULT_WIDTH - (ALBUM_RESULT_PADDING * 2)
+const val ALBUM_RESULT_PADDING = 10
+const val MIN_ALBUM_RESULT_WIDTH = 110
+const val DEFAULT_ALBUM_RESULT_WIDTH = 130

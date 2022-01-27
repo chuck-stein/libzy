@@ -1,12 +1,12 @@
 package io.libzy.recommendation
 
+import androidx.annotation.StringRes
+import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.domain.RecommendationCategory
 import io.libzy.domain.toAlbumResult
 import io.libzy.persistence.database.tuple.LibraryAlbum
-import io.libzy.util.capitalizeAllWords
 import io.libzy.util.combinationsOfSize
-import io.libzy.util.joinToUserFriendlyString
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -105,48 +105,53 @@ class RecommendationService @Inject constructor() {
     ) {
         val fullyRelevantAlbums = possibleAlbums.filter { it.isFullyRelevant }
         if (fullyRelevantAlbums.isNotEmpty()) {
-            val bestMatchCategory = RecommendationCategory(
-                title = "Best Overall Match",
+            val fullyRelevantCategory = RecommendationCategory(
+                relevance = RecommendationCategory.Relevance.Full,
                 albumResults = fullyRelevantAlbums
                     .sortedByDescending { it.overallRelevance }
                     .map { it.libraryAlbum.toAlbumResult() }
             )
-            recommendationCategories.add(bestMatchCategory)
+            recommendationCategories.add(fullyRelevantCategory)
             possibleAlbums.minusAssign(fullyRelevantAlbums)
         }
     }
 
     /**
-     * Create a map of [PossibleRecommendationCategory]s that are partially relevant to the given mood-based [query],
+     * Create a map of possible recommendation categories that are partially relevant to the given mood-based [query],
      * with a set of [PossibleAlbumRecommendation]s associated with each category,
      * representing the albums (picked from [possibleAlbums]) that can belong in that category.
      */
     private fun createPossibleCategories(
         possibleAlbums: MutableSet<PossibleAlbumRecommendation>,
         query: Query
-    ): MutableMap<PossibleRecommendationCategory, MutableSet<PossibleAlbumRecommendation>> {
-        val possibleCategories = mutableMapOf<PossibleRecommendationCategory, MutableSet<PossibleAlbumRecommendation>>()
+    ): MutableMap<RecommendationCategory.Relevance.Partial, MutableSet<PossibleAlbumRecommendation>> {
+        val possibleCategories =
+            mutableMapOf<RecommendationCategory.Relevance.Partial, MutableSet<PossibleAlbumRecommendation>>()
 
         possibleAlbums.forEach { possibleAlbum ->
 
             // Adjectives are strings that describe how a category matches the query (e.g. "Acoustic").
             // They can be compounded with other categories to make more specific categories (e.g. "Acoustic & Chill").
-            val matchedAdjectives = mutableSetOf<String>()
+            @StringRes val matchedAdjectives = mutableSetOf<Int>()
             var matchedGenres = emptySet<String>()
             var matchesFamiliarity = false
 
-            fun placeAlbumInCategory(title: String, numRelevantParameters: Int) {
-                val category = PossibleRecommendationCategory(title, numRelevantParameters)
+            fun placeAlbumInCategory(category: RecommendationCategory.Relevance.Partial) {
                 possibleCategories.getOrPut(category, defaultValue = { mutableSetOf() }).add(possibleAlbum)
             }
 
-            fun checkForHighOrLowCategory(preferredValue: Float?, actualValue: Float, lowTitle: String, highTitle: String) {
+            fun checkForHighOrLowCategory(
+                preferredValue: Float?,
+                actualValue: Float,
+                @StringRes lowAdjective: Int,
+                @StringRes highAdjective: Int
+            ) {
                 if (preferredValue?.isLowParam == true && actualValue.isLowParam) {
-                    placeAlbumInCategory(title = lowTitle, numRelevantParameters = 1)
-                    matchedAdjectives.add(lowTitle)
+                    placeAlbumInCategory(RecommendationCategory.Relevance.Partial(adjectives = listOf(lowAdjective)))
+                    matchedAdjectives.add(lowAdjective)
                 } else if (preferredValue?.isHighParam == true && actualValue.isHighParam) {
-                    placeAlbumInCategory(title = highTitle, numRelevantParameters = 1)
-                    matchedAdjectives.add(highTitle)
+                    placeAlbumInCategory(RecommendationCategory.Relevance.Partial(adjectives = listOf(highAdjective)))
+                    matchedAdjectives.add(highAdjective)
                 }
             }
 
@@ -157,21 +162,21 @@ class RecommendationService @Inject constructor() {
                     is GenreRelevanceParameter -> {
                         matchedGenres = matchedParam.matchedGenres
                         matchedParam.matchedGenres.forEach { genre ->
-                            placeAlbumInCategory(title = genre.capitalizeAllWords(), numRelevantParameters = 1)
+                            placeAlbumInCategory(RecommendationCategory.Relevance.Partial(genre = genre))
                         }
                     }
                     is FamiliarityRelevanceParameter -> {
                         matchesFamiliarity = true
                         query.familiarity?.let {
-                            placeAlbumInCategory(title = it.stringValue.capitalizeAllWords(), numRelevantParameters = 1)
+                            placeAlbumInCategory(RecommendationCategory.Relevance.Partial(familiarity = it))
                         }
                     }
                     is SpectrumBasedRelevanceParameter -> {
                         when (matchedParam.parameterType) {
                             Query.Parameter.INSTRUMENTALNESS -> {
                                 query.instrumental?.let { prefersInstrumental ->
-                                    val categoryTitle = if (prefersInstrumental) "Instrumental" else "Vocal"
-                                    placeAlbumInCategory(categoryTitle, numRelevantParameters = 1)
+                                    val categoryTitle = if (prefersInstrumental) R.string.instrumental else R.string.vocal
+                                    placeAlbumInCategory(RecommendationCategory.Relevance.Partial(adjectives = listOf(categoryTitle)))
                                     matchedAdjectives.add(categoryTitle)
                                 }
                             }
@@ -179,32 +184,32 @@ class RecommendationService @Inject constructor() {
                                 checkForHighOrLowCategory(
                                     preferredValue = query.acousticness,
                                     actualValue = albumAudioFeatures.acousticness,
-                                    lowTitle = "Electric/Electronic",
-                                    highTitle = "Acoustic"
+                                    lowAdjective = R.string.electric_electronic,
+                                    highAdjective = R.string.acoustic
                                 )
                             }
                             Query.Parameter.VALENCE -> {
                                 checkForHighOrLowCategory(
                                     preferredValue = query.valence,
                                     actualValue = albumAudioFeatures.valence,
-                                    lowTitle = "Negative Emotion",
-                                    highTitle = "Positive Emotion"
+                                    lowAdjective = R.string.negative,
+                                    highAdjective = R.string.positive
                                 )
                             }
                             Query.Parameter.ENERGY -> {
                                 checkForHighOrLowCategory(
                                     preferredValue = query.energy,
                                     actualValue = albumAudioFeatures.energy,
-                                    lowTitle = "Chill",
-                                    highTitle = "Energetic"
+                                    lowAdjective = R.string.chill,
+                                    highAdjective = R.string.energetic
                                 )
                             }
                             Query.Parameter.DANCEABILITY -> {
                                 checkForHighOrLowCategory(
                                     preferredValue = query.danceability,
                                     actualValue = albumAudioFeatures.danceability,
-                                    lowTitle = "Arrhythmic",
-                                    highTitle = "Danceable"
+                                    lowAdjective = R.string.arrhythmic,
+                                    highAdjective = R.string.danceable
                                 )
                             }
                             else -> {
@@ -216,25 +221,29 @@ class RecommendationService @Inject constructor() {
             }
 
             fun createAdjectiveCombos(size: Int) = matchedAdjectives.combinationsOfSize(size).onEach { adjectives ->
-                placeAlbumInCategory(title = adjectives.joinToUserFriendlyString(), numRelevantParameters = size)
+                placeAlbumInCategory(RecommendationCategory.Relevance.Partial(adjectives))
             }
 
             val twoAdjectiveCombos = createAdjectiveCombos(2)
             val threeAdjectiveCombos = createAdjectiveCombos(3)
-            createAdjectiveCombos(4)
+            createAdjectiveCombos(4) // not storing these combinations because it's too many to combine w other params
 
             if (matchesFamiliarity) {
-                matchedAdjectives.forEach { adj ->
+                matchedAdjectives.forEach { adjective ->
                     placeAlbumInCategory(
-                        title = "$adj, ${query.familiarity?.stringValue?.capitalizeAllWords()}",
-                        numRelevantParameters = 2
+                        RecommendationCategory.Relevance.Partial(
+                            adjectives = listOf(adjective),
+                            familiarity = query.familiarity
+                        )
                     )
                 }
 
                 twoAdjectiveCombos.forEach { adjectives ->
                     placeAlbumInCategory(
-                        title = "${adjectives.joinToUserFriendlyString()} ${query.familiarity?.stringValue?.capitalizeAllWords()}", // TODO: improve up string formatting, see examples
-                        numRelevantParameters = 3
+                        RecommendationCategory.Relevance.Partial(
+                            adjectives = adjectives,
+                            familiarity = query.familiarity
+                        )
                     )
                 }
             }
@@ -243,43 +252,52 @@ class RecommendationService @Inject constructor() {
                 if (matchesFamiliarity) {
 
                     placeAlbumInCategory(
-                        title = "${genre.capitalizeAllWords()}, ${query.familiarity?.stringValue?.capitalizeAllWords()}",
-                        numRelevantParameters = 2
+                        RecommendationCategory.Relevance.Partial(genre = genre, familiarity = query.familiarity)
                     )
 
-                    matchedAdjectives.forEach { adj ->
+                    matchedAdjectives.forEach { adjective ->
                         placeAlbumInCategory(
-                            title = "$adj, ${genre.capitalizeAllWords()}, ${query.familiarity?.stringValue?.capitalizeAllWords()}",
-                            numRelevantParameters = 3
+                            RecommendationCategory.Relevance.Partial(
+                                adjectives = listOf(adjective),
+                                genre = genre,
+                                familiarity = query.familiarity
+                            )
                         )
                     }
 
                     twoAdjectiveCombos.forEach { adjectives ->
                         placeAlbumInCategory(
-                            title = "${adjectives.joinToUserFriendlyString()}, ${genre.capitalizeAllWords()}, ${query.familiarity?.stringValue?.capitalizeAllWords()}",
-                            numRelevantParameters = 4
+                            RecommendationCategory.Relevance.Partial(
+                                adjectives = adjectives,
+                                genre = genre,
+                                familiarity = query.familiarity
+                            )
                         )
                     }
                 }
 
-                matchedAdjectives.forEach { adj ->
+                matchedAdjectives.forEach { adjective ->
                     placeAlbumInCategory(
-                        title = "$adj ${genre.capitalizeAllWords()}",
-                        numRelevantParameters = 2
+                        RecommendationCategory.Relevance.Partial(
+                            adjectives = listOf(adjective),
+                            genre = genre
+                        )
                     )
                 }
 
                 twoAdjectiveCombos.forEach { adjectives ->
                     placeAlbumInCategory(
-                        title = "${adjectives.joinToUserFriendlyString()} ${genre.capitalizeAllWords()}",
-                        numRelevantParameters = 3
+                        RecommendationCategory.Relevance.Partial(
+                            adjectives = adjectives,
+                            genre = genre
+                        )
                     )
                 }
 
                 threeAdjectiveCombos.forEach { adjectives ->
-                    placeAlbumInCategory(
-                        title = "${adjectives.joinToUserFriendlyString()} ${genre.capitalizeAllWords()}",
-                        numRelevantParameters = 4
+                    RecommendationCategory.Relevance.Partial(
+                        adjectives = adjectives,
+                        genre = genre
                     )
                 }
             }
@@ -300,11 +318,11 @@ class RecommendationService @Inject constructor() {
      * possible categories so that they cannot be recommended twice.
      */
     private fun selectCategories(
-        possibleCategories: MutableMap<PossibleRecommendationCategory, MutableSet<PossibleAlbumRecommendation>>,
+        possibleCategories: MutableMap<RecommendationCategory.Relevance.Partial, MutableSet<PossibleAlbumRecommendation>>,
         recommendationCategories: MutableList<RecommendationCategory>
     ) {
         val categoryComparator =
-            compareBy<Map.Entry<PossibleRecommendationCategory, Set<PossibleAlbumRecommendation>>> { (category, _) ->
+            compareBy<Map.Entry<RecommendationCategory.Relevance.Partial, Set<PossibleAlbumRecommendation>>> { (category, _) ->
                 category.numRelevantParameters
             }.thenBy { (_, albumsInCategory) ->
                 albumsInCategory.map { it.overallRelevance }.average()
@@ -322,14 +340,17 @@ class RecommendationService @Inject constructor() {
                 .filterValues { it.size >= MIN_ALBUMS_PER_CATEGORY }
                 .maxWithOrNull(categoryComparator)
 
-            chosenCategory?.let { (category, albumsInChosenCategory) ->
+            chosenCategory?.let { (categoryRelevance, albumsInChosenCategory) ->
                 recommendationCategories.add(
                     RecommendationCategory(
-                        category.title,
-                        albumsInChosenCategory.toList().sortedWith(albumComparator).map { it.libraryAlbum.toAlbumResult() }
+                        categoryRelevance,
+                        albumsInChosenCategory
+                            .toList()
+                            .sortedWith(albumComparator)
+                            .map { it.libraryAlbum.toAlbumResult() }
                     )
                 )
-                possibleCategories.remove(category)
+                possibleCategories.remove(categoryRelevance)
 
                 possibleCategories.values.forEach { albumsInOtherCategory ->
                     albumsInOtherCategory.minusAssign(albumsInChosenCategory)
@@ -338,16 +359,6 @@ class RecommendationService @Inject constructor() {
         } while (chosenCategory != null)
     }
 }
-
-/**
- * An intermediate data type for the recommendation algorithm, representing a contender for a [RecommendationCategory],
- * containing the title that the category would use, as well as the number of query parameters that
- * this category matches (i.e. how relevant the albums in the category are to the user's mood).
- */
-private data class PossibleRecommendationCategory(
-    val title: String,
-    val numRelevantParameters: Int
-)
 
 /**
  * An intermediate data type for the recommendation algorithm, representing an album from the user's library, coupled
@@ -417,7 +428,7 @@ private data class GenreRelevanceParameter(
  * in order to consider the album relevant in regards to that parameter.
  * Also represents the point on such a spectrum at which values are considered "close" to the extreme.
  */
-private const val SPECTRUM_BASED_PARAM_RELEVANCE_THRESHOLD = 7f
+private const val SPECTRUM_BASED_PARAM_RELEVANCE_THRESHOLD = 0.7f
 
 /** The highest value a spectrum-based [Query.Parameter] can be. */
 private const val SPECTRUM_BASED_PARAM_MAX_VAL = 1

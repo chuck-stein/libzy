@@ -41,10 +41,10 @@
     <string name="afternoon_greeting_text">Good afternoon!</string>
     <string name="evening_greeting_text">Good evening!</string>
     <string name="query_instructions_text">What are you in the mood to listen to?</string>
-    <string name="no_preference">No preference</string>
-    <string name="current_favorite">Current favorite</string>
-    <string name="underappreciated_gem">Underappreciated gem</string>
-    <string name="reliable_classic">Reliable classic</string>
+    <string name="no_preference">No Preference</string>
+    <string name="current_favorite">Current Favorite</string>
+    <string name="underappreciated_gem">Underappreciated Gem</string>
+    <string name="reliable_classic">Reliable Classic</string>
     <string name="positive_emotion">Positive Emotion</string>
     <string name="negative_emotion">Negative Emotion</string>
     <string name="acoustic">Acoustic</string>
@@ -70,5 +70,14 @@
     <string name="cd_album_artwork">Album artwork</string>
     <string name="cd_filled_rating_star">Filled rating star</string>
     <string name="cd_unfilled_rating_star">Unfilled rating star</string>
+    <string name="underappreciated_gems">Underappreciated Gems</string>
+    <string name="reliable_classics">Reliable Classics</string>
+    <string name="current_favorites">Current Favorites</string>
+    <string name="underappreciated_genre">Underappreciated %s</string>
+    <string name="reliable_genre_classics">Reliable %s Classics</string>
+    <string name="current_genre_favorites">Current %s Favorites</string>
+    <string name="full_match_category_title">Best Overall Match</string>
+    <string name="positive">Positive</string>
+    <string name="negative">Negative</string>
 
 </resources>
