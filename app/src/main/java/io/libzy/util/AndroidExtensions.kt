@@ -15,6 +15,6 @@ fun Context.createNotificationTapAction(uri: Uri): PendingIntent? {
     val intent = Intent(Intent.ACTION_VIEW, uri, this, MainActivity::class.java)
     return with(TaskStackBuilder.create(this)) {
         addNextIntentWithParentStack(intent)
-        getPendingIntent(uri.hashCode(), PendingIntent.FLAG_UPDATE_CURRENT)
+        getPendingIntent(uri.hashCode(), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 }
