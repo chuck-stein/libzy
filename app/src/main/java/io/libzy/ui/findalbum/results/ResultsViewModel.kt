@@ -21,7 +21,7 @@ class ResultsViewModel @Inject constructor(
     private val analyticsDispatcher: AnalyticsDispatcher
 ) : LibzyViewModel<ResultsUiState, ResultsUiEvent>() {
 
-    override val initialUiState = ResultsUiState(loading = true)
+    override val initialUiState = ResultsUiState.Loading
 
     private var albumRecommendationJob: Job? = null
 
@@ -30,7 +30,7 @@ class ResultsViewModel @Inject constructor(
         albumRecommendationJob = viewModelScope.launch {
             userLibraryRepository.albums.collect { albums ->
                 updateUiState {
-                    copy(recommendationCategories = recommendationService.recommendAlbums(query, albums), loading = false)
+                    ResultsUiState.Loaded(recommendationService.recommendAlbums(query, albums))
                 }
                 // TODO: create new corresponding analytics event for receiving recommendation categories
 //                analyticsDispatcher.sendViewAlbumResultsEvent(query, uiState.value.albumResults)
@@ -39,16 +39,21 @@ class ResultsViewModel @Inject constructor(
     }
 
     fun rateResults(rating: Int) {
-        updateUiState {
-            copy(resultsRating = rating)
+        (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
+            updateUiState {
+                currentUiState.copy(resultsRating = rating)
+            }
         }
     }
 
     fun sendResultsRating() {
-        uiState.value.resultsRating?.let {
-            analyticsDispatcher.sendRateAlbumResultsEvent(it)
-            updateUiState {
-                copy(resultsRating = null) // reset the rating so that it is not sent again later unless changed
+        (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
+            currentUiState.resultsRating?.let { resultsRating ->
+                analyticsDispatcher.sendRateAlbumResultsEvent(resultsRating)
+                updateUiState {
+                    // reset the rating so that it is not sent again later unless changed
+                    currentUiState.copy(resultsRating = null)
+                }
             }
         }
     }

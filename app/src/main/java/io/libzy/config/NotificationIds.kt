@@ -7,10 +7,10 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 object NotificationIds {
 
+    private val nextId = AtomicInteger(0)
+
     val initialScanProgress = getNextId()
     val initialScanEnd = getNextId()
-
-    private var nextId = AtomicInteger(0)
 
     private fun getNextId() = nextId.getAndIncrement()
 }
