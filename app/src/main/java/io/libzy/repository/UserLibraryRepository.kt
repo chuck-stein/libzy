@@ -57,8 +57,8 @@ class UserLibraryRepository @Inject constructor(
         Timber.v("Scanning genres in saved albums")
         val dbGenres = mutableSetOf<DbGenre>()
         val albumGenreJunctions = mutableSetOf<AlbumGenreJunction>()
-        fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums)
-        
+        if (dbAlbums.isNotEmpty()) fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums)
+
         Timber.v("Saving library data in local database")
         database.runInTransaction { // TODO: ensure nested transactions work as expected
             database.albumDao.replaceAll(dbAlbums)
