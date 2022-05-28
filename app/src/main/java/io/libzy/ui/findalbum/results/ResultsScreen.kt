@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExtendedFloatingActionButton
@@ -35,6 +35,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -56,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import io.libzy.R
 import io.libzy.domain.AlbumResult
@@ -88,12 +90,18 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun ResultsScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory) {
+fun ResultsScreen(
+    navController: NavController,
+    viewModelFactory: ViewModelProvider.Factory,
+    backStackEntry: NavBackStackEntry
+) {
     val viewModel: ResultsViewModel = viewModel(factory = viewModelFactory)
     val uiState by viewModel.uiState
 
     val findAlbumFlowViewModel: FindAlbumFlowViewModel = viewModel(
-        viewModelStoreOwner = navController.getBackStackEntry(Destination.FindAlbumFlow.route),
+        viewModelStoreOwner = remember(backStackEntry) {
+            navController.getBackStackEntry(Destination.FindAlbumFlow.route)
+        },
         factory = viewModelFactory
     )
     val findAlbumFlowUiState by rememberSaveable(findAlbumFlowViewModel.uiState) { findAlbumFlowViewModel.uiState }
@@ -197,7 +205,9 @@ private fun ResultsScreen(
                             Text(
                                 stringResource(R.string.no_results_header),
                                 style = MaterialTheme.typography.h6,
-                                modifier = Modifier.align(Alignment.Center).padding(horizontal = HORIZONTAL_INSET.dp)
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(horizontal = HORIZONTAL_INSET.dp)
                             )
                         }
                         1 -> {
@@ -226,14 +236,16 @@ private fun Modifier.resultsGradient() = this
     .graphicsLayer { alpha = 0.99f } // workaround to enable alpha compositing
     .drawWithContent {
         drawContent()
-        drawRect( // gradient to fade out top of recommendation list
+        drawRect(
+            // gradient to fade out top of recommendation list
             brush = Brush.verticalGradient(
                 colors = listOf(Color.Transparent, Color.Black),
                 endY = RECOMMENDATION_LIST_TOP_PADDING.dp.toPx(),
             ),
             blendMode = BlendMode.DstIn,
         )
-        drawRect( // gradient to fade out bottom of recommendation list
+        drawRect(
+            // gradient to fade out bottom of recommendation list
             brush = Brush.verticalGradient(
                 colors = listOf(
                     Color.Black,
@@ -318,7 +330,7 @@ private fun AlbumResultsGrid(
     val numColumns = maxOf((gridWidth / MIN_ALBUM_RESULT_WIDTH), 1)
 
     LazyVerticalGrid(
-        cells = GridCells.Fixed(numColumns),
+        columns = GridCells.Fixed(numColumns),
         modifier = modifier.padding(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp)
     ) {
         items(albumResults.size) { index ->

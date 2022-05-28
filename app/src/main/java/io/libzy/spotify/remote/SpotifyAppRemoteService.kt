@@ -25,6 +25,7 @@ class SpotifyAppRemoteService @Inject constructor(private val context: Context) 
     private val connectionParams =
         ConnectionParams.Builder(context.getString(R.string.spotify_client_id))
             .setRedirectUri(context.getString(R.string.spotify_auth_redirect_uri))
+            .showAuthView(true)
             .build()
 
     fun connect(onFailure: () -> Unit = {}, pendingSpotifyUri: String? = null) {

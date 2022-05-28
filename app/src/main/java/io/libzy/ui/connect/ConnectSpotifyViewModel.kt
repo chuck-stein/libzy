@@ -31,7 +31,7 @@ class ConnectSpotifyViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
-    private val workManager = WorkManager.getInstance(appContext)
+    private val workManager = WorkManager.getInstance(appContext) // TODO: inject this, create it as a singleton somewhere so that we never forget to use the getInstance(Context) overload
 
     private val sharedPrefs = appContext.getSharedPrefs()
 

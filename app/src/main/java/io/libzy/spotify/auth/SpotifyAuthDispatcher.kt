@@ -12,6 +12,7 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /*
 TODO:
@@ -54,7 +55,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
     }
 
     suspend fun requestAuthorization(withTimeout: Boolean = true): SpotifyAccessToken = withContext(Dispatchers.IO) {
-        val timeout = if (withTimeout) Duration.seconds(AUTH_TIMEOUT) else Duration.INFINITE
+        val timeout = if (withTimeout) AUTH_TIMEOUT.seconds else Duration.INFINITE
         withTimeoutOrNull(timeout) {
             suspendCancellableCoroutine { continuation ->
                 // TODO: Reassess which dispatchers we need here.

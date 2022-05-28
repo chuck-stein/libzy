@@ -42,8 +42,8 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnecte
             screen(Destination.Query) {
                 QueryScreen(navController, viewModelFactory)
             }
-            screen(Destination.Results) {
-                ResultsScreen(navController, viewModelFactory)
+            screen(Destination.Results) { backStackEntry ->
+                ResultsScreen(navController, viewModelFactory, backStackEntry)
             }
         }
     }

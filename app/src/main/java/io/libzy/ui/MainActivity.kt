@@ -34,8 +34,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<SessionViewModel> { viewModelFactory }
 
 
-    @ExperimentalAnimationApi
-    @ExperimentalFoundationApi
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         (applicationContext as LibzyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)

@@ -23,13 +23,13 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 import javax.inject.Inject
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
 class LibzyApplication : Application(), Configuration.Provider {
 
     companion object {
-        private val LIBRARY_SYNC_INTERVAL = Duration.minutes(15) // time to wait between Spotify library syncs
+        private val LIBRARY_SYNC_INTERVAL = 15.minutes // time to wait between Spotify library syncs
     }
 
     val appComponent: AppComponent by lazy {
@@ -115,6 +115,7 @@ class LibzyApplication : Application(), Configuration.Provider {
                 val workRequest =
                     PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL.toJavaDuration()).build()
 
+                // TODO: should we be using a dependency-injected appContext here?
                 WorkManager.getInstance(this@LibzyApplication).enqueueUniquePeriodicWork(
                     LibrarySyncWorker.WORK_NAME,
                     ExistingPeriodicWorkPolicy.KEEP,

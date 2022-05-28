@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 
@@ -19,7 +19,7 @@ import timber.log.Timber
  * @param eventCollector The function that will process each event.
  */
 @Composable
-fun <T> EventHandler(uiEvents: Flow<T>, eventCollector: suspend (T) -> Unit) {
+fun <T> EventHandler(uiEvents: Flow<T>, eventCollector: FlowCollector<T>) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val uiEventsLifecycleAware = remember(uiEvents, lifecycleOwner) {
