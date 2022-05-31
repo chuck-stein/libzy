@@ -331,7 +331,8 @@ private fun AlbumResultsGrid(
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(numColumns),
-        modifier = modifier.padding(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp)
+        modifier = modifier.padding(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp),
+        contentPadding = PaddingValues(bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp)
     ) {
         items(albumResults.size) { index ->
             val albumResult = albumResults[index]
