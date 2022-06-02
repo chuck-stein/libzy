@@ -23,6 +23,10 @@ object LibzyColors {
     val DeepPurple = Color(0xFF0E0023)
     val VeryDeepPurple = Color(0xFF05000E)
 
+    // Spotify Colors
+    val SpotifyBranding = Color(0xFF1BD760)
+    val SpotifyGreen = Color(0xFF1DB954)
+
     // Other Colors (use sparingly)
     val Gray = Color(0xFF808080)
 

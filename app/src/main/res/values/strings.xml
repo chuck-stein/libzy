@@ -29,8 +29,15 @@
     <!-- Navigation -->
     <string name="cd_navigate_back">Navigate back</string>
 
+    <!-- Global UI -->
+    <string name="cd_spotify_icon">Spotify icon</string>
+
     <!-- Connect Spotify Screen -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
+    <string name="welcome_to_libzy">Welcome to Libzy</string>
+    <string name="your_digital_record_collection">Your digital record collection</string>
+    <string name="getting_started">To get started, please connect your Spotify account</string>
+    <string name="cd_libzy_icon">Libzy icon</string>
     <string name="snackbar_spotify_authorization_failed">Failed to authorize your Spotify account! Please try again.</string>
     <string name="snackbar_library_scan_failed">There was a problem scanning your Spotify library! Please try again.</string>
     <string name="scanning_library_heading">Scanning your Spotify library…</string>

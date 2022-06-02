@@ -2,17 +2,24 @@ package io.libzy.ui.connect
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.Text
+import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,18 +27,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
+import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.EventHandler
-import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
+import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
+import io.libzy.ui.theme.LibzyIconTheme
 import kotlinx.coroutines.launch
 
 /**
@@ -91,18 +104,57 @@ private fun ConnectSpotifyScreen(
     LibzyScaffold(scaffoldState = scaffoldState) {
         Crossfade(targetState = uiState.libraryScanInProgress) { libraryScanInProgress ->
             if (!libraryScanInProgress) {
-                ConnectSpotifyButton(onConnectSpotifyClick)
+                Column(
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxSize()
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = LibzyIconTheme.LibraryMusic, // TODO: replace with actual app icon once done
+                            contentDescription = stringResource(R.string.cd_libzy_icon),
+                            tint = LibzyColors.OffWhite,
+                            modifier = Modifier.fillMaxSize(0.25f)
+                        )
+                        Text(stringResource(R.string.welcome_to_libzy), style = MaterialTheme.typography.h3)
+                        Text(
+                            stringResource(R.string.your_digital_record_collection),
+                            style = MaterialTheme.typography.h5
+                        )
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.getting_started),
+                            style = MaterialTheme.typography.subtitle1,
+                            modifier = Modifier.padding(bottom = 48.dp)
+                        )
+                        LibzyButton(
+                            R.string.connect_spotify_button_text,
+                            onClick = onConnectSpotifyClick,
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = LibzyColors.SpotifyBranding,
+                                contentColor = Color.Black
+                            ),
+                            shape = MaterialTheme.shapes.small.copy(CornerSize(percent = 50)),
+                            startContent = {
+                                Image(
+                                    painterResource(R.drawable.ic_spotify_black),
+                                    stringResource(R.string.cd_spotify_icon),
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            }
+                        )
+                    }
+                }
             } else {
                 LibraryScanProgress()
             }
         }
-    }
-}
-
-@Composable
-private fun ConnectSpotifyButton(onConnectSpotifyClick: () -> Unit) {
-    Frame {
-        LibzyButton(R.string.connect_spotify_button_text, onClick = onConnectSpotifyClick)
     }
 }
 
@@ -112,7 +164,9 @@ private fun ConnectSpotifyButton(onConnectSpotifyClick: () -> Unit) {
 private fun LibraryScanProgress() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize().padding(horizontal = HORIZONTAL_INSET.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = HORIZONTAL_INSET.dp)
     ) {
         Text(
             stringResource(R.string.scanning_library_heading),
@@ -124,5 +178,17 @@ private fun LibraryScanProgress() {
             Spacer(Modifier.height(36.dp))
             Text(stringResource(R.string.scanning_library_subheading), style = MaterialTheme.typography.h6)
         }
+    }
+}
+
+@Preview(device = Devices.PIXEL_4_XL)
+@Composable
+private fun ConnectSpotifyScreenPreview() {
+    LibzyContent {
+        ConnectSpotifyScreen(
+            uiState = ConnectSpotifyUiState(libraryScanInProgress = false),
+            scaffoldState = rememberScaffoldState(),
+            onConnectSpotifyClick = {}
+        )
     }
 }
