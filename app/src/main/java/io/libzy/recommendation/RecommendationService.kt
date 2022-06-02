@@ -112,7 +112,7 @@ class RecommendationService @Inject constructor() {
                     .map { it.libraryAlbum.toAlbumResult() }
             )
             recommendationCategories.add(fullyRelevantCategory)
-            possibleAlbums.minusAssign(fullyRelevantAlbums)
+            possibleAlbums.minusAssign(fullyRelevantAlbums.toSet())
         }
     }
 
