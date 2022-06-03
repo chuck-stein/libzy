@@ -39,8 +39,8 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnecte
             ConnectSpotifyScreen(navController, viewModelFactory, exitApp)
         }
         navigation(route = Destination.FindAlbumFlow.route, startDestination = Destination.Query.route) {
-            screen(Destination.Query) {
-                QueryScreen(navController, viewModelFactory)
+            screen(Destination.Query) { backStackEntry ->
+                QueryScreen(navController, viewModelFactory, backStackEntry)
             }
             screen(Destination.Results) { backStackEntry ->
                 ResultsScreen(navController, viewModelFactory, backStackEntry)

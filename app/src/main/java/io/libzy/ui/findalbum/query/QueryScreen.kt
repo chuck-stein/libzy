@@ -16,10 +16,14 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -71,9 +75,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
-import com.google.accompanist.insets.LocalWindowInsets
 import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.ui.Destination
@@ -91,7 +95,6 @@ import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import timber.log.Timber
 import java.time.LocalTime
@@ -99,14 +102,21 @@ import java.time.LocalTime
 /**
  * **Stateful** Query Screen, displaying a series of questions about what the user is in the mood to listen to.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @ExperimentalAnimationApi
 @Composable
-fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory) {
+fun QueryScreen(
+    navController: NavController,
+    viewModelFactory: ViewModelProvider.Factory,
+    backStackEntry: NavBackStackEntry
+) {
     val viewModel: QueryViewModel = viewModel(factory = viewModelFactory)
     val uiState by viewModel.uiState
 
     val findAlbumFlowViewModel: FindAlbumFlowViewModel = viewModel(
-        viewModelStoreOwner = navController.getBackStackEntry(Destination.FindAlbumFlow.route),
+        viewModelStoreOwner = remember(backStackEntry) {
+            navController.getBackStackEntry(Destination.FindAlbumFlow.route)
+        },
         factory = viewModelFactory
     )
 
@@ -137,12 +147,12 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
     }
 
     val focusManager = LocalFocusManager.current
-    val keyboard = LocalWindowInsets.current.ime
+    val keyboardVisible = WindowInsets.isImeVisible
 
     QueryScreen(
         uiState = uiState,
         onBackClick = {
-            if (keyboard.isVisible) focusManager.clearFocus()
+            if (keyboardVisible) focusManager.clearFocus()
             if (uiState.currentStep is QueryStep.Genres.Search) {
                 viewModel.stopGenreSearch()
             } else {
@@ -282,6 +292,7 @@ private fun QueryScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @ExperimentalAnimationApi
 @Composable
 private fun GenreSearchBar(
@@ -292,22 +303,20 @@ private fun GenreSearchBar(
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    val keyboard = LocalWindowInsets.current.ime
+    var keyboardPreviouslyVisible by remember { mutableStateOf(false) }
+    val keyboardVisible = WindowInsets.isImeVisible
     val textStyle = MaterialTheme.typography.subtitle1.copy(textAlign = TextAlign.Start)
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus() // TextField should be focused when search begins
     }
 
-    LaunchedEffect(keyboard, focusManager) {
-        var keyboardPreviouslyVisible = false
-        snapshotFlow { keyboard.isVisible }.collect { keyboardNowVisible ->
-            if (keyboardPreviouslyVisible && !keyboardNowVisible) {
-                focusManager.clearFocus() // TextField should be unfocused when keyboard is dismissed
-                onDismissKeyboard()
-            }
-            keyboardPreviouslyVisible = keyboardNowVisible
+    LaunchedEffect(keyboardVisible, focusManager) {
+        if (keyboardPreviouslyVisible && !keyboardVisible) {
+            focusManager.clearFocus() // TextField should be unfocused when keyboard is dismissed
+            onDismissKeyboard()
         }
+        keyboardPreviouslyVisible = keyboardVisible
     }
 
     TextField(
@@ -581,6 +590,7 @@ private fun SliderQueryStep(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @ExperimentalAnimationApi
 @Composable
 private fun GenresStep(
@@ -591,7 +601,7 @@ private fun GenresStep(
     onSearchGenresClick: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    val keyboard = LocalWindowInsets.current.ime
+    val keyboardVisible = WindowInsets.isImeVisible
     val scrollState = rememberScrollState()
     val genresToDisplay = genresStep.genreOptions.take(genresStep.numGenreOptionsToShow).let { genreOptions ->
         when (genresStep) {
@@ -606,8 +616,8 @@ private fun GenresStep(
         }
     }
 
-    LaunchedEffect(scrollState, keyboard) {
-        snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
+    LaunchedEffect(scrollState, keyboardVisible) {
+        snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboardVisible }.collect {
             focusManager.clearFocus() // close the keyboard if it is open when the user starts scrolling
         }
     }

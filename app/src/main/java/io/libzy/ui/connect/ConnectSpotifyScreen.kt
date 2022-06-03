@@ -101,59 +101,64 @@ private fun ConnectSpotifyScreen(
     scaffoldState: ScaffoldState,
     onConnectSpotifyClick: () -> Unit
 ) {
-    LibzyScaffold(scaffoldState = scaffoldState) {
+    LibzyScaffold(scaffoldState = scaffoldState, showTopBar = false) {
         Crossfade(targetState = uiState.libraryScanInProgress) { libraryScanInProgress ->
             if (!libraryScanInProgress) {
-                Column(
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .fillMaxSize()
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = LibzyIconTheme.LibraryMusic, // TODO: replace with actual app icon once done
-                            contentDescription = stringResource(R.string.cd_libzy_icon),
-                            tint = LibzyColors.OffWhite,
-                            modifier = Modifier.fillMaxSize(0.25f)
-                        )
-                        Text(stringResource(R.string.welcome_to_libzy), style = MaterialTheme.typography.h3)
-                        Text(
-                            stringResource(R.string.your_digital_record_collection),
-                            style = MaterialTheme.typography.h5
-                        )
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(R.string.getting_started),
-                            style = MaterialTheme.typography.subtitle1,
-                            modifier = Modifier.padding(bottom = 48.dp)
-                        )
-                        LibzyButton(
-                            R.string.connect_spotify_button_text,
-                            onClick = onConnectSpotifyClick,
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = LibzyColors.SpotifyBranding,
-                                contentColor = Color.Black
-                            ),
-                            shape = MaterialTheme.shapes.small.copy(CornerSize(percent = 50)),
-                            startContent = {
-                                Image(
-                                    painterResource(R.drawable.ic_spotify_black),
-                                    stringResource(R.string.cd_spotify_icon),
-                                    modifier = Modifier.padding(end = 8.dp)
-                                )
-                            }
-                        )
-                    }
-                }
+                WelcomePage(onConnectSpotifyClick)
             } else {
                 LibraryScanProgress()
             }
+        }
+    }
+}
+
+@Composable
+private fun WelcomePage(onConnectSpotifyClick: () -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .fillMaxSize()
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = LibzyIconTheme.LibraryMusic, // TODO: replace with actual app icon once done
+                contentDescription = stringResource(R.string.cd_libzy_icon),
+                tint = LibzyColors.OffWhite,
+                modifier = Modifier.fillMaxSize(0.25f)
+            )
+            Text(stringResource(R.string.welcome_to_libzy), style = MaterialTheme.typography.h3)
+            Text(
+                stringResource(R.string.your_digital_record_collection),
+                style = MaterialTheme.typography.h5
+            )
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth()
+        ) {
+            Text(
+                stringResource(R.string.getting_started),
+                style = MaterialTheme.typography.subtitle1,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+            LibzyButton(
+                R.string.connect_spotify_button_text,
+                onClick = onConnectSpotifyClick,
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = LibzyColors.SpotifyBranding,
+                    contentColor = Color.Black
+                ),
+                shape = MaterialTheme.shapes.small.copy(CornerSize(percent = 50)),
+                startContent = {
+                    Image(
+                        painterResource(R.drawable.ic_spotify_black),
+                        stringResource(R.string.cd_spotify_icon),
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            )
         }
     }
 }
@@ -171,7 +176,7 @@ private fun LibraryScanProgress() {
         Text(
             stringResource(R.string.scanning_library_heading),
             style = MaterialTheme.typography.h3,
-            modifier = Modifier.weight(0.45f)
+            modifier = Modifier.weight(0.45f).padding(top = 64.dp)
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(0.55f)) {
             CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
@@ -181,12 +186,24 @@ private fun LibraryScanProgress() {
     }
 }
 
-@Preview(device = Devices.PIXEL_4_XL)
+@Preview(device = Devices.PIXEL_4_XL, showSystemUi = true)
 @Composable
 private fun ConnectSpotifyScreenPreview() {
     LibzyContent {
         ConnectSpotifyScreen(
             uiState = ConnectSpotifyUiState(libraryScanInProgress = false),
+            scaffoldState = rememberScaffoldState(),
+            onConnectSpotifyClick = {}
+        )
+    }
+}
+
+@Preview(device = Devices.PIXEL_4_XL, showSystemUi = true)
+@Composable
+private fun LibraryScanningPreview() {
+    LibzyContent {
+        ConnectSpotifyScreen(
+            uiState = ConnectSpotifyUiState(libraryScanInProgress = true),
             scaffoldState = rememberScaffoldState(),
             onConnectSpotifyClick = {}
         )

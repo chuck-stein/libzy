@@ -4,9 +4,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material.FabPosition
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
@@ -20,10 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import io.libzy.ui.BackgroundGradient
@@ -37,6 +40,7 @@ import io.libzy.ui.LibzyContent
 @Composable
 fun LibzyScaffold(
     scaffoldState: ScaffoldState = rememberScaffoldState(),
+    showTopBar: Boolean = true,
     title: @Composable () -> Unit = {},
     navigationIcon: @Composable (() -> Unit)? = null,
     actionIcons: @Composable RowScope.() -> Unit = {},
@@ -47,19 +51,22 @@ fun LibzyScaffold(
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            TopAppBar(
-                title = title,
-                navigationIcon = navigationIcon,
-                actions = actionIcons,
-                backgroundColor = Color.Transparent,
-                elevation = 0.dp,
-                contentPadding = rememberInsetsPaddingValues(
-                    insets = LocalWindowInsets.current.statusBars,
-                    applyBottom = false,
+            if (showTopBar) {
+                TopAppBar(
+                    title = title,
+                    navigationIcon = navigationIcon,
+                    actions = actionIcons,
+                    backgroundColor = Color.Transparent,
+                    elevation = 0.dp,
+                    contentPadding = WindowInsets.statusBars.asPaddingValues()
                 )
-            )
+            } else {
+                Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars).fillMaxWidth())
+            }
         },
-        bottomBar = { Spacer(Modifier.navigationBarsHeight().fillMaxWidth()) },
+        bottomBar = {
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars).fillMaxWidth())
+        },
         floatingActionButton = floatingActionButton,
         floatingActionButtonPosition = floatingActionButtonPosition,
         snackbarHost = { LibzySnackbarHost(it) },
