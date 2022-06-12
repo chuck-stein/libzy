@@ -14,9 +14,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
@@ -274,10 +274,10 @@ private fun AlbumResultsCategories(
             val category = recommendationCategories[categoryIndex]
             Column(modifier = Modifier.padding(bottom = RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp)) {
                 Text(
-                    category.title().uppercase(),
+                    category.title(),
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.ExtraBold,
-                    style = MaterialTheme.typography.subtitle1,
+                    style = MaterialTheme.typography.h5,
                     modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
                 )
                 LazyRow(contentPadding = PaddingValues(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp)) {
@@ -615,5 +615,5 @@ const val RECOMMENDATION_LIST_BOTTOM_PADDING = FLOATING_ACTION_BUTTON_HEIGHT + F
 const val RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT =
     RECOMMENDATION_LIST_BOTTOM_PADDING + RECOMMENDATION_CATEGORY_BOTTOM_PADDING
 const val ALBUM_RESULT_PADDING = 10
-const val MIN_ALBUM_RESULT_WIDTH = 110
-const val DEFAULT_ALBUM_RESULT_WIDTH = 130
+const val MIN_ALBUM_RESULT_WIDTH = 150
+const val DEFAULT_ALBUM_RESULT_WIDTH = 160
