@@ -184,7 +184,7 @@ class RecommendationService @Inject constructor() {
                                 checkForHighOrLowCategory(
                                     preferredValue = query.acousticness,
                                     actualValue = albumAudioFeatures.acousticness,
-                                    lowAdjective = R.string.electric_electronic,
+                                    lowAdjective = R.string.electric_electronic_abbreviated,
                                     highAdjective = R.string.acoustic
                                 )
                             }
