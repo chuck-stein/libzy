@@ -44,13 +44,12 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Diamond
 import androidx.compose.material.icons.rounded.MicExternalOn
 import androidx.compose.material.icons.rounded.Piano
-import androidx.compose.material.icons.rounded.RestartAlt
-import androidx.compose.material.icons.rounded.SavedSearch
+import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.StarOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -490,7 +489,7 @@ private fun FamiliarityStep(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         SelectableButton(
             textResId = R.string.current_favorite,
-            image = LibzyIconTheme.History,
+            image = LibzyIconTheme.Repeat,
             selected = selectedFamiliarity == Query.Familiarity.CURRENT_FAVORITE,
             onClick = onCurrentFavoriteClick
         )
@@ -499,7 +498,7 @@ private fun FamiliarityStep(
 
         SelectableButton(
             textResId = R.string.reliable_classic,
-            image = LibzyIconTheme.FavoriteBorder,
+            image = LibzyIconTheme.StarOutline,
             selected = selectedFamiliarity == Query.Familiarity.RELIABLE_CLASSIC,
             onClick = onReliableClassicClick
         )
@@ -508,7 +507,7 @@ private fun FamiliarityStep(
 
         SelectableButton(
             textResId = R.string.underappreciated_gem,
-            image = LibzyIconTheme.SavedSearch,
+            image = LibzyIconTheme.Diamond,
             selected = selectedFamiliarity == Query.Familiarity.UNDERAPPRECIATED_GEM,
             onClick = onUnderappreciatedGemClick
         )
