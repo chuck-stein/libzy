@@ -49,7 +49,7 @@ class ResultsViewModel @Inject constructor(
         }
     }
 
-    fun dismissRateResults() {
+    fun dismissRateResultsDialog() {
         updateUiState<ResultsUiState.Loaded> {
             copy(submittingFeedback = false)
         }
@@ -57,9 +57,7 @@ class ResultsViewModel @Inject constructor(
 
     fun rateResults(rating: Int, feedback: String?) {
         analyticsDispatcher.sendRateAlbumResultsEvent(rating, feedback)
-        updateUiState<ResultsUiState.Loaded> {
-            copy(submittingFeedback = false)
-        }
+        dismissRateResultsDialog()
     }
 
     fun connectSpotifyAppRemote() {

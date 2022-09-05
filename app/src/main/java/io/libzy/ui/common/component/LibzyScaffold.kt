@@ -1,6 +1,5 @@
 package io.libzy.ui.common.component
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
@@ -86,7 +85,7 @@ fun LibzyScaffold(
 private fun LibzySnackbarHost(state: SnackbarHostState, modifier: Modifier = Modifier) {
     SnackbarHost(hostState = state, modifier = modifier.navigationBarsPadding()) { snackbarData ->
         Snackbar(
-            modifier = Modifier.padding(horizontal = 12.dp), // TODO: test if it needs bottom padding when there's no FAB (e.g. error connecting spotify)
+            modifier = Modifier.padding(horizontal = 12.dp),
             backgroundColor = LibzyColors.OffWhite,
             contentColor = Color.Black,
             action = snackbarData.actionLabel?.let {

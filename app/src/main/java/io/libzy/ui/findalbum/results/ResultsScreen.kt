@@ -58,7 +58,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -99,7 +98,6 @@ import io.libzy.ui.theme.LibzyIconTheme
 import io.libzy.util.capitalizeAllWords
 import io.libzy.util.joinToUserFriendlyString
 import kotlinx.coroutines.launch
-
 
 /**
  * **Stateful** results screen, displaying a list of suggested albums
@@ -166,7 +164,7 @@ fun ResultsScreen(
             findAlbumFlowViewModel.sendClickStartOverAnalyticsEvent()
         },
         onOpenSpotifyClick = { viewModel.openSpotify(context) },
-        onRateResultsDismissed = viewModel::dismissRateResults,
+        onRateResultsDismissed = viewModel::dismissRateResultsDialog,
         onRateResultsClick = viewModel::openRateResultsDialog,
         onRateResultsSubmit = viewModel::rateResults
     )
@@ -327,7 +325,8 @@ private fun AlbumResultsCategories(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier, contentPadding = PaddingValues(
+        modifier = modifier,
+        contentPadding = PaddingValues(
             top = RECOMMENDATION_LIST_TOP_PADDING.dp, bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp
         )
     ) {
