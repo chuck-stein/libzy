@@ -1,5 +1,6 @@
 package io.libzy.ui.common.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
@@ -14,13 +15,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.FabPosition
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarData
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -31,6 +36,7 @@ import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import io.libzy.ui.BackgroundGradient
 import io.libzy.ui.LibzyContent
+import io.libzy.ui.theme.LibzyColors
 
 /**
  * A custom [Scaffold] implementation which takes care of creating a common [TopAppBar] and [SnackbarHost],
@@ -77,14 +83,23 @@ fun LibzyScaffold(
 }
 
 @Composable
-private fun LibzySnackbarHost(state: SnackbarHostState) {
-    SnackbarHost(state, modifier = Modifier.navigationBarsPadding()) {
+private fun LibzySnackbarHost(state: SnackbarHostState, modifier: Modifier = Modifier) {
+    SnackbarHost(hostState = state, modifier = modifier.navigationBarsPadding()) { snackbarData ->
         Snackbar(
-            backgroundColor = MaterialTheme.colors.surface,
-            contentColor = MaterialTheme.colors.onSurface,
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp), // TODO: test if it needs bottom padding when there's no FAB (e.g. error connecting spotify)
+            backgroundColor = LibzyColors.OffWhite,
+            contentColor = Color.Black,
+            action = snackbarData.actionLabel?.let {
+                {
+                    TextButton(
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colors.primary),
+                        onClick = { snackbarData.performAction() },
+                        content = { Text(it) }
+                    )
+                }
+            }
         ) {
-            Text(it.message, style = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Start))
+            Text(snackbarData.message, style = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Start))
         }
     }
 }

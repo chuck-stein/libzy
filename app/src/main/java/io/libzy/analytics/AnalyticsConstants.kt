@@ -97,6 +97,12 @@ object AnalyticsConstants {
         const val RATING = "rating"
 
         /**
+         * A nullable [String] property representing optional feedback to send along
+         * with a rating in [Events.RATE_ALBUM_RESULTS]
+         */
+        const val FEEDBACK = "feedback"
+
+        /**
          * A [Boolean] property representing whether or not [Events.SYNC_LIBRARY_DATA]
          * occurred during a user's initial library scan upon first connecting Spotify.
          */

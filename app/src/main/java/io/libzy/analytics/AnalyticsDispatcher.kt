@@ -14,6 +14,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENT_SEARCH_QUER
 import io.libzy.analytics.AnalyticsConstants.EventProperties.DANCEABILITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ENERGY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FAMILIARITY
+import io.libzy.analytics.AnalyticsConstants.EventProperties.FEEDBACK
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FROM_CURRENT_OPTIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRES
@@ -129,8 +130,8 @@ class AnalyticsDispatcher @Inject constructor(
         amplitude.logEvent(eventName, eventPropertiesJson, outOfSession)
     }
 
-    fun sendRateAlbumResultsEvent(rating: Int) {
-        sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating))
+    fun sendRateAlbumResultsEvent(rating: Int, feedback: String?) {
+        sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating, FEEDBACK to feedback))
     }
 
     fun sendSubmitQueryEvent(query: Query) {

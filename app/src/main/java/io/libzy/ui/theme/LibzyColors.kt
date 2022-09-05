@@ -17,7 +17,7 @@ object LibzyColors {
     val DarkPurple = Color(0xFF462055)
     val PinkGray = Color(0xFF7B5B86)
     val DarkPinkGray = Color(0xFF3E2E44)
-    val OffWhite = Color(0xFFCACACA)
+    val SurfaceGray = Color(0xFF1B1B1B)
 
     // Background Gradient Colors
     val DeepPurple = Color(0xFF0E0023)
@@ -29,6 +29,7 @@ object LibzyColors {
 
     // Other Colors (use sparingly)
     val Gray = Color(0xFF808080)
+    val OffWhite = Color(0xFFCACACA)
 
     /**
      * Some external APIs do not accept true transparency (i.e. [Color.Transparent]) as a [Color] parameter.

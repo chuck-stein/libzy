@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -88,6 +87,7 @@ import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.SelectableButton
+import io.libzy.ui.common.component.StartOverIconButton
 import io.libzy.ui.common.util.AnimatedContent
 import io.libzy.ui.common.util.StatefulAnimatedVisibility
 import io.libzy.ui.common.util.restartFindAlbumFlow
@@ -228,9 +228,7 @@ private fun QueryScreen(
         },
         actionIcons = {
             AnimatedVisibility(visible = uiState.startOverButtonVisible, enter = fadeIn(), exit = fadeOut()) {
-                IconButton(onStartOverClick) {
-                    LibzyIcon(LibzyIconTheme.RestartAlt,  contentDescription = stringResource(R.string.start_over))
-                }
+                StartOverIconButton(onStartOverClick)
             }
         },
         title = {

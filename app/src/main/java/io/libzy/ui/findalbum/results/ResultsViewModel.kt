@@ -1,5 +1,9 @@
 package io.libzy.ui.findalbum.results
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
 import io.libzy.BuildConfig
 import io.libzy.analytics.AnalyticsDispatcher
@@ -8,8 +12,9 @@ import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
 import io.libzy.ui.common.LibzyViewModel
+import io.libzy.util.androidAppUriFor
+import io.libzy.util.isPackageInstalled
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -38,22 +43,29 @@ class ResultsViewModel @Inject constructor(
         }
     }
 
-    fun rateResults(rating: Int) {
+    fun openRateResultsDialog() {
         (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
             updateUiState {
-                currentUiState.copy(resultsRating = rating)
+                currentUiState.copy(submittingFeedback = true)
             }
         }
     }
 
-    fun sendResultsRating() {
+    fun dismissRateResults(sendDismissalEvent: Boolean = true) { // TODO: remove parameter if unused
+        // TODO: send dismiss event
         (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
-            currentUiState.resultsRating?.let { resultsRating ->
-                analyticsDispatcher.sendRateAlbumResultsEvent(resultsRating)
-                updateUiState {
-                    // reset the rating so that it is not sent again later unless changed
-                    currentUiState.copy(resultsRating = null)
-                }
+            updateUiState {
+                currentUiState.copy(submittingFeedback = false)
+            }
+        }
+    }
+
+    fun rateResults(rating: Int, feedback: String?) {
+        analyticsDispatcher.sendRateAlbumResultsEvent(rating, feedback)
+
+        (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
+            updateUiState {
+                currentUiState.copy(submittingFeedback = false)
             }
         }
     }
@@ -75,7 +87,30 @@ class ResultsViewModel @Inject constructor(
             Timber.e("Failed to play album remotely")
             produceUiEvent(ResultsUiEvent.SPOTIFY_REMOTE_FAILURE)
         })
+
+        updateUiState {
+            (this as? ResultsUiState.Loaded)?.copy(currentAlbumUri = spotifyUri) ?: this
+        }
     }
+
+    fun openSpotify(context: Context) { // not leaking context here because we don't store it in memory
+        val spotifyIsInstalled = context.packageManager.isPackageInstalled(SPOTIFY_PACKAGE_NAME)
+        val currentAlbumUri = (uiState.value as? ResultsUiState.Loaded)?.currentAlbumUri
+
+        val uri = when {
+            !spotifyIsInstalled -> Uri.parse(PLAY_STORE_URI).withSpotifyPlayStoreId()
+            currentAlbumUri != null -> Uri.parse(currentAlbumUri)
+            else -> androidAppUriFor(SPOTIFY_PACKAGE_NAME)
+        }
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            putExtra(Intent.EXTRA_REFERRER, androidAppUriFor(context.packageName))
+        }
+        ContextCompat.startActivity(context, intent, null)
+    }
+
+    private fun Uri.withSpotifyPlayStoreId() = buildUpon()
+        .appendQueryParameter(PLAY_STORE_ID_QUERY_PARAM, SPOTIFY_PACKAGE_NAME)
+        .build()
 
     private fun logAlbumDetails(spotifyUri: String) {
         viewModelScope.launch {
@@ -99,3 +134,7 @@ class ResultsViewModel @Inject constructor(
         }
     }
 }
+
+private const val SPOTIFY_PACKAGE_NAME = "com.spotify.music"
+private const val PLAY_STORE_URI = "https://play.google.com/store/apps/details"
+private const val PLAY_STORE_ID_QUERY_PARAM = "id"
