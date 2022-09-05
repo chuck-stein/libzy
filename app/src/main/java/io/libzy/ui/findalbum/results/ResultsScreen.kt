@@ -1,5 +1,10 @@
 package io.libzy.ui.findalbum.results
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -11,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,27 +24,34 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.rounded.RestartAlt
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.StarRate
+import androidx.compose.material.icons.rounded.ThumbsUpDown
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -47,14 +60,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -67,11 +86,14 @@ import io.libzy.domain.Query.Familiarity.UNDERAPPRECIATED_GEM
 import io.libzy.domain.RecommendationCategory
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
+import io.libzy.ui.common.component.AutoResizeText
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
+import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
+import io.libzy.ui.common.component.StartOverIconButton
 import io.libzy.ui.common.util.loadRemoteImage
 import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
@@ -82,6 +104,7 @@ import io.libzy.ui.theme.LibzyIconTheme
 import io.libzy.util.capitalizeAllWords
 import io.libzy.util.joinToUserFriendlyString
 import kotlinx.coroutines.launch
+
 
 /**
  * **Stateful** results screen, displaying a list of suggested albums
@@ -106,6 +129,7 @@ fun ResultsScreen(
     )
     val findAlbumFlowUiState by rememberSaveable(findAlbumFlowViewModel.uiState) { findAlbumFlowViewModel.uiState }
 
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
@@ -126,7 +150,6 @@ fun ResultsScreen(
         },
         onStop = {
             viewModel.disconnectSpotifyAppRemote()
-            viewModel.sendResultsRating()
         }
     )
 
@@ -147,7 +170,10 @@ fun ResultsScreen(
             navController.restartFindAlbumFlow()
             findAlbumFlowViewModel.sendClickStartOverAnalyticsEvent()
         },
-        onRateResults = viewModel::rateResults
+        onOpenSpotifyClick = { viewModel.openSpotify(context) },
+        onRateResultsDismissed = viewModel::dismissRateResults,
+        onRateResultsClick = viewModel::openRateResultsDialog,
+        onRateResultsSubmit = viewModel::rateResults
     )
 }
 
@@ -164,26 +190,41 @@ private fun ResultsScreen(
     onBackClick: () -> Unit,
     onAlbumClick: (String) -> Unit,
     onStartOverClick: () -> Unit,
-    onRateResults: (Int) -> Unit
+    onOpenSpotifyClick: () -> Unit,
+    onRateResultsDismissed: () -> Unit,
+    onRateResultsClick: () -> Unit,
+    onRateResultsSubmit: (Int, String?) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     LibzyScaffold(
         title = {
             if (uiState is ResultsUiState.Loaded) {
-                Text(stringResource(R.string.recommended_albums_title))
+                AutoResizeText(stringResource(R.string.recommended_albums_title))
             }
         },
         scaffoldState = scaffoldState,
         navigationIcon = { BackIcon(onBackClick) },
+        actionIcons = {
+            IconButton(
+                onClick = {
+                    onRateResultsClick()
+                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                }
+            ) {
+                LibzyIcon(LibzyIconTheme.ThumbsUpDown, contentDescription = stringResource(R.string.rate_results))
+            }
+            StartOverIconButton(onStartOverClick)
+        },
         floatingActionButton = {
             if (uiState is ResultsUiState.Loaded) {
                 ExtendedFloatingActionButton(
-                    text = { Text(stringResource(R.string.start_over).uppercase()) },
-                    onClick = onStartOverClick,
-                    backgroundColor = MaterialTheme.colors.primary,
+                    text = { Text(stringResource(R.string.open_spotify).uppercase()) },
+                    onClick = { onOpenSpotifyClick() },
                     icon = {
                         Icon(
-                            imageVector = LibzyIconTheme.RestartAlt,
-                            contentDescription = null, // button text serves as adequate CD already
+                            painterResource(R.drawable.ic_spotify_black),
+                            contentDescription = stringResource(R.string.cd_spotify_icon)
                         )
                     }
                 )
@@ -223,8 +264,18 @@ private fun ResultsScreen(
                                 uiState.recommendationCategories, onAlbumClick, Modifier.resultsGradient()
                             )
                         }
-                        // TODO: decide how to incorporate rating UX
-                        // RatingBox(uiState.resultsRating, onRateResults, Modifier.padding(bottom = 16.dp).align(Alignment.BottomCenter))
+                    }
+                    val feedbackSubmittedText = stringResource(R.string.results_feedback_submitted)
+                    if (uiState.submittingFeedback) {
+                        ResultsFeedbackDialog(onRateResultsDismissed) { rating, feedback ->
+                            onRateResultsSubmit(rating, feedback)
+                            coroutineScope.launch {
+                                scaffoldState.snackbarHostState.showSnackbar(
+                                    message = feedbackSubmittedText,
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -267,9 +318,11 @@ private fun AlbumResultsCategories(
     onAlbumClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier, contentPadding = PaddingValues(
-        top = RECOMMENDATION_LIST_TOP_PADDING.dp, bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp
-    )) {
+    LazyColumn(
+        modifier, contentPadding = PaddingValues(
+            top = RECOMMENDATION_LIST_TOP_PADDING.dp, bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp
+        )
+    ) {
         items(recommendationCategories.size) { categoryIndex ->
             val category = recommendationCategories[categoryIndex]
             Column(modifier = Modifier.padding(bottom = RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp)) {
@@ -387,22 +440,76 @@ private fun AlbumArtwork(artworkUrl: String?, size: Int) {
     }
 }
 
-// TODO: determine how to incorporate this into new results UX, or remove it altogether
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun RatingBox(resultsRating: Int?, onRateResults: (Int) -> Unit, modifier: Modifier = Modifier) {
-    Surface(color = MaterialTheme.colors.secondaryVariant, shape = RoundedCornerShape(16.dp), elevation = 100.dp, modifier = modifier) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                stringResource(R.string.results_rating_text),
-                style = MaterialTheme.typography.body1,
-                modifier = Modifier.padding(vertical = 10.dp)
-            )
-            RatingBar(resultsRating, onRateResults, Modifier.padding(bottom = 10.dp))
-        }
-    }
-}
+private fun ResultsFeedbackDialog(
+    onRateResultsDismissed: () -> Unit,
+    onRateResultsSubmit: (Int, String?) -> Unit
+) {
+    var resultsRating: Int? by remember { mutableStateOf(null) }
+    var resultsFeedback: String? by remember { mutableStateOf(null) }
+    val dialogContentTextStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Start)
+    val feedbackSubmittable = resultsRating != null
+    val focusManager = LocalFocusManager.current
+    val localKeyboardController = LocalSoftwareKeyboardController.current
 
-// TODO: if we use this without RatingBox, add horizontal inset
+    fun submitFeedback() {
+        resultsRating?.let { onRateResultsSubmit(it, resultsFeedback) }
+    }
+
+    AlertDialog(
+        onDismissRequest = onRateResultsDismissed,
+        confirmButton = {
+            TextButton(
+                onClick = ::submitFeedback,
+                enabled = feedbackSubmittable
+            ) {
+                Text(stringResource(R.string.action_submit).uppercase())
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onRateResultsDismissed) {
+                Text(stringResource(R.string.action_cancel).uppercase())
+            }
+        },
+        title = {
+            Text(stringResource(R.string.rate_results))
+        },
+        text = {
+            Column {
+                Text(stringResource(R.string.rate_results_prompt), style = dialogContentTextStyle)
+                RatingBar(
+                    rating = resultsRating, onStarPress = { resultsRating = it }, modifier = Modifier
+                        .padding(vertical = FEEDBACK_DIALOG_CONTENT_VERTICAL_PADDING.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+                TextField(
+                    value = resultsFeedback ?: "",
+                    textStyle = dialogContentTextStyle,
+                    onValueChange = { resultsFeedback = it },
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.results_feedback_placeholder),
+                            style = dialogContentTextStyle
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = if (feedbackSubmittable) ImeAction.Send else ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSend = { submitFeedback() },
+                        onDone = {
+                            focusManager.clearFocus(force = true) // TODO: figure out why this isnt working
+                            localKeyboardController?.hide()
+                        }
+                    ),
+                    modifier = Modifier.height(FEEDBACK_TEXT_FIELD_HEIGHT.dp)
+                )
+            }
+        }
+    )
+}
 @Composable
 private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifier = Modifier, numStars: Int = 5) {
     Row(
@@ -432,6 +539,34 @@ private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifi
     }
 }
 
+private val previewRecommendationCategories = List(4) { index ->
+    RecommendationCategory(
+        relevance = RecommendationCategory.Relevance.Partial(genre = "Genre $index"),
+        albumResults = List(5) {
+            AlbumResult(
+                "Album Title",
+                "Album Artist",
+                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+                spotifyUri = ""
+            )
+        }
+    )
+}
+
+private val previewRecommendationsOneCategory = listOf(
+    RecommendationCategory(
+        relevance = RecommendationCategory.Relevance.Full,
+        albumResults = List(20) {
+            AlbumResult(
+                "Album Title",
+                "Album Artist",
+                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+                spotifyUri = ""
+            )
+        }
+    )
+)
+
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Preview(device = Devices.PIXEL_4_XL)
@@ -439,26 +574,15 @@ private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifi
 private fun ResultsScreenPreview() {
     LibzyContent {
         ResultsScreen(
-            uiState = ResultsUiState.Loaded(
-                recommendationCategories = List(4) { index ->
-                    RecommendationCategory(
-                        relevance = RecommendationCategory.Relevance.Partial(genre = "Genre $index"),
-                        albumResults = List(5) {
-                            AlbumResult(
-                                "Album Title",
-                                "Album Artist",
-                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
-                                spotifyUri = ""
-                            )
-                        }
-                    )
-                }
-            ),
+            uiState = ResultsUiState.Loaded(previewRecommendationCategories),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onRateResults = {}
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
         )
     }
 }
@@ -470,14 +594,15 @@ private fun ResultsScreenPreview() {
 private fun NoResultsScreenPreview() {
     LibzyContent {
         ResultsScreen(
-            uiState = ResultsUiState.Loaded(
-                recommendationCategories = emptyList()
-            ),
+            uiState = ResultsUiState.Loaded(recommendationCategories = emptyList()),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onRateResults = {}
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
         )
     }
 }
@@ -489,26 +614,15 @@ private fun NoResultsScreenPreview() {
 private fun ResultsScreenOneCategoryPixel4XlPreview() {
     LibzyContent {
         ResultsScreen(
-            uiState = ResultsUiState.Loaded(
-                recommendationCategories = listOf(
-                    RecommendationCategory(
-                        relevance = RecommendationCategory.Relevance.Full,
-                        albumResults = List(20) {
-                            AlbumResult(
-                                "Album Title",
-                                "Album Artist",
-                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
-                                spotifyUri = ""
-                            )
-                        }
-                    )
-                )
-            ),
+            uiState = ResultsUiState.Loaded(previewRecommendationsOneCategory),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onRateResults = {}
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
         )
     }
 }
@@ -520,26 +634,15 @@ private fun ResultsScreenOneCategoryPixel4XlPreview() {
 private fun ResultsScreenOneCategoryPixelCPreview() {
     LibzyContent {
         ResultsScreen(
-            uiState = ResultsUiState.Loaded(
-                recommendationCategories = listOf(
-                    RecommendationCategory(
-                        relevance = RecommendationCategory.Relevance.Full,
-                        albumResults = List(20) {
-                            AlbumResult(
-                                "Album Title",
-                                "Album Artist",
-                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
-                                spotifyUri = ""
-                            )
-                        }
-                    )
-                )
-            ),
+            uiState = ResultsUiState.Loaded(previewRecommendationsOneCategory),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onRateResults = {}
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
         )
     }
 }
@@ -551,26 +654,15 @@ private fun ResultsScreenOneCategoryPixelCPreview() {
 private fun ResultsScreenOneCategoryPixel3APreview() {
     LibzyContent {
         ResultsScreen(
-            uiState = ResultsUiState.Loaded(
-                recommendationCategories = listOf(
-                    RecommendationCategory(
-                        relevance = RecommendationCategory.Relevance.Full,
-                        albumResults = List(20) {
-                            AlbumResult(
-                                "Album Title",
-                                "Album Artist",
-                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
-                                spotifyUri = ""
-                            )
-                        }
-                    )
-                )
-            ),
+            uiState = ResultsUiState.Loaded(previewRecommendationsOneCategory),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onRateResults = {}
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
         )
     }
 }
@@ -582,38 +674,51 @@ private fun ResultsScreenOneCategoryPixel3APreview() {
 private fun ResultsScreenOneCategoryNexus5Preview() {
     LibzyContent {
         ResultsScreen(
+            uiState = ResultsUiState.Loaded(previewRecommendationsOneCategory),
+            scaffoldState = rememberScaffoldState(),
+            onBackClick = {},
+            onAlbumClick = {},
+            onStartOverClick = {},
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
+        )
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
+@Preview(device = Devices.PIXEL_4_XL)
+@Composable
+private fun ResultsScreenFeedbackDialogPreview() {
+    LibzyContent {
+        ResultsScreen(
             uiState = ResultsUiState.Loaded(
-                recommendationCategories = listOf(
-                    RecommendationCategory(
-                        relevance = RecommendationCategory.Relevance.Full,
-                        albumResults = List(20) {
-                            AlbumResult(
-                                "Album Title",
-                                "Album Artist",
-                                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
-                                spotifyUri = ""
-                            )
-                        }
-                    )
-                )
+                submittingFeedback = true,
+                recommendationCategories = previewRecommendationCategories
             ),
             scaffoldState = rememberScaffoldState(),
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onRateResults = {}
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
         )
     }
 }
 
 // all in DP
-const val FLOATING_ACTION_BUTTON_HEIGHT = 48
-const val FLOATING_ACTION_BUTTON_BOTTOM_PADDING = 16
+const val FAB_HEIGHT = 48
+const val FAB_BOTTOM_PADDING = 16
 const val RECOMMENDATION_CATEGORY_BOTTOM_PADDING = 28
 const val RECOMMENDATION_LIST_TOP_PADDING = 16
-const val RECOMMENDATION_LIST_BOTTOM_PADDING = FLOATING_ACTION_BUTTON_HEIGHT + FLOATING_ACTION_BUTTON_BOTTOM_PADDING
+const val RECOMMENDATION_LIST_BOTTOM_PADDING = FAB_HEIGHT + FAB_BOTTOM_PADDING
 const val RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT =
     RECOMMENDATION_LIST_BOTTOM_PADDING + RECOMMENDATION_CATEGORY_BOTTOM_PADDING
 const val ALBUM_RESULT_PADDING = 10
 const val MIN_ALBUM_RESULT_WIDTH = 150
 const val DEFAULT_ALBUM_RESULT_WIDTH = 160
+const val FEEDBACK_DIALOG_CONTENT_VERTICAL_PADDING = 12
+const val FEEDBACK_TEXT_FIELD_HEIGHT = 72

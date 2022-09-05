@@ -9,10 +9,11 @@ sealed interface ResultsUiState {
 
     /**
      * @property recommendationCategories The album results, grouped into categories
-     * @property resultsRating A rating from 1-5 stars of how accurate the album results are to the user's current mood
+     * @property submittingFeedback Whether the user is currently submit
      */
     data class Loaded(
         val recommendationCategories: List<RecommendationCategory>,
-        val resultsRating: Int? = null
+        val submittingFeedback: Boolean = false,
+        val currentAlbumUri: String? = null,
     ) : ResultsUiState
 }
