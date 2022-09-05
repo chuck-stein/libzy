@@ -1,10 +1,5 @@
 package io.libzy.ui.findalbum.results
 
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -15,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -73,7 +69,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -199,20 +194,22 @@ private fun ResultsScreen(
 
     LibzyScaffold(
         title = {
-            if (uiState is ResultsUiState.Loaded) {
+            if (uiState is ResultsUiState.Loaded && uiState.recommendationCategories.isNotEmpty()) {
                 AutoResizeText(stringResource(R.string.recommended_albums_title))
             }
         },
         scaffoldState = scaffoldState,
         navigationIcon = { BackIcon(onBackClick) },
         actionIcons = {
-            IconButton(
-                onClick = {
-                    onRateResultsClick()
-                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+            if (uiState is ResultsUiState.Loaded && uiState.recommendationCategories.isNotEmpty()) {
+                IconButton(
+                    onClick = {
+                        onRateResultsClick()
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                    }
+                ) {
+                    LibzyIcon(LibzyIconTheme.ThumbsUpDown, contentDescription = stringResource(R.string.rate_results))
                 }
-            ) {
-                LibzyIcon(LibzyIconTheme.ThumbsUpDown, contentDescription = stringResource(R.string.rate_results))
             }
             StartOverIconButton(onStartOverClick)
         },
@@ -243,13 +240,24 @@ private fun ResultsScreen(
                 Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize()) {
                     when (uiState.recommendationCategories.size) {
                         0 -> {
-                            Text(
-                                stringResource(R.string.no_results_header),
-                                style = MaterialTheme.typography.h6,
-                                modifier = Modifier
+                            Column(
+                                Modifier
                                     .align(Alignment.Center)
                                     .padding(horizontal = HORIZONTAL_INSET.dp)
-                            )
+                                    .padding(bottom = FAB_BOTTOM_PADDING.dp)
+                            ) {
+                                Text(
+                                    stringResource(R.string.no_results_header),
+                                    style = MaterialTheme.typography.h4,
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                                Spacer(Modifier.padding(8.dp))
+                                Text(
+                                    stringResource(R.string.no_results_description),
+                                    style = MaterialTheme.typography.h6,
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
                         }
                         1 -> {
                             // TODO: if the one category is a partial match, indicate that somehow (since we won't have a category title)
@@ -510,6 +518,7 @@ private fun ResultsFeedbackDialog(
         }
     )
 }
+
 @Composable
 private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifier = Modifier, numStars: Int = 5) {
     Row(

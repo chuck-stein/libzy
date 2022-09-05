@@ -71,7 +71,8 @@
     <!-- Results Screen -->
     <string name="recommended_albums_title">Recommended Albums</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
-    <string name="no_results_header">Oops! We couldn\'t quite find the vibe right now. Try looking for something else or saving more albums on Spotify.</string>
+    <string name="no_results_header">Oops!</string>
+    <string name="no_results_description">We couldn\'t quite find the vibe right now. Try looking for something else or saving more albums on Spotify.</string>
     <string name="start_over">Start over</string>
     <string name="open_spotify">Open Spotify</string>
     <string name="cd_album_artwork">Album artwork</string>
