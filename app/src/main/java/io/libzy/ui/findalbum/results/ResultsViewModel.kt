@@ -44,29 +44,21 @@ class ResultsViewModel @Inject constructor(
     }
 
     fun openRateResultsDialog() {
-        (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
-            updateUiState {
-                currentUiState.copy(submittingFeedback = true)
-            }
+        updateUiState<ResultsUiState.Loaded> {
+            copy(submittingFeedback = true)
         }
     }
 
-    fun dismissRateResults(sendDismissalEvent: Boolean = true) { // TODO: remove parameter if unused
-        // TODO: send dismiss event
-        (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
-            updateUiState {
-                currentUiState.copy(submittingFeedback = false)
-            }
+    fun dismissRateResults() {
+        updateUiState<ResultsUiState.Loaded> {
+            copy(submittingFeedback = false)
         }
     }
 
     fun rateResults(rating: Int, feedback: String?) {
         analyticsDispatcher.sendRateAlbumResultsEvent(rating, feedback)
-
-        (uiState.value as? ResultsUiState.Loaded)?.let { currentUiState ->
-            updateUiState {
-                currentUiState.copy(submittingFeedback = false)
-            }
+        updateUiState<ResultsUiState.Loaded> {
+            copy(submittingFeedback = false)
         }
     }
 
@@ -88,8 +80,8 @@ class ResultsViewModel @Inject constructor(
             produceUiEvent(ResultsUiEvent.SPOTIFY_REMOTE_FAILURE)
         })
 
-        updateUiState {
-            (this as? ResultsUiState.Loaded)?.copy(currentAlbumUri = spotifyUri) ?: this
+        updateUiState<ResultsUiState.Loaded> {
+            copy(currentAlbumUri = spotifyUri)
         }
     }
 

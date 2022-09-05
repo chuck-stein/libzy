@@ -32,13 +32,11 @@ abstract class LibzyViewModel<STATE, EVENT>(eventBufferSize: Int = DEFAULT_EVENT
         _uiState.value = _uiState.value.performUpdate()
     }
 
-//    @JvmName("updateUiSubstate")
-//    protected fun <SUBSTATE : STATE> updateUiState(stateType: KType, performUpdate: SUBSTATE.() -> STATE,) {
-//        (_uiState.value as? SUBSTATE)?.let(performUpdate)
-//        if (_uiState.value is SUBSTATE) {
-//
-//        }
-//    }
+    @JvmName("updateUiSubstate")
+    @Suppress("UNCHECKED_CAST")
+    protected fun <SUBSTATE : STATE> updateUiState(performUpdate: SUBSTATE.() -> STATE) {
+        _uiState.value = (_uiState.value as? SUBSTATE)?.let(performUpdate) ?: _uiState.value
+    }
 
     protected fun produceUiEvent(event: EVENT) {
         viewModelScope.launch {
