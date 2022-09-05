@@ -458,8 +458,6 @@ private fun ResultsFeedbackDialog(
     var resultsFeedback: String? by remember { mutableStateOf(null) }
     val dialogContentTextStyle = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Start)
     val feedbackSubmittable = resultsRating != null
-    val focusManager = LocalFocusManager.current
-    val localKeyboardController = LocalSoftwareKeyboardController.current
 
     fun submitFeedback() {
         resultsRating?.let { onRateResultsSubmit(it, resultsFeedback) }
@@ -484,6 +482,8 @@ private fun ResultsFeedbackDialog(
             Text(stringResource(R.string.rate_results))
         },
         text = {
+            val focusManager = LocalFocusManager.current
+
             Column {
                 Text(stringResource(R.string.rate_results_prompt), style = dialogContentTextStyle)
                 RatingBar(
@@ -507,10 +507,7 @@ private fun ResultsFeedbackDialog(
                     ),
                     keyboardActions = KeyboardActions(
                         onSend = { submitFeedback() },
-                        onDone = {
-                            focusManager.clearFocus(force = true) // TODO: figure out why this isnt working
-                            localKeyboardController?.hide()
-                        }
+                        onDone = { focusManager.clearFocus(force = true) }
                     ),
                     modifier = Modifier.height(FEEDBACK_TEXT_FIELD_HEIGHT.dp)
                 )
