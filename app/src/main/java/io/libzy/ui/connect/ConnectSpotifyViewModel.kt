@@ -1,6 +1,7 @@
 package io.libzy.ui.connect
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
@@ -19,21 +20,17 @@ import io.libzy.util.handle
 import io.libzy.util.unwrap
 import io.libzy.util.wrapResult
 import io.libzy.work.LibrarySyncWorker
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ConnectSpotifyViewModel @Inject constructor(
-    appContext: Context,
     private val analyticsDispatcher: AnalyticsDispatcher,
-    private val spotifyAuthDispatcher: SpotifyAuthDispatcher
+    private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
+    private val workManager: WorkManager,
+    private val sharedPrefs: SharedPreferences
 ) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
-
-    private val workManager = WorkManager.getInstance(appContext) // TODO: inject this, create it as a singleton somewhere so that we never forget to use the getInstance(Context) overload
-
-    private val sharedPrefs = appContext.getSharedPrefs()
 
     override val initialUiState = ConnectSpotifyUiState(
         libraryScanInProgress = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SCAN_IN_PROGRESS, false)

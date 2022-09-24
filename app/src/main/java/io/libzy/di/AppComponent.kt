@@ -11,6 +11,7 @@ import javax.inject.Singleton
 @Singleton
 @Component(
     modules = [
+        AndroidModule::class,
         ViewModelModule::class,
         DatabaseModule::class,
         BuildVariantModule::class

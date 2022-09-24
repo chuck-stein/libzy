@@ -54,6 +54,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.onNewSpotifyAuthAvailable()
+    }
+
     private fun collectSpotifyAuthRequests() {
         lifecycleScope.launch {
             viewModel.uiEvents.flowWithLifecycle(lifecycle, Lifecycle.State.CREATED).collect {

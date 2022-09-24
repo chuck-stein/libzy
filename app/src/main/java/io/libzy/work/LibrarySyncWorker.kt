@@ -24,9 +24,11 @@ import io.libzy.util.appInForeground
 import io.libzy.util.createNotificationTapAction
 import io.libzy.util.currentTimeSeconds
 import timber.log.Timber
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
+import kotlin.time.toJavaDuration
 
 class LibrarySyncWorker(
     appContext: Context,
@@ -41,6 +43,8 @@ class LibrarySyncWorker(
         // the parameter key for this worker's input data, representing whether this is the first-time library scan,
         // which is initiated when the user first connects their spotify account
         const val IS_INITIAL_SCAN = "is_initial_scan"
+
+        val LIBRARY_SYNC_INTERVAL = 15.minutes.toJavaDuration() // time to wait between Spotify library syncs
     }
 
     private val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
@@ -50,8 +54,9 @@ class LibrarySyncWorker(
         val authExpirationTimestamp = sharedPrefs.getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
         if (currentTimeSeconds() > authExpirationTimestamp && !appInForeground()) {
             // If auth has expired and the app is in the background,
-            // retry the library sync later since we need to be in the foreground to refresh auth
-            return Result.retry()
+            // fail the library sync job since we need to be in the foreground to refresh auth
+            analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialScan)
+            return Result.failure()
         }
         beforeLibrarySync()
 

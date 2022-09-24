@@ -6,7 +6,12 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.work.*
+import androidx.work.Configuration
+import androidx.work.DelegatingWorkerFactory
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.CrashlyticsTree
 import io.libzy.config.ApiKeys
@@ -16,21 +21,15 @@ import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
+import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.toJavaDuration
 
 class LibzyApplication : Application(), Configuration.Provider {
-
-    companion object {
-        private val LIBRARY_SYNC_INTERVAL = 15.minutes // time to wait between Spotify library syncs
-    }
 
     val appComponent: AppComponent by lazy {
         DaggerAppComponent.factory().create(applicationContext)
@@ -44,6 +43,9 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var apiKeys: ApiKeys
+
+    @Inject
+    lateinit var workManager: WorkManager
 
     private var sharedPrefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
@@ -110,13 +112,14 @@ class LibzyApplication : Application(), Configuration.Provider {
      */
     private fun scheduleLibrarySync() {
 
-        fun enqueueWorkRequest() {
+        fun enqueueWorkRequest(builderBlock: PeriodicWorkRequest.Builder.() -> PeriodicWorkRequest.Builder = { this }) {
             applicationScope.launch {
                 val workRequest =
-                    PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL.toJavaDuration()).build()
+                    PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL)
+                        .builderBlock()
+                        .build()
 
-                // TODO: should we be using a dependency-injected appContext here?
-                WorkManager.getInstance(this@LibzyApplication).enqueueUniquePeriodicWork(
+                workManager.enqueueUniquePeriodicWork(
                     LibrarySyncWorker.WORK_NAME,
                     ExistingPeriodicWorkPolicy.KEEP,
                     workRequest
@@ -135,8 +138,9 @@ class LibzyApplication : Application(), Configuration.Provider {
                     applicationScope.launch {
                         // Spotify was just connected, meaning the first library scan just completed,
                         // so schedule the next one in 15 minutes, which will recur every subsequent 15 minutes
-                        delay(LIBRARY_SYNC_INTERVAL)
-                        enqueueWorkRequest()
+                        enqueueWorkRequest {
+                            setInitialDelay(LIBRARY_SYNC_INTERVAL)
+                        }
                         prefs.unregisterOnSharedPreferenceChangeListener(sharedPrefsListener)
                         sharedPrefsListener = null
                     }

@@ -1,14 +1,17 @@
 package io.libzy.ui
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserProfileRepository
 import io.libzy.spotify.auth.SpotifyAccessToken
 import io.libzy.spotify.auth.SpotifyAuthCallback
@@ -17,6 +20,9 @@ import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.ui.common.EventsOnlyViewModel
 import io.libzy.util.currentTimeSeconds
+import io.libzy.work.LibrarySyncWorker
+import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -25,10 +31,12 @@ class SessionViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val userProfileRepository: UserProfileRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
+    private val workManager: WorkManager,
+    private val sharedPrefs: SharedPreferences,
     appContext: Context
 ) : EventsOnlyViewModel<SessionUiEvent>(), SpotifyAuthClientProxy {
 
-    private val sharedPrefs = appContext.getSharedPrefs()
+    private var refreshSpotifyAuthJob: Job? = null
 
     private var spotifyAuthCallback: SpotifyAuthCallback? = null
 
@@ -49,6 +57,21 @@ class SessionViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         spotifyAuthDispatcher.authClientProxy = null
+    }
+
+    fun onNewSpotifyAuthAvailable() {
+        val authExpirationTimestamp = sharedPrefs.getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
+        if (currentTimeSeconds() > authExpirationTimestamp && refreshSpotifyAuthJob?.isActive != true) {
+            refreshSpotifyAuthJob = viewModelScope.launch {
+                spotifyAuthDispatcher.requestAuthorization()
+                val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
+                workManager.enqueueUniquePeriodicWork(
+                    LibrarySyncWorker.WORK_NAME,
+                    ExistingPeriodicWorkPolicy.REPLACE,
+                    workRequest
+                )
+            }
+        }
     }
 
     override fun initiateSpotifyAuthRequest(callback: SpotifyAuthCallback) {

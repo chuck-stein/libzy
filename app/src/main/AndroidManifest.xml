@@ -29,11 +29,15 @@
             android:name="firebase_analytics_collection_enabled"
             android:value="true" />
 
-<!--        TODO: look into what App Startup is to see what I'm losing by not using it (new Jetpack library)-->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove">
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
         </provider>
 
         <service
