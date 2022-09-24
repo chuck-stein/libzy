@@ -62,13 +62,11 @@ import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTE
 import io.libzy.domain.Query
 import io.libzy.domain.RecommendationCategory
 import io.libzy.domain.title
+import io.libzy.persistence.database.tuple.LibraryAlbum
 import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.persistence.prefs.getSharedPrefs
-import io.libzy.repository.UserLibraryRepository
 import io.libzy.util.plus
 import io.libzy.util.toString
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -80,10 +78,7 @@ import kotlin.math.roundToInt
  * with any method parameters needed to send along event properties.
  */
 @Singleton
-class AnalyticsDispatcher @Inject constructor(
-    private val userLibraryRepository: UserLibraryRepository,
-    appContext: Context
-) {
+class AnalyticsDispatcher @Inject constructor(appContext: Context) {
     private val amplitude = Amplitude.getInstance()
 
     private val sharedPrefs = appContext.getSharedPrefs()
@@ -178,28 +173,25 @@ class AnalyticsDispatcher @Inject constructor(
         sendEvent(SYNC_LIBRARY_DATA, eventProperties, outOfSession = true)
     }
 
-    fun sendPlayAlbumEvent(spotifyUri: String) {
+    fun sendPlayAlbumEvent(album: LibraryAlbum) {
         Identify().increment(NUM_ALBUM_PLAYS).updateUserProperties()
 
-        GlobalScope.launch {
-            val album = userLibraryRepository.getAlbumFromUri(spotifyUri)
-            sendEvent(PLAY_ALBUM, mapOf(
-                SPOTIFY_URI to album.spotifyUri,
-                TITLE to album.title,
-                ARTIST to album.artists,
-                GENRES to album.genres,
-                ACOUSTICNESS to album.audioFeatures.acousticness,
-                DANCEABILITY to album.audioFeatures.danceability,
-                ENERGY to album.audioFeatures.energy,
-                INSTRUMENTALNESS to album.audioFeatures.instrumentalness,
-                VALENCE to album.audioFeatures.valence,
-                IS_LONG_TERM_FAVORITE to album.familiarity.longTermFavorite,
-                IS_MEDIUM_TERM_FAVORITE to album.familiarity.mediumTermFavorite,
-                IS_SHORT_TERM_FAVORITE to album.familiarity.shortTermFavorite,
-                IS_RECENTLY_PLAYED to album.familiarity.recentlyPlayed,
-                IS_LOW_FAMILIARITY to album.familiarity.isLowFamiliarity()
-            ))
-        }
+        sendEvent(PLAY_ALBUM, mapOf(
+            SPOTIFY_URI to album.spotifyUri,
+            TITLE to album.title,
+            ARTIST to album.artists,
+            GENRES to album.genres,
+            ACOUSTICNESS to album.audioFeatures.acousticness,
+            DANCEABILITY to album.audioFeatures.danceability,
+            ENERGY to album.audioFeatures.energy,
+            INSTRUMENTALNESS to album.audioFeatures.instrumentalness,
+            VALENCE to album.audioFeatures.valence,
+            IS_LONG_TERM_FAVORITE to album.familiarity.longTermFavorite,
+            IS_MEDIUM_TERM_FAVORITE to album.familiarity.mediumTermFavorite,
+            IS_SHORT_TERM_FAVORITE to album.familiarity.shortTermFavorite,
+            IS_RECENTLY_PLAYED to album.familiarity.recentlyPlayed,
+            IS_LOW_FAMILIARITY to album.familiarity.isLowFamiliarity()
+        ))
     }
 
     fun sendViewQuestionEvent(questionName: String, questionNum: Int, totalQuestions: Int) {

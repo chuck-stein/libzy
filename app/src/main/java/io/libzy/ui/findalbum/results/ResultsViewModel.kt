@@ -70,8 +70,6 @@ class ResultsViewModel @Inject constructor(
     }
 
     fun playAlbum(spotifyUri: String) {
-        analyticsDispatcher.sendPlayAlbumEvent(spotifyUri)
-
         if (BuildConfig.DEBUG) logAlbumDetails(spotifyUri)
 
         spotifyAppRemoteService.playAlbum(spotifyUri, onFailure = {
@@ -81,6 +79,11 @@ class ResultsViewModel @Inject constructor(
 
         updateUiState<ResultsUiState.Loaded> {
             copy(currentAlbumUri = spotifyUri)
+        }
+
+        viewModelScope.launch {
+            val album = userLibraryRepository.getAlbumFromUri(spotifyUri)
+            analyticsDispatcher.sendPlayAlbumEvent(album)
         }
     }
 
