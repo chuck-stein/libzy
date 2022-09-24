@@ -2,6 +2,7 @@ package io.libzy.ui.findalbum.results
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.net.Uri
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
@@ -30,15 +31,15 @@ class ResultsViewModel @Inject constructor(
 
     private var albumRecommendationJob: Job? = null
 
-    fun recommendAlbums(query: Query) {
+    fun recommendAlbums(query: Query, resources: Resources) {
         albumRecommendationJob?.cancel()
         albumRecommendationJob = viewModelScope.launch {
             userLibraryRepository.albums.collect { albums ->
+                val recommendationCategories = recommendationService.recommendAlbums(query, albums)
                 updateUiState {
-                    ResultsUiState.Loaded(recommendationService.recommendAlbums(query, albums))
+                    ResultsUiState.Loaded(recommendationCategories)
                 }
-                // TODO: create new corresponding analytics event for receiving recommendation categories
-//                analyticsDispatcher.sendViewAlbumResultsEvent(query, uiState.value.albumResults)
+                analyticsDispatcher.sendViewAlbumResultsEvent(query, recommendationCategories, resources)
             }
         }
     }

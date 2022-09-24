@@ -1,7 +1,11 @@
 package io.libzy.domain
 
+import android.content.res.Resources
 import androidx.annotation.StringRes
+import io.libzy.R
 import io.libzy.persistence.database.tuple.LibraryAlbum
+import io.libzy.util.capitalizeAllWords
+import io.libzy.util.joinToUserFriendlyString
 
 /**
  * An album that is recommended to the user based on their listening mood [Query].
@@ -48,6 +52,41 @@ data class RecommendationCategory(
             val familiarity: Query.Familiarity? = null,
         ) : Relevance {
             val numRelevantParameters = adjectives.size + listOfNotNull(genre, familiarity).size
+        }
+    }
+}
+
+fun RecommendationCategory.title(resources: Resources) = when (relevance) {
+
+    is RecommendationCategory.Relevance.Full -> resources.getString(R.string.full_match_category_title)
+
+    is RecommendationCategory.Relevance.Partial -> {
+
+        val adjectiveString = relevance.adjectives.map { resources.getString(it) }.joinToUserFriendlyString()
+        val capitalizedGenre = relevance.genre?.capitalizeAllWords()
+
+        val nounString = when (relevance.familiarity) {
+            Query.Familiarity.CURRENT_FAVORITE -> capitalizedGenre?.let {
+                resources.getString(R.string.current_genre_favorites, it)
+            } ?: resources.getString(R.string.current_favorites)
+
+            Query.Familiarity.RELIABLE_CLASSIC -> capitalizedGenre?.let {
+                resources.getString(R.string.reliable_genre_classics, it)
+            } ?: resources.getString(R.string.reliable_classics)
+
+            Query.Familiarity.UNDERAPPRECIATED_GEM -> capitalizedGenre?.let {
+                resources.getString(R.string.underappreciated_genre, it)
+            } ?: resources.getString(R.string.underappreciated_gems)
+
+            null -> capitalizedGenre.orEmpty()
+        }
+
+        buildString {
+            append(adjectiveString)
+            if (adjectiveString.isNotEmpty() && nounString.isNotEmpty()) {
+                append(" ")
+            }
+            append(nounString)
         }
     }
 }

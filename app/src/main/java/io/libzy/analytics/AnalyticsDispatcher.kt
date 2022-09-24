@@ -2,11 +2,12 @@ package io.libzy.analytics
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Resources
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ACOUSTICNESS
-import io.libzy.analytics.AnalyticsConstants.EventProperties.ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ARTIST
+import io.libzy.analytics.AnalyticsConstants.EventProperties.CATEGORIES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_CONNECTED_USER_ID
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_SEARCHING
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_SELECTED_GENRES
@@ -29,6 +30,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_SHORT_TERM_FAVOR
 import io.libzy.analytics.AnalyticsConstants.EventProperties.LIBRARY_SYNC_TIME
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SYNCED
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUM_RESULTS
+import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_CATEGORIES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_GENRES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.QUESTION_NAME
 import io.libzy.analytics.AnalyticsConstants.EventProperties.QUESTION_NUM
@@ -57,8 +59,9 @@ import io.libzy.analytics.AnalyticsConstants.UserProperties.DISPLAY_NAME
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRARY
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTED
-import io.libzy.domain.AlbumResult
 import io.libzy.domain.Query
+import io.libzy.domain.RecommendationCategory
+import io.libzy.domain.title
 import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
@@ -140,10 +143,19 @@ class AnalyticsDispatcher @Inject constructor(
         sendEvent(SUBMIT_QUERY, query.toEventPropertyMap())
     }
 
-    fun sendViewAlbumResultsEvent(query: Query, results: List<AlbumResult>) {
-        sendEvent(VIEW_ALBUM_RESULTS, query.toEventPropertyMap().plus(
-            ALBUM_RESULTS to results.map { "${it.artists} - ${it.title} (${it.spotifyUri})" },
-            NUM_ALBUM_RESULTS to results.size
+    fun sendViewAlbumResultsEvent(
+        query: Query,
+        recommendationCategories: List<RecommendationCategory>,
+        resources: Resources
+    ) {
+        val categoryMap = recommendationCategories.associate { category ->
+            // prepend titles with underscore so all category event properties appear in Amplitude UI next to each other
+            "_${category.title(resources)}" to category.albumResults.map { "${it.artists} - ${it.title}" }
+        }
+        sendEvent(VIEW_ALBUM_RESULTS, query.toEventPropertyMap().plus(categoryMap).plus(
+            CATEGORIES to categoryMap.keys.map { it.drop(1) }, // remove underscore prefix
+            NUM_CATEGORIES to categoryMap.size,
+            NUM_ALBUM_RESULTS to categoryMap.values.sumOf { it.size }
         ))
     }
 

@@ -74,10 +74,8 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import io.libzy.R
 import io.libzy.domain.AlbumResult
-import io.libzy.domain.Query.Familiarity.CURRENT_FAVORITE
-import io.libzy.domain.Query.Familiarity.RELIABLE_CLASSIC
-import io.libzy.domain.Query.Familiarity.UNDERAPPRECIATED_GEM
 import io.libzy.domain.RecommendationCategory
+import io.libzy.domain.title
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.AutoResizeText
@@ -95,8 +93,6 @@ import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
-import io.libzy.util.capitalizeAllWords
-import io.libzy.util.joinToUserFriendlyString
 import kotlinx.coroutines.launch
 
 /**
@@ -139,7 +135,7 @@ fun ResultsScreen(
     LifecycleObserver(
         onStart = {
             viewModel.connectSpotifyAppRemote()
-            viewModel.recommendAlbums(findAlbumFlowUiState.query)
+            viewModel.recommendAlbums(findAlbumFlowUiState.query, context.resources)
         },
         onStop = {
             viewModel.disconnectSpotifyAppRemote()
@@ -334,7 +330,7 @@ private fun AlbumResultsCategories(
             val category = recommendationCategories[categoryIndex]
             Column(modifier = Modifier.padding(bottom = RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp)) {
                 Text(
-                    category.title(),
+                    category.title(LocalContext.current.resources),
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.ExtraBold,
                     style = MaterialTheme.typography.h5,
@@ -347,32 +343,6 @@ private fun AlbumResultsCategories(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun RecommendationCategory.title() = when (relevance) {
-    is RecommendationCategory.Relevance.Full -> stringResource(R.string.full_match_category_title)
-    is RecommendationCategory.Relevance.Partial -> {
-        val adjectiveString = relevance.adjectives.map { stringResource(it) }.joinToUserFriendlyString()
-        val capitalizedGenre = relevance.genre?.capitalizeAllWords()
-        val nounString = when (relevance.familiarity) {
-            CURRENT_FAVORITE -> capitalizedGenre?.let { stringResource(R.string.current_genre_favorites, it) }
-                ?: stringResource(R.string.current_favorites)
-            RELIABLE_CLASSIC -> capitalizedGenre?.let { stringResource(R.string.reliable_genre_classics, it) }
-                ?: stringResource(R.string.reliable_classics)
-            UNDERAPPRECIATED_GEM -> capitalizedGenre?.let { stringResource(R.string.underappreciated_genre, it) }
-                ?: stringResource(R.string.underappreciated_gems)
-            null -> capitalizedGenre.orEmpty()
-        }
-
-        buildString {
-            append(adjectiveString)
-            if (adjectiveString.isNotEmpty() && nounString.isNotEmpty()) {
-                append(" ")
-            }
-            append(nounString)
         }
     }
 }

@@ -1,6 +1,7 @@
 package io.libzy.analytics
 
 import io.libzy.domain.Query.Familiarity
+import io.libzy.domain.RecommendationCategory
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.findalbum.query.QueryScreen
 import io.libzy.ui.findalbum.results.ResultsScreen
@@ -186,10 +187,16 @@ object AnalyticsConstants {
         const val NUM_GENRES = "num genres"
 
         /**
-         * A [List] property representing the albums recommended as a result of the user's current mood query for
-         * [Events.VIEW_ALBUM_RESULTS].
+         * A [List] property containing the title of each [RecommendationCategory] in the results
+         * for [Events.VIEW_ALBUM_RESULTS].
          */
-        const val ALBUM_RESULTS = "album results"
+        const val CATEGORIES = "categories"
+
+        /**
+         * An [Int] property representing the number of [RecommendationCategory]s in the results
+         * for [Events.VIEW_ALBUM_RESULTS].
+         */
+        const val NUM_CATEGORIES = "num categories"
 
         /**
          * An [Int] property representing the number of albums recommended as a result of the user's current mood query
