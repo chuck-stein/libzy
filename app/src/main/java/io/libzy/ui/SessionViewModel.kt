@@ -61,7 +61,10 @@ class SessionViewModel @Inject constructor(
 
     fun onNewSpotifyAuthAvailable() {
         val authExpirationTimestamp = sharedPrefs.getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
-        if (currentTimeSeconds() > authExpirationTimestamp && refreshSpotifyAuthJob?.isActive != true) {
+        val shouldRefreshAuth = isSpotifyConnected()
+                && currentTimeSeconds() > authExpirationTimestamp
+                && refreshSpotifyAuthJob?.isActive != true
+        if (shouldRefreshAuth) {
             refreshSpotifyAuthJob = viewModelScope.launch {
                 spotifyAuthDispatcher.requestAuthorization()
                 val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
