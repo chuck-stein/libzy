@@ -1,7 +1,7 @@
 package io.libzy.analytics
 
 import android.app.Application
-import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Resources
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
@@ -64,7 +64,6 @@ import io.libzy.domain.RecommendationCategory
 import io.libzy.domain.title
 import io.libzy.persistence.database.tuple.LibraryAlbum
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.util.plus
 import io.libzy.util.toString
 import org.json.JSONObject
@@ -78,10 +77,8 @@ import kotlin.math.roundToInt
  * with any method parameters needed to send along event properties.
  */
 @Singleton
-class AnalyticsDispatcher @Inject constructor(appContext: Context) {
+class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPreferences) {
     private val amplitude = Amplitude.getInstance()
-
-    private val sharedPrefs = appContext.getSharedPrefs()
 
     fun initialize(application: Application, apiKey: String) {
         amplitude

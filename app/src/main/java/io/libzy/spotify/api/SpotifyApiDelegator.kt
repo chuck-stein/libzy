@@ -1,6 +1,6 @@
 package io.libzy.spotify.api
 
-import android.content.Context
+import android.content.SharedPreferences
 import com.adamratzman.spotify.SpotifyApiOptions
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.SpotifyClientApiBuilder
@@ -13,7 +13,6 @@ import com.adamratzman.spotify.models.PlayHistory
 import com.adamratzman.spotify.models.SavedAlbum
 import com.adamratzman.spotify.models.Track
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.util.currentTimeSeconds
 import kotlinx.coroutines.Dispatchers
@@ -26,15 +25,12 @@ import javax.inject.Singleton
 
 @Singleton
 class SpotifyApiDelegator @Inject constructor(
-    private val context: Context,
+    private val sharedPrefs: SharedPreferences,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher
 ) {
     companion object {
         // the lower of Spotify's limits for how many items are available from an endpoint
         private const val API_ITEM_LIMIT_LOW = 50
-
-        // the higher of Spotify's limits for how many items are available from an endpoint
-        private const val API_ITEM_LIMIT_HIGH = 100
 
         // a limit to maximize the number of items available from Spotify's paging endpoints which use the lower max
         // limit -- this works by requesting the next page at the highest allowed offset
@@ -58,7 +54,7 @@ class SpotifyApiDelegator @Inject constructor(
         _apiDelegate ?: createApiDelegateIfTokenAvailable() ?: createApiDelegateWithNewToken()
 
     private suspend fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
-        with(context.getSharedPrefs()) {
+        with(sharedPrefs) {
             val savedAccessToken = getString(SharedPrefKeys.SPOTIFY_AUTH_TOKEN, null)
             val tokenExpirationTimestamp = getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
             if (savedAccessToken != null && currentTimeSeconds() < tokenExpirationTimestamp) {

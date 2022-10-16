@@ -2,6 +2,7 @@ package io.libzy.work
 
 import android.app.NotificationManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
 import android.net.Uri
 import androidx.core.app.NotificationCompat
@@ -17,7 +18,6 @@ import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
 import io.libzy.config.NotificationIds
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.Destination
 import io.libzy.util.appInForeground
@@ -34,7 +34,8 @@ class LibrarySyncWorker(
     appContext: Context,
     params: WorkerParameters,
     private val userLibraryRepository: UserLibraryRepository,
-    private val analyticsDispatcher: AnalyticsDispatcher
+    private val analyticsDispatcher: AnalyticsDispatcher,
+    private val sharedPrefs: SharedPreferences
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
@@ -48,7 +49,6 @@ class LibrarySyncWorker(
     }
 
     private val isInitialScan = inputData.getBoolean(IS_INITIAL_SCAN, false)
-    private val sharedPrefs = applicationContext.getSharedPrefs()
 
     override suspend fun doWork(): Result {
         val authExpirationTimestamp = sharedPrefs.getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
@@ -180,7 +180,8 @@ class LibrarySyncWorker(
 
     class Factory(
         private val userLibraryRepository: UserLibraryRepository,
-        private val analyticsDispatcher: AnalyticsDispatcher
+        private val analyticsDispatcher: AnalyticsDispatcher,
+        private val sharedPrefs: SharedPreferences
     ) : WorkerFactory() {
 
         override fun createWorker(
@@ -190,8 +191,9 @@ class LibrarySyncWorker(
         ): ListenableWorker? {
 
             return when (workerClassName) {
-                LibrarySyncWorker::class.java.name ->
-                    LibrarySyncWorker(appContext, workerParameters, userLibraryRepository, analyticsDispatcher)
+                LibrarySyncWorker::class.java.name -> LibrarySyncWorker(
+                    appContext, workerParameters, userLibraryRepository, analyticsDispatcher, sharedPrefs
+                )
                 else -> null
             }
         }

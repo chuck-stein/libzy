@@ -14,11 +14,10 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.CrashlyticsTree
-import io.libzy.config.ApiKeys
+import io.libzy.di.AndroidModule
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
 import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
@@ -42,10 +41,10 @@ class LibzyApplication : Application(), Configuration.Provider {
     lateinit var analyticsDispatcher: AnalyticsDispatcher
 
     @Inject
-    lateinit var apiKeys: ApiKeys
+    lateinit var workManager: WorkManager
 
     @Inject
-    lateinit var workManager: WorkManager
+    lateinit var sharedPrefs: SharedPreferences
 
     private var sharedPrefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
@@ -57,12 +56,14 @@ class LibzyApplication : Application(), Configuration.Provider {
         createNotificationChannels()
         scheduleLibrarySync()
         initLogging()
-        analyticsDispatcher.initialize(this, apiKeys.amplitudeApiKey)
+        analyticsDispatcher.initialize(this, BuildConfig.AMPLITUDE_API_KEY)
     }
 
     override fun getWorkManagerConfiguration(): Configuration {
         val workerFactory = DelegatingWorkerFactory()
-        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository, analyticsDispatcher))
+        // can't use the injected sharedPrefs because it will not have been injected yet when this method is called
+        val sharedPrefs = AndroidModule().provideSharedPrefs(this)
+        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository, analyticsDispatcher, sharedPrefs))
 
         return Configuration.Builder()
             .setMinimumLoggingLevel(Log.VERBOSE)
@@ -127,7 +128,6 @@ class LibzyApplication : Application(), Configuration.Provider {
             }
         }
 
-        val sharedPrefs = getSharedPrefs()
         val spotifyConnected = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 
         if (spotifyConnected) {

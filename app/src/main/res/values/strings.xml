@@ -3,13 +3,9 @@
     <!-- Spotify SDK -->
     <string name="spotify_client_id" translatable="false">058c796e8b3740d190136f2ebc4d64ab</string>
     <string name="spotify_auth_redirect_uri" translatable="false">io.libzy://spotify-auth</string>
-    
-    <!-- Amplitude SDK -->
-    <string name="amplitude_api_key_dev" translatable="false">f1201f6fa3f87ba14fca4e448f3d40b9</string>
-    <string name="amplitude_api_key_prod" translatable="false">5257667ce56af0dcc0d10101d455d4d3</string>
 
     <!-- Room DB -->
-    <string name="database_file_name" translatable="false">spotify_library</string>
+    <string name="database_file_name" translatable="false">libzy_database</string>
     
     <!-- Notification Channels -->
     <string name="library_scan_progress_notification_channel_id" translatable="false">channel_library_scan_progress</string>

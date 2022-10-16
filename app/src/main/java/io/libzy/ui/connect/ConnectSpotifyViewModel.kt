@@ -1,6 +1,5 @@
 package io.libzy.ui.connect
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.asFlow
@@ -12,7 +11,6 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.ui.common.LibzyViewModel
