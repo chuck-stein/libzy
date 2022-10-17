@@ -15,8 +15,8 @@ import com.adamratzman.spotify.models.Track
 import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.util.currentTimeSeconds
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -26,7 +26,8 @@ import javax.inject.Singleton
 @Singleton
 class SpotifyApiDelegator @Inject constructor(
     private val sharedPrefs: SharedPreferences,
-    private val spotifyAuthDispatcher: SpotifyAuthDispatcher
+    private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
+    applicationScope: CoroutineScope
 ) {
     companion object {
         // the lower of Spotify's limits for how many items are available from an endpoint
@@ -41,8 +42,7 @@ class SpotifyApiDelegator @Inject constructor(
     private var _apiDelegate: SpotifyClientApi? = null
 
     init {
-        // TODO: use an injected application scope instead of GlobalScope
-        GlobalScope.launch {
+        applicationScope.launch {
             createApiDelegateIfTokenAvailable()
         }
     }

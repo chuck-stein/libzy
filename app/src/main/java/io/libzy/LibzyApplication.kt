@@ -22,7 +22,6 @@ import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
 import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import timber.log.Timber.DebugTree
@@ -46,9 +45,10 @@ class LibzyApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var sharedPrefs: SharedPreferences
 
-    private var sharedPrefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
+    @Inject
+    lateinit var applicationScope: CoroutineScope
 
-    private val applicationScope = CoroutineScope(Dispatchers.Default)
+    private var sharedPrefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     override fun onCreate() {
         super.onCreate()

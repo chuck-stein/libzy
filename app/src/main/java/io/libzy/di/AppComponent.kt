@@ -13,7 +13,8 @@ import javax.inject.Singleton
     modules = [
         AndroidModule::class,
         ViewModelModule::class,
-        DatabaseModule::class
+        DatabaseModule::class,
+        CoroutineModule::class
     ]
 )
 interface AppComponent {
@@ -23,7 +24,6 @@ interface AppComponent {
         fun create(@BindsInstance applicationContext: Context): AppComponent
     }
 
-    // TODO: move these to their own subcomponents
     fun inject(libzyApplication: LibzyApplication)
     fun inject(mainActivity: MainActivity)
 }
