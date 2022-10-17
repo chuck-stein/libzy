@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
@@ -47,7 +49,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -170,8 +171,6 @@ fun ResultsScreen(
  * **Stateless** results screen, displaying a list of suggested albums
  * based on what the user indicated they are in the mood to listen to.
  */
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
 @Composable
 private fun ResultsScreen(
     uiState: ResultsUiState,
@@ -312,8 +311,6 @@ private fun Modifier.resultsGradient() = this
         )
     }
 
-// TODO: naming (could be AlbumResults, AlbumResultsList, Recommendations, RecommendationCategories, ResultCategories, etc) -- also make sure it makes sense with a corresponding name for AlbumResultsGrid, which will still exist for instance if everything is a "perfect match"
-@ExperimentalAnimationApi
 @Composable
 private fun AlbumResultsCategories(
     recommendationCategories: List<RecommendationCategory>,
@@ -326,8 +323,7 @@ private fun AlbumResultsCategories(
             top = RECOMMENDATION_LIST_TOP_PADDING.dp, bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp
         )
     ) {
-        items(recommendationCategories.size) { categoryIndex ->
-            val category = recommendationCategories[categoryIndex]
+        items(recommendationCategories) { category ->
             Column(modifier = Modifier.padding(bottom = RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp)) {
                 Text(
                     category.title(LocalContext.current.resources),
@@ -348,8 +344,6 @@ private fun AlbumResultsCategories(
 }
 
 // TODO: handle rotation by maintaining position such that still looking at albums that were previously on screen
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
 @Composable
 private fun AlbumResultsGrid(
     albumResults: List<AlbumResult>,
@@ -364,14 +358,12 @@ private fun AlbumResultsGrid(
         modifier = modifier.padding(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp),
         contentPadding = PaddingValues(bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp)
     ) {
-        items(albumResults.size) { index ->
-            val albumResult = albumResults[index]
+        items(albumResults) { albumResult ->
             AlbumResultListItem(albumResult, onAlbumClick, width = gridWidth / numColumns)
         }
     }
 }
 
-@ExperimentalAnimationApi
 @Composable
 private fun AlbumResultListItem(
     albumResult: AlbumResult,
@@ -403,7 +395,6 @@ private fun AlbumResultListItem(
     }
 }
 
-@ExperimentalAnimationApi
 @Composable
 private fun AlbumArtwork(artworkUrl: String?, size: Int) {
     val artworkContentDescription = stringResource(R.string.cd_album_artwork)
@@ -417,7 +408,6 @@ private fun AlbumArtwork(artworkUrl: String?, size: Int) {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ResultsFeedbackDialog(
     onRateResultsDismissed: () -> Unit,
@@ -542,8 +532,6 @@ private val previewRecommendationsOneCategory = listOf(
     )
 )
 
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
 @Preview(device = Devices.PIXEL_4_XL)
 @Composable
 private fun ResultsScreenPreview() {
@@ -562,8 +550,6 @@ private fun ResultsScreenPreview() {
     }
 }
 
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
 @Preview(device = Devices.PIXEL_4_XL)
 @Composable
 private fun NoResultsScreenPreview() {
