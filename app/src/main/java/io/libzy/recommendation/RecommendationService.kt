@@ -322,7 +322,9 @@ class RecommendationService @Inject constructor() {
         recommendationCategories: MutableList<RecommendationCategory>
     ) {
         val categoryComparator =
-            compareBy<Map.Entry<RecommendationCategory.Relevance.Partial, Set<PossibleAlbumRecommendation>>> { (category, _) ->
+            compareBy<Map.Entry<RecommendationCategory.Relevance.Partial, Set<PossibleAlbumRecommendation>>> { (_, albumsInCategory) ->
+                albumsInCategory.size > 1
+            }.thenBy { (category, _) ->
                 category.numRelevantParameters
             }.thenBy { (_, albumsInCategory) ->
                 albumsInCategory.map { it.overallRelevance }.average()
