@@ -1,14 +1,18 @@
 package io.libzy.ui
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
+import io.libzy.repository.PreferencesRepository
 import io.libzy.repository.UserProfileRepository
 import io.libzy.spotify.auth.SpotifyAccessToken
 import io.libzy.spotify.auth.SpotifyAuthCallback
@@ -17,6 +21,9 @@ import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.ui.common.EventsOnlyViewModel
 import io.libzy.util.currentTimeSeconds
+import io.libzy.work.LibrarySyncWorker
+import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -24,22 +31,25 @@ import javax.inject.Inject
 class SessionViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val userProfileRepository: UserProfileRepository,
+    private val preferencesRepository: PreferencesRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
+    private val workManager: WorkManager,
+    private val sharedPrefs: SharedPreferences,
     appContext: Context
 ) : EventsOnlyViewModel<SessionUiEvent>(), SpotifyAuthClientProxy {
 
-    private val sharedPrefs = appContext.getSharedPrefs()
+    fun isSpotifyConnected() = preferencesRepository.isSpotifyConnected()
+
+    private var refreshSpotifyAuthJob: Job? = null
 
     private var spotifyAuthCallback: SpotifyAuthCallback? = null
 
-    private val spotifyAuthRequest by lazy {
+    private val baseSpotifyAuthRequest by lazy {
         AuthorizationRequest.Builder(
             appContext.getString(R.string.spotify_client_id),
             AuthorizationResponse.Type.TOKEN,
             appContext.getString(R.string.spotify_auth_redirect_uri)
-        )
-            .setScopes(arrayOf("user-library-read", "app-remote-control", "user-read-recently-played", "user-top-read"))
-            .build()
+        ).setScopes(arrayOf("user-library-read", "app-remote-control", "user-read-recently-played", "user-top-read"))
     }
 
     init {
@@ -51,8 +61,30 @@ class SessionViewModel @Inject constructor(
         spotifyAuthDispatcher.authClientProxy = null
     }
 
-    override fun initiateSpotifyAuthRequest(callback: SpotifyAuthCallback) {
+    fun onNewSpotifyAuthAvailable() {
+        val authExpirationTimestamp = sharedPrefs.getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
+        val shouldRefreshAuth = isSpotifyConnected()
+                && currentTimeSeconds() > authExpirationTimestamp
+                && refreshSpotifyAuthJob?.isActive != true
+        if (shouldRefreshAuth) {
+            refreshSpotifyAuthJob = viewModelScope.launch {
+                spotifyAuthDispatcher.requestAuthorization()
+                val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
+                workManager.enqueueUniquePeriodicWork(
+                    LibrarySyncWorker.WORK_NAME,
+                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                    workRequest
+                )
+            }
+        }
+    }
+
+    override fun initiateSpotifyAuthRequest(
+        callback: SpotifyAuthCallback,
+        authOptions: AuthorizationRequest.Builder.() -> AuthorizationRequest.Builder
+    ) {
         spotifyAuthCallback = callback
+        val spotifyAuthRequest = baseSpotifyAuthRequest.authOptions().build()
         produceUiEvent(SessionUiEvent.SpotifyAuthRequest(spotifyAuthRequest))
     }
 
@@ -100,6 +132,4 @@ class SessionViewModel @Inject constructor(
             }
         }
     }
-
-    fun isSpotifyConnected() = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 }

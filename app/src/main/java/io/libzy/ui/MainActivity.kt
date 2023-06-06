@@ -1,9 +1,11 @@
 package io.libzy.ui
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,8 +15,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationRequest
+import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.LibzyApplication
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,9 +36,11 @@ class MainActivity : ComponentActivity() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val viewModel by viewModels<SessionViewModel> { viewModelFactory }
 
+    private val requestSpotifyAuth = registerForActivityResult(RequestSpotifyAuth()) { response: AuthorizationResponse ->
+        viewModel.handleSpotifyAuthResponse(response)
+    }
 
-    @ExperimentalAnimationApi
-    @ExperimentalFoundationApi
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         (applicationContext as LibzyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)
@@ -49,25 +54,27 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.onNewSpotifyAuthAvailable()
+    }
+
     private fun collectSpotifyAuthRequests() {
         lifecycleScope.launch {
             viewModel.uiEvents.flowWithLifecycle(lifecycle, Lifecycle.State.CREATED).collect {
                 if (it is SessionUiEvent.SpotifyAuthRequest) {
-                    AuthorizationClient.openLoginActivity(this@MainActivity, SPOTIFY_AUTH_REQUEST_CODE, it.request)
+                    requestSpotifyAuth.launch(it.request)
                 }
             }
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        super.onActivityResult(requestCode, resultCode, intent)
+    inner class RequestSpotifyAuth : ActivityResultContract<AuthorizationRequest, AuthorizationResponse>() {
 
-        if (requestCode == SPOTIFY_AUTH_REQUEST_CODE) {
-            viewModel.handleSpotifyAuthResponse(AuthorizationClient.getResponse(resultCode, intent))
-        }
-    }
+        override fun createIntent(context: Context, input: AuthorizationRequest): Intent =
+            AuthorizationClient.createLoginActivityIntent(this@MainActivity, input)
 
-    companion object {
-        private const val SPOTIFY_AUTH_REQUEST_CODE = 1104
+        override fun parseResult(resultCode: Int, intent: Intent?): AuthorizationResponse =
+            AuthorizationClient.getResponse(resultCode, intent)
     }
 }

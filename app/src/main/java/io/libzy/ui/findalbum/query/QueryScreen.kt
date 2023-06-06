@@ -4,7 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContentScope.SlideDirection
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -16,10 +18,13 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -40,15 +45,16 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Diamond
 import androidx.compose.material.icons.rounded.MicExternalOn
 import androidx.compose.material.icons.rounded.Piano
-import androidx.compose.material.icons.rounded.RestartAlt
-import androidx.compose.material.icons.rounded.SavedSearch
+import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.StarOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -71,9 +78,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowRow
-import com.google.accompanist.insets.LocalWindowInsets
 import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.ui.Destination
@@ -84,29 +91,37 @@ import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
+import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.common.component.SelectableButton
+import io.libzy.ui.common.component.StartOverIconButton
 import io.libzy.ui.common.util.AnimatedContent
 import io.libzy.ui.common.util.StatefulAnimatedVisibility
 import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
+import io.libzy.ui.findalbum.query.QueryScreenActionIcon.Settings
+import io.libzy.ui.findalbum.query.QueryScreenActionIcon.StartOver
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
-import timber.log.Timber
 import java.time.LocalTime
 
 /**
  * **Stateful** Query Screen, displaying a series of questions about what the user is in the mood to listen to.
  */
-@ExperimentalAnimationApi
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvider.Factory) {
+fun QueryScreen(
+    navController: NavController,
+    viewModelFactory: ViewModelProvider.Factory,
+    backStackEntry: NavBackStackEntry
+) {
     val viewModel: QueryViewModel = viewModel(factory = viewModelFactory)
-    val uiState by viewModel.uiState
+    val uiState by viewModel.uiStateFlow.collectAsState()
 
     val findAlbumFlowViewModel: FindAlbumFlowViewModel = viewModel(
-        viewModelStoreOwner = navController.getBackStackEntry(Destination.FindAlbumFlow.route),
+        viewModelStoreOwner = remember(backStackEntry) {
+            navController.getBackStackEntry(Destination.FindAlbumFlow.route)
+        },
         factory = viewModelFactory
     )
 
@@ -125,6 +140,7 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
         viewModel.sendQuestionViewAnalyticsEvent()
     }
 
+    // TODO: re-evaluate this -- shouldn't update state on every recomposition
     // Initialize the current step in the flow on initial composition.
     // Can't do this using LaunchedEffect(Unit) because then a composition can render
     // before the state becomes initialized, leading to unintended effects such as the keyboard
@@ -133,16 +149,15 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
     if (!initializedCurrentStep) {
         viewModel.initCurrentStep()
         initializedCurrentStep = true
-        Timber.d("Logging this value to suppress 'unused' warning: $initializedCurrentStep")
     }
 
     val focusManager = LocalFocusManager.current
-    val keyboard = LocalWindowInsets.current.ime
+    val keyboardVisible = WindowInsets.isImeVisible
 
     QueryScreen(
         uiState = uiState,
         onBackClick = {
-            if (keyboard.isVisible) focusManager.clearFocus()
+            if (keyboardVisible) focusManager.clearFocus()
             if (uiState.currentStep is QueryStep.Genres.Search) {
                 viewModel.stopGenreSearch()
             } else {
@@ -179,14 +194,14 @@ fun QueryScreen(navController: NavController, viewModelFactory: ViewModelProvide
         onDeselectGenre = viewModel::removeGenre,
         onSearchGenresClick = viewModel::startGenreSearch,
         onGenreSearchQueryChange = viewModel::searchGenres,
-        onDismissKeyboard = viewModel::sendDismissKeyboardAnalyticsEvent
+        onDismissKeyboard = viewModel::sendDismissKeyboardAnalyticsEvent,
+        onSettingsClick = { navController.navigate(Destination.Settings.route) }
     )
 }
 
 /**
  * **Stateless** Query Screen, displaying a series of questions about what the user is in the mood to listen to.
  */
-@ExperimentalAnimationApi
 @Composable
 private fun QueryScreen(
     uiState: QueryUiState,
@@ -207,107 +222,124 @@ private fun QueryScreen(
     onDeselectGenre: (String) -> Unit,
     onSearchGenresClick: () -> Unit,
     onGenreSearchQueryChange: (String) -> Unit,
-    onDismissKeyboard: () -> Unit
+    onDismissKeyboard: () -> Unit,
+    onSettingsClick: () -> Unit = {}
 ) {
-    BackHandler(enabled = uiState.pastFirstStep, onBack = onBackClick)
+    LoadedContent(uiState.loading) {
+        BackHandler(enabled = uiState.showBackButton, onBack = onBackClick)
 
-    LibzyScaffold(
-        navigationIcon = {
-            AnimatedVisibility(visible = uiState.pastFirstStep, enter = fadeIn(), exit = fadeOut()) {
-                BackIcon(onBackClick, enabled = uiState.pastFirstStep)
-            }
-        },
-        actionIcons = {
-            AnimatedVisibility(visible = uiState.startOverButtonVisible, enter = fadeIn(), exit = fadeOut()) {
-                IconButton(onStartOverClick) {
-                    LibzyIcon(LibzyIconTheme.RestartAlt,  contentDescription = stringResource(R.string.start_over))
+        LibzyScaffold(
+            navigationIcon = {
+                AnimatedVisibility(visible = uiState.showBackButton, enter = fadeIn(), exit = fadeOut()) {
+                    BackIcon(onBackClick, enabled = uiState.showBackButton)
+                }
+            },
+            actionIcons = {
+                val iconRotation = remember { Animatable(0f) }
+                val actionIconState = rememberUpdatedState(uiState.actionIcon)
+                LaunchedEffect(iconRotation, actionIconState) {
+                    // TODO: prevent rotation animation from happening when first opening the app, or when navigating from a screen that didn't have the restart icon (e.g. SettingsScreen)
+                    snapshotFlow { actionIconState.value }.collect {
+                        iconRotation.animateTo(iconRotation.targetValue - 360f, animationSpec = tween())
+                    }
+                }
+
+                Crossfade(
+                    targetState = uiState.actionIcon,
+                    modifier = Modifier.rotate(iconRotation.value)
+                ) { actionIcon ->
+                    when (actionIcon) {
+                        Settings -> IconButton(onSettingsClick) {
+                            LibzyIcon(LibzyIconTheme.Settings, contentDescription = stringResource(R.string.settings))
+                        }
+                        StartOver -> StartOverIconButton(onStartOverClick)
+                        null -> {}
+                    }
+                }
+            },
+            title = {
+                StatefulAnimatedVisibility(
+                    visible = uiState.currentStep is QueryStep.Genres.Search,
+                    stateToRemember = (uiState.currentStep as? QueryStep.Genres.Search)?.searchQuery ?: "",
+                    enter = fadeIn(
+                        animationSpec = tween(
+                            delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                            durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                            easing = LinearOutSlowInEasing
+                        )
+                    ) + slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(
+                            delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                            durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                            easing = LinearOutSlowInEasing
+                        )
+                    ),
+                    exit = fadeOut()
+                ) { searchQuery ->
+                    GenreSearchBar(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = onGenreSearchQueryChange,
+                        onDismissKeyboard = onDismissKeyboard
+                    )
                 }
             }
-        },
-        title = {
-            StatefulAnimatedVisibility(
-                visible = uiState.currentStep is QueryStep.Genres.Search,
-                stateToRemember = (uiState.currentStep as? QueryStep.Genres.Search)?.searchQuery ?: "",
-                enter = fadeIn(
-                    animationSpec = tween(
-                        delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
-                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
-                        easing = LinearOutSlowInEasing
-                    )
-                ) + slideInVertically(
-                    initialOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(
-                        delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
-                        durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
-                        easing = LinearOutSlowInEasing
-                    )
-                ),
-                exit = fadeOut()
-            ) { searchQuery ->
-                GenreSearchBar(
-                    searchQuery = searchQuery,
-                    enableTrailingIcon = !uiState.startOverButtonVisible,
-                    onSearchQueryChange = onGenreSearchQueryChange,
-                    onDismissKeyboard = onDismissKeyboard
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
+                QueryScreenHeaders(visible = uiState.currentStep !is QueryStep.Genres.Search)
+
+                CurrentQueryStep(
+                    uiState,
+                    onCurrentFavoriteClick,
+                    onReliableClassicClick,
+                    onUnderappreciatedGemClick,
+                    onInstrumentalClick,
+                    onVocalClick,
+                    onAcousticnessChange,
+                    onValenceChange,
+                    onEnergyChange,
+                    onDanceabilityChange,
+                    onSelectGenre,
+                    onDeselectGenre,
+                    onSearchGenresClick,
+                    modifier = Modifier.weight(1f)
                 )
-            }
-        }
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
-            QueryScreenHeaders(visible = uiState.currentStep !is QueryStep.Genres.Search)
 
-            CurrentQueryStep(
-                uiState,
-                onCurrentFavoriteClick,
-                onReliableClassicClick,
-                onUnderappreciatedGemClick,
-                onInstrumentalClick,
-                onVocalClick,
-                onAcousticnessChange,
-                onValenceChange,
-                onEnergyChange,
-                onDanceabilityChange,
-                onSelectGenre,
-                onDeselectGenre,
-                onSearchGenresClick,
-                modifier = Modifier.weight(1f)
-            )
+                LibzyButton(uiState.continueButtonText, Modifier.padding(bottom = 16.dp), uiState.continueButtonEnabled) {
+                    onContinueClick()
+                }
 
-            LibzyButton(uiState.continueButtonText, Modifier.padding(bottom = 16.dp), onContinueClick, uiState.continueButtonEnabled)
-
-            TextButton(onNoPreferenceClick,  Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)) {
-                Text(stringResource(R.string.no_preference).uppercase())
+                TextButton(onNoPreferenceClick, Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)) {
+                    Text(stringResource(R.string.no_preference).uppercase())
+                }
             }
         }
     }
 }
 
-@ExperimentalAnimationApi
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun GenreSearchBar(
     searchQuery: String,
-    enableTrailingIcon: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onDismissKeyboard: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    val keyboard = LocalWindowInsets.current.ime
+    var keyboardPreviouslyVisible by remember { mutableStateOf(false) }
+    val keyboardVisible = WindowInsets.isImeVisible
     val textStyle = MaterialTheme.typography.subtitle1.copy(textAlign = TextAlign.Start)
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus() // TextField should be focused when search begins
     }
 
-    LaunchedEffect(keyboard, focusManager) {
-        var keyboardPreviouslyVisible = false
-        snapshotFlow { keyboard.isVisible }.collect { keyboardNowVisible ->
-            if (keyboardPreviouslyVisible && !keyboardNowVisible) {
-                focusManager.clearFocus() // TextField should be unfocused when keyboard is dismissed
-                onDismissKeyboard()
-            }
-            keyboardPreviouslyVisible = keyboardNowVisible
+    LaunchedEffect(keyboardVisible, focusManager) {
+        if (keyboardPreviouslyVisible && !keyboardVisible) {
+            focusManager.clearFocus() // TextField should be unfocused when keyboard is dismissed
+            onDismissKeyboard()
         }
+        keyboardPreviouslyVisible = keyboardVisible
     }
 
     TextField(
@@ -315,19 +347,17 @@ private fun GenreSearchBar(
         onValueChange = { onSearchQueryChange(it.take(GENRE_SEARCH_CHARACTER_LIMIT)) },
         placeholder = { Text(stringResource(R.string.search_genres), style = textStyle) },
         trailingIcon = {
-            if (enableTrailingIcon) {
-                AnimatedVisibility(
-                    visible = searchQuery.isNotEmpty(),
-                    modifier = Modifier.padding(start = 30.dp),
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    IconButton(onClick = {
-                        onSearchQueryChange("")
-                        focusRequester.requestFocus()
-                    }) {
-                        LibzyIcon(LibzyIconTheme.Close, stringResource(R.string.cd_clear_search_query))
-                    }
+            AnimatedVisibility(
+                visible = searchQuery.isNotEmpty(),
+                modifier = Modifier.padding(start = 30.dp),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                IconButton(onClick = {
+                    onSearchQueryChange("")
+                    focusRequester.requestFocus()
+                }) {
+                    LibzyIcon(LibzyIconTheme.Close, stringResource(R.string.cd_clear_search_query))
                 }
             }
         },
@@ -346,7 +376,6 @@ private fun GenreSearchBar(
     )
 }
 
-@ExperimentalAnimationApi
 @Composable
 private fun QueryScreenHeaders(visible: Boolean) {
 
@@ -386,7 +415,7 @@ private fun QueryScreenHeaders(visible: Boolean) {
     }
 }
 
-@ExperimentalAnimationApi
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun CurrentQueryStep(
     uiState: QueryUiState,
@@ -407,7 +436,7 @@ private fun CurrentQueryStep(
     Box(modifier) {
         AnimatedContent(
             targetState = uiState.currentStep,
-            key = uiState.currentStep.type,
+            key = uiState.currentStep.parameterType,
             transitionSpec = {
                 val slideDirection = if (uiState.navigatingForward) SlideDirection.Left else SlideDirection.Right
                 slideIntoContainer(slideDirection) with slideOutOfContainer(slideDirection)
@@ -416,7 +445,8 @@ private fun CurrentQueryStep(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .padding(horizontal = HORIZONTAL_INSET.dp), contentAlignment = Alignment.Center) {
+                    .padding(horizontal = HORIZONTAL_INSET.dp), contentAlignment = Alignment.Center
+            ) {
                 when (currentStep) {
                     is QueryStep.Familiarity -> FamiliarityStep(
                         uiState.query.familiarity,
@@ -481,7 +511,7 @@ private fun FamiliarityStep(
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         SelectableButton(
             textResId = R.string.current_favorite,
-            image = LibzyIconTheme.History,
+            image = LibzyIconTheme.Repeat,
             selected = selectedFamiliarity == Query.Familiarity.CURRENT_FAVORITE,
             onClick = onCurrentFavoriteClick
         )
@@ -490,7 +520,7 @@ private fun FamiliarityStep(
 
         SelectableButton(
             textResId = R.string.reliable_classic,
-            image = LibzyIconTheme.FavoriteBorder,
+            image = LibzyIconTheme.StarOutline,
             selected = selectedFamiliarity == Query.Familiarity.RELIABLE_CLASSIC,
             onClick = onReliableClassicClick
         )
@@ -499,7 +529,7 @@ private fun FamiliarityStep(
 
         SelectableButton(
             textResId = R.string.underappreciated_gem,
-            image = LibzyIconTheme.SavedSearch,
+            image = LibzyIconTheme.Diamond,
             selected = selectedFamiliarity == Query.Familiarity.UNDERAPPRECIATED_GEM,
             onClick = onUnderappreciatedGemClick
         )
@@ -581,6 +611,7 @@ private fun SliderQueryStep(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @ExperimentalAnimationApi
 @Composable
 private fun GenresStep(
@@ -591,7 +622,7 @@ private fun GenresStep(
     onSearchGenresClick: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    val keyboard = LocalWindowInsets.current.ime
+    val keyboardVisible = WindowInsets.isImeVisible
     val scrollState = rememberScrollState()
     val genresToDisplay = genresStep.genreOptions.take(genresStep.numGenreOptionsToShow).let { genreOptions ->
         when (genresStep) {
@@ -606,8 +637,8 @@ private fun GenresStep(
         }
     }
 
-    LaunchedEffect(scrollState, keyboard) {
-        snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboard.isVisible }.collect {
+    LaunchedEffect(scrollState, keyboardVisible) {
+        snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboardVisible }.collect {
             focusManager.clearFocus() // close the keyboard if it is open when the user starts scrolling
         }
     }

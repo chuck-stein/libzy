@@ -12,6 +12,7 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Devices
@@ -41,7 +42,19 @@ fun BackgroundGradient(content: @Composable () -> Unit = {}) {
         1f + gradientPositionOffset to LibzyColors.VeryDeepPurple
     )
     Surface(
-        modifier = Modifier.fillMaxSize().background(gradient),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(gradient)
+            .drawWithContent {
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black),
+                        startY = size.height * 0.75f,
+                        endY = size.height * 0.9f
+                    )
+                )
+                drawContent()
+            },
         color = Color.Transparent,
         contentColor = Color.White,
         content = content

@@ -1,10 +1,10 @@
 package io.libzy.ui.common
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -22,14 +22,22 @@ import timber.log.Timber
 abstract class LibzyViewModel<STATE, EVENT>(eventBufferSize: Int = DEFAULT_EVENT_BUFFER_SIZE) : ViewModel() {
 
     protected abstract val initialUiState: STATE
-    private val _uiState by lazy { mutableStateOf(initialUiState) }
-    val uiState: State<STATE> by lazy { _uiState }
+    private val _uiStateFlow by lazy { MutableStateFlow(initialUiState) }
+    val uiStateFlow by lazy { _uiStateFlow.asStateFlow() }
+    val uiState: STATE
+        get() = _uiStateFlow.value
 
     private val _uiEvents = Channel<EVENT>(capacity = eventBufferSize)
     val uiEvents = _uiEvents.receiveAsFlow()
 
     protected fun updateUiState(performUpdate: STATE.() -> STATE) {
-        _uiState.value = _uiState.value.performUpdate()
+        _uiStateFlow.value = _uiStateFlow.value.performUpdate()
+    }
+
+    @JvmName("updateUiSubstate")
+    @Suppress("UNCHECKED_CAST")
+    protected fun <SUBSTATE : STATE> updateUiState(performUpdate: SUBSTATE.() -> STATE) {
+        _uiStateFlow.value = (_uiStateFlow.value as? SUBSTATE)?.let(performUpdate) ?: _uiStateFlow.value
     }
 
     protected fun produceUiEvent(event: EVENT) {

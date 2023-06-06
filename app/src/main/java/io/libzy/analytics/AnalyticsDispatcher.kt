@@ -1,12 +1,13 @@
 package io.libzy.analytics
 
 import android.app.Application
-import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.Resources
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ACOUSTICNESS
-import io.libzy.analytics.AnalyticsConstants.EventProperties.ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ARTIST
+import io.libzy.analytics.AnalyticsConstants.EventProperties.CATEGORIES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_CONNECTED_USER_ID
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_SEARCHING
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_SELECTED_GENRES
@@ -14,12 +15,13 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENT_SEARCH_QUER
 import io.libzy.analytics.AnalyticsConstants.EventProperties.DANCEABILITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ENERGY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FAMILIARITY
+import io.libzy.analytics.AnalyticsConstants.EventProperties.FEEDBACK
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FROM_CURRENT_OPTIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.INSTRUMENTAL
 import io.libzy.analytics.AnalyticsConstants.EventProperties.INSTRUMENTALNESS
-import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_INITIAL_SCAN
+import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_INITIAL_SYNC
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_LONG_TERM_FAVORITE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_LOW_FAMILIARITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_MEDIUM_TERM_FAVORITE
@@ -28,6 +30,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_SHORT_TERM_FAVOR
 import io.libzy.analytics.AnalyticsConstants.EventProperties.LIBRARY_SYNC_TIME
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SYNCED
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUM_RESULTS
+import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_CATEGORIES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_GENRES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.QUESTION_NAME
 import io.libzy.analytics.AnalyticsConstants.EventProperties.QUESTION_NUM
@@ -56,15 +59,13 @@ import io.libzy.analytics.AnalyticsConstants.UserProperties.DISPLAY_NAME
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRARY
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTED
-import io.libzy.domain.AlbumResult
 import io.libzy.domain.Query
+import io.libzy.domain.RecommendationCategory
+import io.libzy.domain.title
+import io.libzy.persistence.database.tuple.LibraryAlbum
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.persistence.prefs.getSharedPrefs
-import io.libzy.repository.UserLibraryRepository
 import io.libzy.util.plus
 import io.libzy.util.toString
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -76,13 +77,8 @@ import kotlin.math.roundToInt
  * with any method parameters needed to send along event properties.
  */
 @Singleton
-class AnalyticsDispatcher @Inject constructor(
-    private val userLibraryRepository: UserLibraryRepository,
-    appContext: Context
-) {
+class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPreferences) {
     private val amplitude = Amplitude.getInstance()
-
-    private val sharedPrefs = appContext.getSharedPrefs()
 
     fun initialize(application: Application, apiKey: String) {
         amplitude
@@ -129,8 +125,8 @@ class AnalyticsDispatcher @Inject constructor(
         amplitude.logEvent(eventName, eventPropertiesJson, outOfSession)
     }
 
-    fun sendRateAlbumResultsEvent(rating: Int) {
-        sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating))
+    fun sendRateAlbumResultsEvent(rating: Int, feedback: String?) {
+        sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating, FEEDBACK to feedback))
     }
 
     fun sendSubmitQueryEvent(query: Query) {
@@ -139,16 +135,25 @@ class AnalyticsDispatcher @Inject constructor(
         sendEvent(SUBMIT_QUERY, query.toEventPropertyMap())
     }
 
-    fun sendViewAlbumResultsEvent(query: Query, results: List<AlbumResult>) {
-        sendEvent(VIEW_ALBUM_RESULTS, query.toEventPropertyMap().plus(
-            ALBUM_RESULTS to results.map { "${it.artists} - ${it.title} (${it.spotifyUri})" },
-            NUM_ALBUM_RESULTS to results.size
+    fun sendViewAlbumResultsEvent(
+        query: Query,
+        recommendationCategories: List<RecommendationCategory>,
+        resources: Resources
+    ) {
+        val categoryMap = recommendationCategories.associate { category ->
+            // prepend titles with underscore so all category event properties appear in Amplitude UI next to each other
+            "_${category.title(resources)}" to category.albumResults.map { "${it.artists} - ${it.title}" }
+        }
+        sendEvent(VIEW_ALBUM_RESULTS, query.toEventPropertyMap().plus(categoryMap).plus(
+            CATEGORIES to categoryMap.keys.map { it.drop(1) }, // remove underscore prefix
+            NUM_CATEGORIES to categoryMap.size,
+            NUM_ALBUM_RESULTS to categoryMap.values.sumOf { it.size }
         ))
     }
 
     fun sendSyncLibraryDataEvent(
         result: LibrarySyncResult,
-        isInitialScan: Boolean,
+        isInitialSync: Boolean,
         numAlbumsSynced: Int? = null,
         librarySyncTime: Double? = null
     ) {
@@ -158,35 +163,32 @@ class AnalyticsDispatcher @Inject constructor(
 
         val eventProperties = mapOf(
             RESULT to result.value,
-            IS_INITIAL_SCAN to isInitialScan,
+            IS_INITIAL_SYNC to isInitialSync,
             NUM_ALBUMS_SYNCED to numAlbumsSynced,
             LIBRARY_SYNC_TIME to librarySyncTime?.roundToInt()
         )
         sendEvent(SYNC_LIBRARY_DATA, eventProperties, outOfSession = true)
     }
 
-    fun sendPlayAlbumEvent(spotifyUri: String) {
+    fun sendPlayAlbumEvent(album: LibraryAlbum) {
         Identify().increment(NUM_ALBUM_PLAYS).updateUserProperties()
 
-        GlobalScope.launch {
-            val album = userLibraryRepository.getAlbumFromUri(spotifyUri)
-            sendEvent(PLAY_ALBUM, mapOf(
-                SPOTIFY_URI to album.spotifyUri,
-                TITLE to album.title,
-                ARTIST to album.artists,
-                GENRES to album.genres,
-                ACOUSTICNESS to album.audioFeatures.acousticness,
-                DANCEABILITY to album.audioFeatures.danceability,
-                ENERGY to album.audioFeatures.energy,
-                INSTRUMENTALNESS to album.audioFeatures.instrumentalness,
-                VALENCE to album.audioFeatures.valence,
-                IS_LONG_TERM_FAVORITE to album.familiarity.longTermFavorite,
-                IS_MEDIUM_TERM_FAVORITE to album.familiarity.mediumTermFavorite,
-                IS_SHORT_TERM_FAVORITE to album.familiarity.shortTermFavorite,
-                IS_RECENTLY_PLAYED to album.familiarity.recentlyPlayed,
-                IS_LOW_FAMILIARITY to album.familiarity.isLowFamiliarity()
-            ))
-        }
+        sendEvent(PLAY_ALBUM, mapOf(
+            SPOTIFY_URI to album.spotifyUri,
+            TITLE to album.title,
+            ARTIST to album.artists,
+            GENRES to album.genres,
+            ACOUSTICNESS to album.audioFeatures.acousticness,
+            DANCEABILITY to album.audioFeatures.danceability,
+            ENERGY to album.audioFeatures.energy,
+            INSTRUMENTALNESS to album.audioFeatures.instrumentalness,
+            VALENCE to album.audioFeatures.valence,
+            IS_LONG_TERM_FAVORITE to album.familiarity.longTermFavorite,
+            IS_MEDIUM_TERM_FAVORITE to album.familiarity.mediumTermFavorite,
+            IS_SHORT_TERM_FAVORITE to album.familiarity.shortTermFavorite,
+            IS_RECENTLY_PLAYED to album.familiarity.recentlyPlayed,
+            IS_LOW_FAMILIARITY to album.familiarity.isLowFamiliarity()
+        ))
     }
 
     fun sendViewQuestionEvent(questionName: String, questionNum: Int, totalQuestions: Int) {
@@ -263,7 +265,7 @@ class AnalyticsDispatcher @Inject constructor(
     // ~~~~~~~~~~~~~~~~~~ Helpers ~~~~~~~~~~~~~~~~~~
 
     private fun Query.toEventPropertyMap() = mapOf(
-        FAMILIARITY to familiarity?.value,
+        FAMILIARITY to familiarity?.stringValue,
         INSTRUMENTAL to instrumental,
         ACOUSTICNESS to acousticness?.toString(FLOAT_PRECISION),
         VALENCE to valence?.toString(FLOAT_PRECISION),

@@ -3,48 +3,50 @@
     <!-- Spotify SDK -->
     <string name="spotify_client_id" translatable="false">058c796e8b3740d190136f2ebc4d64ab</string>
     <string name="spotify_auth_redirect_uri" translatable="false">io.libzy://spotify-auth</string>
-    
-    <!-- Amplitude SDK -->
-    <string name="amplitude_api_key_dev" translatable="false">f1201f6fa3f87ba14fca4e448f3d40b9</string>
-    <string name="amplitude_api_key_prod" translatable="false">5257667ce56af0dcc0d10101d455d4d3</string>
 
     <!-- Room DB -->
-    <string name="database_file_name" translatable="false">spotify_library</string>
+    <string name="database_file_name" translatable="false">libzy_database</string>
     
     <!-- Notification Channels -->
-    <string name="library_scan_progress_notification_channel_id" translatable="false">channel_library_scan_progress</string>
-    <string name="library_scan_progress_notification_channel_name">Library Scan Progress</string>
-    <string name="library_scan_progress_notification_channel_description">Displays the progress while scanning your Spotify library</string>
-    <string name="library_scan_update_notification_channel_id" translatable="false">channel_library_scan_update</string>
-    <string name="library_scan_update_notification_channel_name">Library Scan Update</string>
-    <string name="library_scan_update_notification_channel_description">Notifies you when a scan of your Spotify library succeeds or fails</string>
+    <string name="library_sync_progress_notification_channel_id" translatable="false">channel_library_sync_progress</string>
+    <string name="library_sync_progress_notification_channel_name">Library Sync Progress</string>
+    <string name="library_sync_progress_notification_channel_description">Displays the progress while syncing your Spotify library</string>
+    <string name="library_sync_update_notification_channel_id" translatable="false">channel_library_sync_update</string>
+    <string name="library_sync_update_notification_channel_name">Library Sync Update</string>
+    <string name="library_sync_update_notification_channel_description">Notifies you when a sync of your Spotify library succeeds or fails</string>
 
     <!-- Notifications -->
-    <string name="initial_library_scan_notification_title">Scanning your Spotify library…</string>
-    <string name="initial_library_scan_succeeded_notification_title">Finished scanning your Spotify library!</string>
-    <string name="initial_library_scan_succeeded_notification_text">Ready to find something to listen to?</string>
-    <string name="initial_library_scan_failed_notification_title">There was a problem scanning your Spotify library!</string>
-    <string name="initial_library_scan_failed_notification_text">Please try again.</string>
+    <string name="initial_library_sync_notification_title">Syncing your Spotify library…</string>
+    <string name="initial_library_sync_succeeded_notification_title">Finished syncing your Spotify library!</string>
+    <string name="initial_library_sync_succeeded_notification_text">Ready to find something to listen to?</string>
+    <string name="initial_library_sync_failed_notification_title">There was a problem syncing your Spotify library!</string>
+    <string name="initial_library_sync_failed_notification_text">Please try again.</string>
 
-    <!-- Navigation -->
+    <!-- Global UI -->
     <string name="cd_navigate_back">Navigate back</string>
+    <string name="action_submit">Submit</string>
+    <string name="action_cancel">Cancel</string>
 
     <!-- Connect Spotify Screen -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
+    <string name="welcome_to_libzy">Welcome to Libzy</string>
+    <string name="your_digital_record_collection">Your digital record collection</string>
+    <string name="getting_started">To get started, please connect your Spotify account</string>
+    <string name="cd_libzy_icon">Libzy icon</string>
     <string name="snackbar_spotify_authorization_failed">Failed to authorize your Spotify account! Please try again.</string>
-    <string name="snackbar_library_scan_failed">There was a problem scanning your Spotify library! Please try again.</string>
-    <string name="scanning_library_heading">Scanning your Spotify library…</string>
-    <string name="scanning_library_subheading">This may take a few minutes, so feel free to come back later</string>
+    <string name="snackbar_library_sync_failed">There was a problem syncing your Spotify library! Please try again.</string>
+    <string name="syncing_library_heading">Syncing your Spotify library…</string>
+    <string name="syncing_library_subheading">This may take a few minutes, so feel free to come back later</string>
 
     <!-- Query Screen -->
     <string name="morning_greeting_text">Good morning!</string>
     <string name="afternoon_greeting_text">Good afternoon!</string>
     <string name="evening_greeting_text">Good evening!</string>
     <string name="query_instructions_text">What are you in the mood to listen to?</string>
-    <string name="no_preference">No preference</string>
-    <string name="current_favorite">Current favorite</string>
-    <string name="underappreciated_gem">Underappreciated gem</string>
-    <string name="reliable_classic">Reliable classic</string>
+    <string name="no_preference">No Preference</string>
+    <string name="current_favorite">Current Favorite</string>
+    <string name="underappreciated_gem">Underappreciated Gem</string>
+    <string name="reliable_classic">Reliable Classic</string>
     <string name="positive_emotion">Positive Emotion</string>
     <string name="negative_emotion">Negative Emotion</string>
     <string name="acoustic">Acoustic</string>
@@ -62,13 +64,44 @@
     <string name="no_genre_results">There are no genres from your library matching \"%s\".</string>
 
     <!-- Results Screen -->
-    <string name="results_header">Here are some suggested albums from your library:</string>
+    <string name="recommended_albums_title">Recommended Albums</string>
     <string name="toast_spotify_remote_failed">There was a problem playing this album remotely! Try using Spotify directly.</string>
-    <string name="results_rating_text">How are these suggestions?\n Your feedback is much appreciated!</string>
-    <string name="no_results_header">Oops! We couldn\'t quite find the vibe right now. Try looking for something else or saving more albums on Spotify.</string>
+    <string name="no_results_header">Oops!</string>
+    <string name="no_results_description">We couldn\'t quite find the vibe right now. Try looking for something else or saving more albums on Spotify.</string>
     <string name="start_over">Start over</string>
+    <string name="open_spotify">Open Spotify</string>
     <string name="cd_album_artwork">Album artwork</string>
     <string name="cd_filled_rating_star">Filled rating star</string>
     <string name="cd_unfilled_rating_star">Unfilled rating star</string>
+    <string name="underappreciated_gems">Underappreciated Gems</string>
+    <string name="reliable_classics">Reliable Classics</string>
+    <string name="current_favorites">Current Favorites</string>
+    <string name="underappreciated_genre">Underappreciated %s</string>
+    <string name="reliable_genre_classics">Reliable %s Classics</string>
+    <string name="current_genre_favorites">Current %s Favorites</string>
+    <string name="full_match_category_title">Best Overall Match</string>
+    <string name="electric_electronic_abbreviated">Electr(on)ic</string>
+    <string name="positive">Positive</string>
+    <string name="negative">Negative</string>
+    <string name="rate_results">Rate Results</string>
+    <string name="rate_results_prompt">How relevant are these recommended albums to your search? Your feedback is much appreciated!</string>
+    <string name="results_feedback_placeholder">Optionally, provide a reason for your rating…</string>
+    <string name="results_feedback_submitted">Thank you! Your feedback has been submitted.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings">Settings</string>
+    <string name="log_out">Log Out</string>
+    <string name="log_out_dialog_description">Are you sure you want to disconnect your Spotify account? The next time you log in with this account we will need to sync your entire library.</string>
+    <string name="last_sync_date_label">Spotify library last synced:</string>
+    <string name="sync">SYNC</string>
+    <string name="ask_me_about">Ask me about:</string>
+    <string name="familiarity_label">Familiarity</string>
+    <string name="instrumentalness_label">Instrumental or Vocal</string>
+    <string name="acousticness_label">Acoustic or Electric/Electronic</string>
+    <string name="valence_label">Positive Emotion or Negative Emotion</string>
+    <string name="energy_label">Energetic or Chill</string>
+    <string name="danceability_label">Danceable or Arrhythmic</string>
+    <string name="genres_label">Genres</string>
+    <string name="unknown">Unknown</string>
 
 </resources>

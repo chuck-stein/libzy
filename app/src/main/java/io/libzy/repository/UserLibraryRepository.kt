@@ -11,7 +11,9 @@ import io.libzy.persistence.database.tuple.AudioFeaturesTuple
 import io.libzy.persistence.database.tuple.FamiliarityTuple
 import io.libzy.spotify.api.SpotifyApiDelegator
 import io.libzy.util.percentageToFloat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -20,10 +22,17 @@ import javax.inject.Singleton
 @Singleton
 class UserLibraryRepository @Inject constructor(
     private val database: UserLibraryDatabase,
-    private val spotifyApi: SpotifyApiDelegator
+    private val spotifyApi: SpotifyApiDelegator,
+    private val coroutineScope: CoroutineScope
 ) {
 
     val albums = database.albumDao.getAllAlbums()
+
+    fun clearLibraryData() {
+        coroutineScope.launch(Dispatchers.IO) {
+            database.clearAllTables()
+        }
+    }
 
     /**
      * Run a Spotify library sync by requesting the user's latest library data from the Spotify API,
@@ -57,8 +66,8 @@ class UserLibraryRepository @Inject constructor(
         Timber.v("Scanning genres in saved albums")
         val dbGenres = mutableSetOf<DbGenre>()
         val albumGenreJunctions = mutableSetOf<AlbumGenreJunction>()
-        fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums)
-        
+        if (dbAlbums.isNotEmpty()) fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums)
+
         Timber.v("Saving library data in local database")
         database.runInTransaction { // TODO: ensure nested transactions work as expected
             database.albumDao.replaceAll(dbAlbums)

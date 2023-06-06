@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyTheme
@@ -20,13 +19,11 @@ import io.libzy.ui.theme.LibzyTheme
 @Composable
 fun LibzyContent(content: @Composable () -> Unit) {
     LibzyTheme {
-        ProvideWindowInsets {
-            val systemUiController = rememberSystemUiController()
-            SideEffect {
-                systemUiController.setStatusBarColor(Color.Transparent)
-                systemUiController.setNavigationBarColor(LibzyColors.ForcedTransparency)
-            }
-            BackgroundGradient(content)
+        val systemUiController = rememberSystemUiController()
+        SideEffect {
+            systemUiController.setStatusBarColor(Color.Transparent)
+            systemUiController.setNavigationBarColor(LibzyColors.ForcedTransparency)
         }
+        BackgroundGradient(content)
     }
 }

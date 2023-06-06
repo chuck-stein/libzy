@@ -4,65 +4,76 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.FabPosition
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarData
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import io.libzy.ui.BackgroundGradient
 import io.libzy.ui.LibzyContent
+import io.libzy.ui.theme.LibzyColors
 
 /**
  * A custom [Scaffold] implementation which takes care of creating a common [TopAppBar] and [SnackbarHost],
  * adding padding for the system status bar and navigation bar so that they do not overlap screen content,
  * and making the background transparent so that content appears over the [BackgroundGradient] from [LibzyContent].
- *
- * @param title The title for the [TopAppBar].
- * @param navigationIcon The primary nav icon, to place in the top-left corner of the screen inside the [TopAppBar],
- *                       or null for no top-left nav icon.
  */
 @Composable
 fun LibzyScaffold(
     scaffoldState: ScaffoldState = rememberScaffoldState(),
+    showTopBar: Boolean = true,
     title: @Composable () -> Unit = {},
     navigationIcon: @Composable (() -> Unit)? = null,
     actionIcons: @Composable RowScope.() -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
     content: @Composable (BoxScope) -> Unit
 ) {
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            TopAppBar(
-                title = title,
-                navigationIcon = navigationIcon,
-                actions = actionIcons,
-                backgroundColor = Color.Transparent,
-                elevation = 0.dp,
-                contentPadding = rememberInsetsPaddingValues(
-                    insets = LocalWindowInsets.current.statusBars,
-                    applyBottom = false,
+            if (showTopBar) {
+                TopAppBar(
+                    title = title,
+                    navigationIcon = navigationIcon,
+                    actions = actionIcons,
+                    backgroundColor = Color.Transparent,
+                    elevation = 0.dp,
+                    contentPadding = WindowInsets.statusBars.asPaddingValues()
                 )
-            )
+            } else {
+                Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars).fillMaxWidth())
+            }
         },
         bottomBar = {
-            Spacer(Modifier.navigationBarsHeight().fillMaxWidth())
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars).fillMaxWidth())
         },
+        floatingActionButton = floatingActionButton,
+        floatingActionButtonPosition = floatingActionButtonPosition,
         snackbarHost = { LibzySnackbarHost(it) },
         backgroundColor = Color.Transparent
     ) { contentPadding ->
@@ -71,14 +82,23 @@ fun LibzyScaffold(
 }
 
 @Composable
-private fun LibzySnackbarHost(state: SnackbarHostState) {
-    SnackbarHost(state, modifier = Modifier.navigationBarsPadding()) {
+private fun LibzySnackbarHost(state: SnackbarHostState, modifier: Modifier = Modifier) {
+    SnackbarHost(hostState = state, modifier = modifier.navigationBarsPadding()) { snackbarData ->
         Snackbar(
-            backgroundColor = MaterialTheme.colors.surface,
-            contentColor = MaterialTheme.colors.onSurface,
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp),
+            backgroundColor = LibzyColors.OffWhite,
+            contentColor = Color.Black,
+            action = snackbarData.actionLabel?.let {
+                {
+                    TextButton(
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colors.primary),
+                        onClick = { snackbarData.performAction() },
+                        content = { Text(it) }
+                    )
+                }
+            }
         ) {
-            Text(it.message, style = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Start))
+            Text(snackbarData.message, style = MaterialTheme.typography.body2.copy(textAlign = TextAlign.Start))
         }
     }
 }

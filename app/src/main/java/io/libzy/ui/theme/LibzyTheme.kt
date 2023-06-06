@@ -27,8 +27,7 @@ private val DarkColors = darkColors(
     secondary = LibzyColors.PinkGray,
     secondaryVariant = LibzyColors.DarkPinkGray,
     error = Color.Red,
-    surface = LibzyColors.OffWhite,
-    onSurface = Color.Black
+    surface = LibzyColors.SurfaceGray
 )
 
 private val LibzyTypography = Typography(

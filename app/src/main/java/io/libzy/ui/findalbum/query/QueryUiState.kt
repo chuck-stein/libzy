@@ -4,14 +4,15 @@ import io.libzy.R
 import io.libzy.domain.Query
 
 data class QueryUiState(
-    val stepOrder: List<QueryStep.Type>,
-    val currentStep: QueryStep,
+    val stepOrder: List<Query.Parameter> = DEFAULT_STEP_ORDER,
+    val currentStep: QueryStep = QueryStep.Familiarity,
     val previousStepIndex: Int? = null,
-    val query: Query = Query()
+    val query: Query = Query(),
+    val loading: Boolean = false
 ) {
-    val currentStepIndex = stepOrder.indexOfFirst { it == currentStep.type }
+    val currentStepIndex = stepOrder.indexOfFirst { it == currentStep.parameterType }
     private val onFinalStep = currentStepIndex == stepOrder.size - 1
-    val pastFirstStep = currentStepIndex > 0
+    val showBackButton = currentStepIndex > 0 || currentStep is QueryStep.Genres.Search
     val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
     val continueButtonEnabled = when (currentStep) {
         is QueryStep.Familiarity -> query.familiarity != null
@@ -22,7 +23,11 @@ data class QueryUiState(
         is QueryStep.Danceability -> query.danceability != null
         is QueryStep.Genres -> query.genres != null
     }
-    val startOverButtonVisible = currentStep !is QueryStep.Genres.Search && pastFirstStep
+    val actionIcon = when (currentStepIndex) {
+        0 -> QueryScreenActionIcon.Settings
+        else -> QueryScreenActionIcon.StartOver
+    }.takeIf { currentStep !is QueryStep.Genres.Search }
+
     val navigatingForward = previousStepIndex == null || previousStepIndex <= currentStepIndex
 
     init {
@@ -34,59 +39,54 @@ data class QueryUiState(
 
     companion object {
         val DEFAULT_STEP_ORDER = listOf(
-            QueryStep.Type.FAMILIARITY,
-            QueryStep.Type.INSTRUMENTALNESS,
-            QueryStep.Type.ACOUSTICNESS,
-            QueryStep.Type.VALENCE,
-            QueryStep.Type.ENERGY,
-            QueryStep.Type.DANCEABILITY,
-            QueryStep.Type.GENRES
+            Query.Parameter.FAMILIARITY,
+            Query.Parameter.INSTRUMENTALNESS,
+            Query.Parameter.ACOUSTICNESS,
+            Query.Parameter.VALENCE,
+            Query.Parameter.ENERGY,
+            Query.Parameter.DANCEABILITY,
+            Query.Parameter.GENRES
         )
     }
 }
 
-sealed class QueryStep(val type: Type) {
+sealed class QueryStep(val parameterType: Query.Parameter) {
 
-    enum class Type(val stringValue: String) {
-        FAMILIARITY("familiarity"),
-        INSTRUMENTALNESS("instrumentalness"),
-        ACOUSTICNESS("acousticness"),
-        VALENCE("valence"),
-        ENERGY("energy"),
-        DANCEABILITY("danceability"),
-        GENRES("genres")
-    }
+    object Familiarity : QueryStep(Query.Parameter.FAMILIARITY)
 
-    object Familiarity : QueryStep(Type.FAMILIARITY)
+    object Instrumentalness : QueryStep(Query.Parameter.INSTRUMENTALNESS)
 
-    object Instrumentalness : QueryStep(Type.INSTRUMENTALNESS)
+    object Acousticness : QueryStep(Query.Parameter.ACOUSTICNESS)
 
-    object Acousticness : QueryStep(Type.ACOUSTICNESS)
+    object Valence : QueryStep(Query.Parameter.VALENCE)
 
-    object Valence : QueryStep(Type.VALENCE)
+    object Energy : QueryStep(Query.Parameter.ENERGY)
 
-    object Energy : QueryStep(Type.ENERGY)
+    object Danceability : QueryStep(Query.Parameter.DANCEABILITY)
 
-    object Danceability : QueryStep(Type.DANCEABILITY)
-
-    sealed class Genres : QueryStep(Type.GENRES) {
+    sealed class Genres : QueryStep(Query.Parameter.GENRES) {
         abstract val genreOptions: List<String>
 
         // TODO: calculate this based on screen size rather than magic numbers: https://chilipot.atlassian.net/browse/LIB-272
         abstract val numGenreOptionsToShow: Int
 
         data class Recommendations(
-            override val genreOptions: List<String>,
+            override val genreOptions: List<String> = emptyList(),
             val recentlyRemovedGenres: Set<String> = emptySet()
         ) : Genres() {
             override val numGenreOptionsToShow = 28
         }
 
         data class Search(
-            val searchQuery: String,
-            override val genreOptions: List<String>
+            override val genreOptions: List<String> = emptyList(),
+            val searchQuery: String
         ) : Genres() {
             override val numGenreOptionsToShow = 50
         }
     }
+}
+
+enum class QueryScreenActionIcon {
+    Settings,
+    StartOver
 }

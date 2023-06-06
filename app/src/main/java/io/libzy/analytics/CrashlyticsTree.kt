@@ -10,23 +10,16 @@ import com.google.firebase.ktx.Firebase
 import timber.log.Timber
 
 /**
- * A logging [Timber.Tree] which logs INFO, WARN, and ERROR level messages to Firebase Crashlytics,
- * along with any exceptions the log contains. Ignores DEBUG and VERBOSE level logs.
+ * A logging [Timber.Tree] which logs WARN and ERROR level messages to Firebase Crashlytics,
+ * along with any exceptions the log contains. Ignores INFO, DEBUG, and VERBOSE level logs.
  */
 class CrashlyticsTree : Timber.Tree() {
     
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (priority == VERBOSE || priority == DEBUG) return
-        
-        val messagePrefix = when(priority) {
-            INFO -> "INFO: "
-            WARN -> "WARNING: "
-            ERROR -> "ERROR: "
-            else -> ""
-        }
-        
-        Firebase.crashlytics.log(messagePrefix + message)
-        
+        if (priority !in listOf(WARN, ERROR)) return
+
+        val logPrefix = if (priority == WARN) "WARNING: " else "ERROR: "
+        Firebase.crashlytics.log(logPrefix + message)
         if (t != null) Firebase.crashlytics.recordException(t)
     }
     

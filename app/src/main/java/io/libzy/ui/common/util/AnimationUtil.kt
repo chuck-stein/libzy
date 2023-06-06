@@ -109,7 +109,6 @@ class AnimatedContentDelegatorScope<S>(private val delegate: AnimatedContentScop
  * This overload is useful when some state that [content] depends on
  * in order to render is not available when [visible] is false.
  */
-@ExperimentalAnimationApi
 @Composable
 fun <S> StatefulAnimatedVisibility(
     visible: Boolean,

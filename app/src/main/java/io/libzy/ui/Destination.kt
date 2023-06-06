@@ -1,8 +1,8 @@
 package io.libzy.ui
 
 import android.net.Uri
+import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavDeepLink
-import androidx.navigation.compose.NamedNavArgument
 import androidx.navigation.navDeepLink
 
 /**
@@ -44,5 +44,8 @@ sealed class Destination {
     }
     object Results : Destination() {
         override val route = "results"
+    }
+    object Settings : Destination() {
+        override val route = "settings"
     }
 }
