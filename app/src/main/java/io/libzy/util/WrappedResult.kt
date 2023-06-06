@@ -136,6 +136,30 @@ inline fun <RESULT, OUTPUT, reified E : Exception> WrappedResult<RESULT, OUTPUT>
 }
 
 /**
+ * Attaches an [exceptionHandler] to a chain of functional error handling.
+ *
+ * If the receiving [WrappedResult] represents a failure which wraps an exception of any of the given [exceptionTypes],
+ * then the [exceptionHandler] will be called with the wrapped exception, and this function will return a new
+ * [WrappedResult] which will no longer rethrow the wrapped exception once [unwrap]ped.
+ * Instead, once unwrapped, it will return the output of the [exceptionHandler].
+ *
+ * If the receiving [WrappedResult] does not wrap an exception of one of the given [exceptionTypes],
+ * then this function will return that [WrappedResult] unchanged.
+ *
+ * @param exceptionTypes The types of exception to handle.
+ * @param exceptionHandler Analogous to a catch block.
+ */
+inline fun <RESULT, OUTPUT> WrappedResult<RESULT, OUTPUT>.handleAny(
+    vararg exceptionTypes: KClass<*>,
+    exceptionHandler: (exception: Exception) -> OUTPUT
+): WrappedResult<RESULT, OUTPUT> {
+    if (this is WrappedResult.Failure && exceptionTypes.any { wrappedException::class == it }) {
+        return toHandledFailure(exceptionHandler(wrappedException))
+    }
+    return this
+}
+
+/**
  * Completes a chain of functional error handling, by unwrapping the receiving [WrappedResult].
  *
  * The [WrappedResult] may be wrapping a value of type [RESULT] if the operation was a success, in which case

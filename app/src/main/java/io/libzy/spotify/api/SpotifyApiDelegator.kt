@@ -4,7 +4,11 @@ import android.content.SharedPreferences
 import com.adamratzman.spotify.SpotifyApiOptions
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.SpotifyClientApiBuilder
-import com.adamratzman.spotify.SpotifyException
+import com.adamratzman.spotify.SpotifyException.AuthenticationException
+import com.adamratzman.spotify.SpotifyException.BadRequestException
+import com.adamratzman.spotify.SpotifyException.ParseException
+import com.adamratzman.spotify.SpotifyException.ReAuthenticationNeededException
+import com.adamratzman.spotify.SpotifyException.TimeoutException
 import com.adamratzman.spotify.SpotifyUserAuthorization
 import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
 import com.adamratzman.spotify.models.Artist
@@ -15,6 +19,10 @@ import com.adamratzman.spotify.models.Track
 import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.util.currentTimeSeconds
+import io.libzy.util.handle
+import io.libzy.util.handleAny
+import io.libzy.util.unwrap
+import io.libzy.util.wrapResultForOutput
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -116,28 +124,28 @@ class SpotifyApiDelegator @Inject constructor(
         }
 
         return withContext(Dispatchers.IO) {
-            try {
+            wrapResultForOutput {
                 apiCall()
-            } catch (e: SpotifyException.AuthenticationException) {
+            }.handleAny(AuthenticationException::class, ReAuthenticationNeededException::class) {
                 retryCallWithNewToken()
-            } catch (e: SpotifyException.BadRequestException) {
+            }.handle(BadRequestException::class) { e ->
                 if (e.statusCode == 401) retryCallWithNewToken()
                 else e.statusCode.let { errorCode ->
-                    if (errorCode != null && errorCode >= 500 && errorCode < 600) {
+                    if (errorCode != null && errorCode in 500..599) {
                         Timber.w(e, "API call failed due to server error $errorCode, trying one more time...")
                         apiCall()
                     }
                     else throw e
                 }
-            } catch (e: SpotifyException.ParseException) {
+            }.handle(ParseException::class) { e ->
                 Timber.w(e, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
                 // this is a temporary workaround for Spotify sometimes sending 503 errors during library refresh
                 if (num503s < 10) doSafeApiCall(num503s + 1, apiCall)
                 else throw e
-            } catch (e: SpotifyException.TimeoutException) {
+            }.handle(TimeoutException::class) { e ->
                 Timber.w(e, "API call failed due to timing out, trying one more time...")
                 apiCall()
-            }
+            }.unwrap()
         }
     }
 

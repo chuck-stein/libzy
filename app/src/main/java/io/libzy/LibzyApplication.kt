@@ -9,7 +9,6 @@ import android.util.Log
 import androidx.work.Configuration
 import androidx.work.DelegatingWorkerFactory
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import io.libzy.analytics.AnalyticsDispatcher
@@ -17,7 +16,7 @@ import io.libzy.analytics.CrashlyticsTree
 import io.libzy.di.AndroidModule
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
-import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.repository.PreferencesRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
 import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
@@ -37,6 +36,9 @@ class LibzyApplication : Application(), Configuration.Provider {
     lateinit var userLibraryRepository: UserLibraryRepository
 
     @Inject
+    lateinit var preferencesRepository: PreferencesRepository
+
+    @Inject
     lateinit var analyticsDispatcher: AnalyticsDispatcher
 
     @Inject
@@ -47,8 +49,6 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var applicationScope: CoroutineScope
-
-    private var sharedPrefsListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -63,7 +63,9 @@ class LibzyApplication : Application(), Configuration.Provider {
         val workerFactory = DelegatingWorkerFactory()
         // can't use the injected sharedPrefs because it will not have been injected yet when this method is called
         val sharedPrefs = AndroidModule().provideSharedPrefs(this)
-        workerFactory.addFactory(LibrarySyncWorker.Factory(userLibraryRepository, analyticsDispatcher, sharedPrefs))
+        workerFactory.addFactory(
+            LibrarySyncWorker.Factory(userLibraryRepository, preferencesRepository, analyticsDispatcher, sharedPrefs)
+        )
 
         return Configuration.Builder()
             .setMinimumLoggingLevel(Log.VERBOSE)
@@ -89,19 +91,19 @@ class LibzyApplication : Application(), Configuration.Provider {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Library Scan Progress channel
+        // Library Sync Progress channel
         createNotificationChannel(
-            R.string.library_scan_progress_notification_channel_id,
-            R.string.library_scan_progress_notification_channel_name,
-            R.string.library_scan_progress_notification_channel_description,
+            R.string.library_sync_progress_notification_channel_id,
+            R.string.library_sync_progress_notification_channel_name,
+            R.string.library_sync_progress_notification_channel_description,
             NotificationManager.IMPORTANCE_LOW
         )
 
-        // Library Scan Update channel
+        // Library Sync Update channel
         createNotificationChannel(
-            R.string.library_scan_update_notification_channel_id,
-            R.string.library_scan_update_notification_channel_name,
-            R.string.library_scan_update_notification_channel_description,
+            R.string.library_sync_update_notification_channel_id,
+            R.string.library_sync_update_notification_channel_name,
+            R.string.library_sync_update_notification_channel_description,
             NotificationManager.IMPORTANCE_HIGH
         )
     }
@@ -109,15 +111,13 @@ class LibzyApplication : Application(), Configuration.Provider {
     /**
      * Setup a WorkManager background job to sync Spotify library data every 15 minutes.
      *
-     * If there is no Spotify account connected to Libzy, set a callback to start the job upon connection.
+     * If there is no Spotify account connected to Libzy, do not launch the job.
      */
     private fun scheduleLibrarySync() {
-
-        fun enqueueWorkRequest(builderBlock: PeriodicWorkRequest.Builder.() -> PeriodicWorkRequest.Builder = { this }) {
-            applicationScope.launch {
+        applicationScope.launch {
+            if (preferencesRepository.spotifyConnectedState.value) {
                 val workRequest =
                     PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL)
-                        .builderBlock()
                         .build()
 
                 workManager.enqueueUniquePeriodicWork(
@@ -126,27 +126,6 @@ class LibzyApplication : Application(), Configuration.Provider {
                     workRequest
                 )
             }
-        }
-
-        val spotifyConnected = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
-
-        if (spotifyConnected) {
-            enqueueWorkRequest()
-        } else {
-            sharedPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
-                if (key == SharedPrefKeys.SPOTIFY_CONNECTED && prefs.getBoolean(key, false)) {
-                    applicationScope.launch {
-                        // Spotify was just connected, meaning the first library scan just completed,
-                        // so schedule the next one in 15 minutes, which will recur every subsequent 15 minutes
-                        enqueueWorkRequest {
-                            setInitialDelay(LIBRARY_SYNC_INTERVAL)
-                        }
-                        prefs.unregisterOnSharedPreferenceChangeListener(sharedPrefsListener)
-                        sharedPrefsListener = null
-                    }
-                }
-            }
-            sharedPrefs.registerOnSharedPreferenceChangeListener(sharedPrefsListener)
         }
     }
     

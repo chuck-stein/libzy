@@ -15,6 +15,7 @@ import androidx.navigation.navigation
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.findalbum.query.QueryScreen
 import io.libzy.ui.findalbum.results.ResultsScreen
+import io.libzy.ui.settings.SettingsScreen
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
@@ -23,7 +24,7 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnecte
     val navController = rememberNavController()
 
     // define a helper for adding destinations to the graph
-    fun NavGraphBuilder.screen(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
+    fun NavGraphBuilder.composable(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
         composable(destination.route, destination.arguments, destination.deepLinks) { backStackEntry ->
             val redirectToConnectSpotify = remember { destination.requiresSpotifyConnection && !isSpotifyConnected() }
             LaunchedEffect(redirectToConnectSpotify) {
@@ -35,16 +36,19 @@ fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnecte
 
     // TODO: add transition animations to/from each screen in the nav graph once they are supported (especially Results)
     NavHost(navController, route = Destination.NavHost.route, startDestination = Destination.FindAlbumFlow.route) {
-        screen(Destination.ConnectSpotify) {
+        composable(Destination.ConnectSpotify) {
             ConnectSpotifyScreen(navController, viewModelFactory, exitApp)
         }
         navigation(route = Destination.FindAlbumFlow.route, startDestination = Destination.Query.route) {
-            screen(Destination.Query) { backStackEntry ->
+            composable(Destination.Query) { backStackEntry ->
                 QueryScreen(navController, viewModelFactory, backStackEntry)
             }
-            screen(Destination.Results) { backStackEntry ->
+            composable(Destination.Results) { backStackEntry ->
                 ResultsScreen(navController, viewModelFactory, backStackEntry)
             }
+        }
+        composable(Destination.Settings) {
+            SettingsScreen(navController, viewModelFactory)
         }
     }
 }

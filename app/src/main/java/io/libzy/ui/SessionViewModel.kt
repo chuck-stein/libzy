@@ -12,6 +12,7 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.repository.PreferencesRepository
 import io.libzy.repository.UserProfileRepository
 import io.libzy.spotify.auth.SpotifyAccessToken
 import io.libzy.spotify.auth.SpotifyAuthCallback
@@ -30,24 +31,25 @@ import javax.inject.Inject
 class SessionViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val userProfileRepository: UserProfileRepository,
+    private val preferencesRepository: PreferencesRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val workManager: WorkManager,
     private val sharedPrefs: SharedPreferences,
     appContext: Context
 ) : EventsOnlyViewModel<SessionUiEvent>(), SpotifyAuthClientProxy {
 
+    fun isSpotifyConnected() = preferencesRepository.isSpotifyConnected()
+
     private var refreshSpotifyAuthJob: Job? = null
 
     private var spotifyAuthCallback: SpotifyAuthCallback? = null
 
-    private val spotifyAuthRequest by lazy {
+    private val baseSpotifyAuthRequest by lazy {
         AuthorizationRequest.Builder(
             appContext.getString(R.string.spotify_client_id),
             AuthorizationResponse.Type.TOKEN,
             appContext.getString(R.string.spotify_auth_redirect_uri)
-        )
-            .setScopes(arrayOf("user-library-read", "app-remote-control", "user-read-recently-played", "user-top-read"))
-            .build()
+        ).setScopes(arrayOf("user-library-read", "app-remote-control", "user-read-recently-played", "user-top-read"))
     }
 
     init {
@@ -70,15 +72,19 @@ class SessionViewModel @Inject constructor(
                 val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
                 workManager.enqueueUniquePeriodicWork(
                     LibrarySyncWorker.WORK_NAME,
-                    ExistingPeriodicWorkPolicy.REPLACE,
+                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
                     workRequest
                 )
             }
         }
     }
 
-    override fun initiateSpotifyAuthRequest(callback: SpotifyAuthCallback) {
+    override fun initiateSpotifyAuthRequest(
+        callback: SpotifyAuthCallback,
+        authOptions: AuthorizationRequest.Builder.() -> AuthorizationRequest.Builder
+    ) {
         spotifyAuthCallback = callback
+        val spotifyAuthRequest = baseSpotifyAuthRequest.authOptions().build()
         produceUiEvent(SessionUiEvent.SpotifyAuthRequest(spotifyAuthRequest))
     }
 
@@ -126,6 +132,4 @@ class SessionViewModel @Inject constructor(
             }
         }
     }
-
-    fun isSpotifyConnected() = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_CONNECTED, false)
 }

@@ -45,4 +45,7 @@ sealed class Destination {
     object Results : Destination() {
         override val route = "results"
     }
+    object Settings : Destination() {
+        override val route = "settings"
+    }
 }

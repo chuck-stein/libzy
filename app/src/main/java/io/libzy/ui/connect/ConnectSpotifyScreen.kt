@@ -2,7 +2,6 @@ package io.libzy.ui.connect
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +22,7 @@ import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 
 /**
  * **Stateful** Connect Spotify Screen, displaying either a button to connect the user's Spotify
- * account and scan their library, or the progress of the library scan if it has started.
+ * account and sync their library, or the progress of the library sync if it has started.
  */
 @Composable
 fun ConnectSpotifyScreen(
@@ -58,11 +58,11 @@ fun ConnectSpotifyScreen(
     exitApp: () -> Unit
 ) {
     val viewModel: ConnectSpotifyViewModel = viewModel(factory = viewModelFactory)
-    val uiState by viewModel.uiState
+    val uiState by viewModel.uiStateFlow.collectAsState()
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
 
-    val scanFailedMsg = stringResource(R.string.snackbar_library_scan_failed)
+    val syncFailedMsg = stringResource(R.string.snackbar_library_sync_failed)
     val spotifyAuthFailedMsg = stringResource(R.string.snackbar_spotify_authorization_failed)
 
     fun showSnackbar(message: String) {
@@ -74,7 +74,7 @@ fun ConnectSpotifyScreen(
     EventHandler(viewModel.uiEvents) {
         when (it) {
             ConnectSpotifyUiEvent.SPOTIFY_CONNECTED -> navController.popBackStack() // this screen is always a redirect
-            ConnectSpotifyUiEvent.SPOTIFY_SCAN_FAILED -> showSnackbar(scanFailedMsg)
+            ConnectSpotifyUiEvent.SPOTIFY_SYNC_FAILED -> showSnackbar(syncFailedMsg)
             ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED -> showSnackbar(spotifyAuthFailedMsg)
         }
     }
@@ -93,7 +93,7 @@ fun ConnectSpotifyScreen(
 
 /**
  * **Stateless** Connect Spotify Screen, displaying either a button to connect the user's Spotify
- * account and scan their library, or the progress of the library scan if it has started.
+ * account and sync their library, or the progress of the library sync if it has started.
  */
 @Composable
 private fun ConnectSpotifyScreen(
@@ -102,11 +102,11 @@ private fun ConnectSpotifyScreen(
     onConnectSpotifyClick: () -> Unit
 ) {
     LibzyScaffold(scaffoldState = scaffoldState, showTopBar = false) {
-        Crossfade(targetState = uiState.libraryScanInProgress) { libraryScanInProgress ->
-            if (!libraryScanInProgress) {
+        Crossfade(targetState = uiState.librarySyncInProgress) { librarySyncInProgress ->
+            if (!librarySyncInProgress) {
                 WelcomePage(onConnectSpotifyClick)
             } else {
-                LibraryScanProgress()
+                LibrarySyncProgress()
             }
         }
     }
@@ -152,10 +152,9 @@ private fun WelcomePage(onConnectSpotifyClick: () -> Unit) {
                 ),
                 shape = MaterialTheme.shapes.small.copy(CornerSize(percent = 50)),
                 startContent = {
-                    Image(
+                    Icon(
                         painterResource(R.drawable.ic_spotify_black),
-                        stringResource(R.string.cd_spotify_icon),
-                        modifier = Modifier.padding(end = 8.dp)
+                        contentDescription = null
                     )
                 }
             )
@@ -164,9 +163,9 @@ private fun WelcomePage(onConnectSpotifyClick: () -> Unit) {
 }
 
 // TODO: replace CircularProgressIndicator with LinearProgressIndicator(progress = X) where X is a float representing approximate progress,
-//  based on number of albums scanned (could also show some text indicating this) and number of other network operations completed
+//  based on number of albums synced (could also show some text indicating this) and number of other network operations completed
 @Composable
-private fun LibraryScanProgress() {
+private fun LibrarySyncProgress() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -174,14 +173,14 @@ private fun LibraryScanProgress() {
             .padding(horizontal = HORIZONTAL_INSET.dp)
     ) {
         Text(
-            stringResource(R.string.scanning_library_heading),
+            stringResource(R.string.syncing_library_heading),
             style = MaterialTheme.typography.h3,
             modifier = Modifier.weight(0.45f).padding(top = 64.dp)
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(0.55f)) {
             CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
             Spacer(Modifier.height(36.dp))
-            Text(stringResource(R.string.scanning_library_subheading), style = MaterialTheme.typography.h6)
+            Text(stringResource(R.string.syncing_library_subheading), style = MaterialTheme.typography.h6)
         }
     }
 }
@@ -191,7 +190,7 @@ private fun LibraryScanProgress() {
 private fun ConnectSpotifyScreenPreview() {
     LibzyContent {
         ConnectSpotifyScreen(
-            uiState = ConnectSpotifyUiState(libraryScanInProgress = false),
+            uiState = ConnectSpotifyUiState(librarySyncInProgress = false),
             scaffoldState = rememberScaffoldState(),
             onConnectSpotifyClick = {}
         )
@@ -200,10 +199,10 @@ private fun ConnectSpotifyScreenPreview() {
 
 @Preview(device = Devices.PIXEL_4_XL, showSystemUi = true)
 @Composable
-private fun LibraryScanningPreview() {
+private fun LibrarySyncingPreview() {
     LibzyContent {
         ConnectSpotifyScreen(
-            uiState = ConnectSpotifyUiState(libraryScanInProgress = true),
+            uiState = ConnectSpotifyUiState(librarySyncInProgress = true),
             scaffoldState = rememberScaffoldState(),
             onConnectSpotifyClick = {}
         )

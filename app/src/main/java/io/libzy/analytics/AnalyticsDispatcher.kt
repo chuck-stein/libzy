@@ -21,7 +21,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.INSTRUMENTAL
 import io.libzy.analytics.AnalyticsConstants.EventProperties.INSTRUMENTALNESS
-import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_INITIAL_SCAN
+import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_INITIAL_SYNC
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_LONG_TERM_FAVORITE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_LOW_FAMILIARITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_MEDIUM_TERM_FAVORITE
@@ -153,7 +153,7 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
 
     fun sendSyncLibraryDataEvent(
         result: LibrarySyncResult,
-        isInitialScan: Boolean,
+        isInitialSync: Boolean,
         numAlbumsSynced: Int? = null,
         librarySyncTime: Double? = null
     ) {
@@ -163,7 +163,7 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
 
         val eventProperties = mapOf(
             RESULT to result.value,
-            IS_INITIAL_SCAN to isInitialScan,
+            IS_INITIAL_SYNC to isInitialSync,
             NUM_ALBUMS_SYNCED to numAlbumsSynced,
             LIBRARY_SYNC_TIME to librarySyncTime?.roundToInt()
         )

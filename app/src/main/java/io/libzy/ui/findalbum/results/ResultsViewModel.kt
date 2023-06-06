@@ -89,7 +89,7 @@ class ResultsViewModel @Inject constructor(
 
     fun openSpotify(context: Context) { // not leaking context here because we don't store it in memory
         val spotifyIsInstalled = context.packageManager.isPackageInstalled(SPOTIFY_PACKAGE_NAME)
-        val currentAlbumUri = (uiState.value as? ResultsUiState.Loaded)?.currentAlbumUri
+        val currentAlbumUri = (uiState as? ResultsUiState.Loaded)?.currentAlbumUri
 
         val uri = when {
             !spotifyIsInstalled -> Uri.parse(PLAY_STORE_URI).withSpotifyPlayStoreId()

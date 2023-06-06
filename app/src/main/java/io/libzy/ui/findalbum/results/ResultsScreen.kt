@@ -42,11 +42,11 @@ import androidx.compose.material.icons.rounded.ThumbsUpDown
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -109,15 +109,14 @@ fun ResultsScreen(
     backStackEntry: NavBackStackEntry
 ) {
     val viewModel: ResultsViewModel = viewModel(factory = viewModelFactory)
-    val uiState by viewModel.uiState
-
     val findAlbumFlowViewModel: FindAlbumFlowViewModel = viewModel(
         viewModelStoreOwner = remember(backStackEntry) {
             navController.getBackStackEntry(Destination.FindAlbumFlow.route)
         },
         factory = viewModelFactory
     )
-    val findAlbumFlowUiState by rememberSaveable(findAlbumFlowViewModel.uiState) { findAlbumFlowViewModel.uiState }
+    val uiState by viewModel.uiStateFlow.collectAsState()
+    val findAlbumFlowUiState by findAlbumFlowViewModel.uiStateFlow.collectAsState()
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -214,7 +213,7 @@ private fun ResultsScreen(
                     icon = {
                         Icon(
                             painterResource(R.drawable.ic_spotify_black),
-                            contentDescription = stringResource(R.string.cd_spotify_icon)
+                            contentDescription = null
                         )
                     }
                 )

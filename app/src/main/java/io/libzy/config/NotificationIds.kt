@@ -9,8 +9,8 @@ object NotificationIds {
 
     private val nextId = AtomicInteger(0)
 
-    val initialScanProgress = getNextId()
-    val initialScanEnd = getNextId()
+    val initialSyncProgress = getNextId()
+    val initialSyncEnd = getNextId()
 
     private fun getNextId() = nextId.getAndIncrement()
 }

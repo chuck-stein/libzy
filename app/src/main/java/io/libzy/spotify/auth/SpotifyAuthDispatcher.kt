@@ -1,5 +1,6 @@
 package io.libzy.spotify.auth
 
+import com.spotify.sdk.android.auth.AuthorizationRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,7 +55,10 @@ class SpotifyAuthDispatcher @Inject constructor() {
         }
     }
 
-    suspend fun requestAuthorization(withTimeout: Boolean = true): SpotifyAccessToken = withContext(Dispatchers.IO) {
+    suspend fun requestAuthorization(
+        withTimeout: Boolean = true,
+        authOptions: AuthorizationRequest.Builder.() -> AuthorizationRequest.Builder = { this },
+    ): SpotifyAccessToken = withContext(Dispatchers.IO) {
         val timeout = if (withTimeout) AUTH_TIMEOUT.seconds else Duration.INFINITE
         withTimeoutOrNull(timeout) {
             suspendCancellableCoroutine { continuation ->
@@ -85,7 +89,7 @@ class SpotifyAuthDispatcher @Inject constructor() {
                     if (pendingAuthCallbacks.size == 1) {
                         authClientProxy.let {
                             if (it == null) requestsWaitingForProxy = true
-                            else it.initiateSpotifyAuthRequest(onAuthComplete)
+                            else it.initiateSpotifyAuthRequest(onAuthComplete, authOptions)
                         }
                     }
                 }

@@ -105,9 +105,9 @@ object AnalyticsConstants {
 
         /**
          * A [Boolean] property representing whether or not [Events.SYNC_LIBRARY_DATA]
-         * occurred during a user's initial library scan upon first connecting Spotify.
+         * occurred during a user's initial library sync upon first connecting Spotify.
          */
-        const val IS_INITIAL_SCAN = "is initial scan"
+        const val IS_INITIAL_SYNC = "is initial sync"
 
         /**
          * An [Int] property representing how many albums were synced in a successful [Events.SYNC_LIBRARY_DATA].
