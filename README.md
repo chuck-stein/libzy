@@ -1,4 +1,8 @@
 # Libzy
-An Android app to narrow down a large Spotify library into suggested albums, based on your current mood.
+Your digital record collection.
 
-<img src="https://gist.githubusercontent.com/chuck-stein/da3ea19985ad6682daa11127e199632e/raw/45bc8edc097703bc0713948db12cafdd4ff01161/libzy-screenshot-1.jpg" width="20%" /> <img src="https://gist.githubusercontent.com/chuck-stein/da3ea19985ad6682daa11127e199632e/raw/45bc8edc097703bc0713948db12cafdd4ff01161/libzy-screenshot-2.jpg" width="20%" /> <img src="https://gist.githubusercontent.com/chuck-stein/da3ea19985ad6682daa11127e199632e/raw/45bc8edc097703bc0713948db12cafdd4ff01161/libzy-screenshot-3.jpg" width="20%" /> <img src="https://gist.githubusercontent.com/chuck-stein/da3ea19985ad6682daa11127e199632e/raw/45bc8edc097703bc0713948db12cafdd4ff01161/libzy-screenshot-4.jpg" width="20%" />
+| <img src="https://github.com/chuck-stein/libzy/assets/33754765/d3dcf8c7-a860-4aca-bdd2-ad3d48c762f0" width=250 />| <img src="https://github.com/chuck-stein/libzy/assets/33754765/1f34a176-5367-47ed-8679-da82b4ff2962" width=250 /> | <img src="https://github.com/chuck-stein/libzy/assets/33754765/cc159e0c-1880-4e96-b53c-f45e699a64dd" width=250 />|
+| ----------- | ----------- |--|
+
+Libzy is an Android app to narrow down a large Spotify library into suggested albums, based on your current mood.
+
