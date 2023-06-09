@@ -158,11 +158,7 @@ fun QueryScreen(
         uiState = uiState,
         onBackClick = {
             if (keyboardVisible) focusManager.clearFocus()
-            if (uiState.currentStep is QueryStep.Genres.Search) {
-                viewModel.stopGenreSearch()
-            } else {
-                viewModel.goToPreviousStep()
-            }
+            viewModel.goBack()
         },
         onStartOverClick = {
             navController.restartFindAlbumFlow()
@@ -238,7 +234,6 @@ private fun QueryScreen(
                 val iconRotation = remember { Animatable(0f) }
                 val actionIconState = rememberUpdatedState(uiState.actionIcon)
                 LaunchedEffect(iconRotation, actionIconState) {
-                    // TODO: prevent rotation animation from happening when first opening the app, or when navigating from a screen that didn't have the restart icon (e.g. SettingsScreen)
                     snapshotFlow { actionIconState.value }.collect {
                         iconRotation.animateTo(iconRotation.targetValue - 360f, animationSpec = tween())
                     }

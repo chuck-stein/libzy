@@ -167,6 +167,14 @@ class QueryViewModel @Inject constructor(
         }
     }
 
+    fun goBack() {
+        if (uiState.currentStep is QueryStep.Genres.Search) {
+            stopGenreSearch()
+        } else {
+            goToPreviousStep()
+        }
+    }
+
     fun setFamiliarity(familiarity: Query.Familiarity?) {
         updateUiState {
             copy(query = query.copy(familiarity = familiarity))
