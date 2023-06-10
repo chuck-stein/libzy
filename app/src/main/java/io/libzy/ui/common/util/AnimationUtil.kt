@@ -1,7 +1,7 @@
 package io.libzy.ui.common.util
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ContentTransform
@@ -17,7 +17,7 @@ import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.key
@@ -44,7 +44,7 @@ fun <S> AnimatedContent(
     key: Any?,
     modifier: Modifier = Modifier,
     transitionSpec: AnimatedContentDelegatorScope<S>.() -> ContentTransform = {
-        fadeIn(animationSpec = tween(220, delayMillis = 90)) with fadeOut(animationSpec = tween(90))
+        fadeIn(animationSpec = tween(220, delayMillis = 90)) togetherWith fadeOut(animationSpec = tween(90))
     },
     contentAlignment: Alignment = Alignment.TopStart,
     content: @Composable AnimatedVisibilityScope.(targetState: S) -> Unit
@@ -63,19 +63,16 @@ fun <S> AnimatedContent(
 }
 
 /**
- * A wrapper for an [AnimatedContentScope] that has a state of type [State]<[S]>, providing the same properties
- * and functionality as [AnimatedContentScope], but with respect to a state of type [S] (equivalent to the `value` of
- * the wrapped [State]), to hide away the detail of the actual state being wrapped in the [State] type.
+ * A wrapper for an [AnimatedContentTransitionScope] that has a state of type [State]<[S]>, providing the same
+ * properties and functionality as [AnimatedContentTransitionScope], but with respect to a state of type [S]
+ * (equivalent to the `value` of the wrapped [State]), to hide away the detail of the actual state being wrapped in the
+ * [State] type.
  *
- * This cannot be done as an anonymous subclass of [AnimatedContentScope] that overrides [initialState] and
- * [targetState] to reflect the wrapped [AnimatedContentScope]'s [State]'s `value`, because [AnimatedContentScope]
- * is a final class.
- *
- * TODO: Once [AnimatedContentScope] is no longer experimental, see if the aforementioned alternative approach will
- *  now work, as there is a note in the source that it may become a (hopefully public) interface.
+ * This cannot be done as an anonymous subclass of [AnimatedContentTransitionScope] that overrides [initialState] and
+ * [targetState] to reflect the wrapped [AnimatedContentTransitionScope]'s [State]'s `value`,
+ * because [AnimatedContentTransitionScope] is a sealed interface.
  */
-@ExperimentalAnimationApi
-class AnimatedContentDelegatorScope<S>(private val delegate: AnimatedContentScope<State<S>>) {
+class AnimatedContentDelegatorScope<S>(private val delegate: AnimatedContentTransitionScope<State<S>>) {
 
     val initialState: S
         get() = delegate.initialState.value
@@ -85,7 +82,7 @@ class AnimatedContentDelegatorScope<S>(private val delegate: AnimatedContentScop
     infix fun ContentTransform.using(sizeTransform: SizeTransform?) = with(delegate) { using(sizeTransform) }
 
     fun slideIntoContainer(
-        towards: AnimatedContentScope.SlideDirection,
+        towards: AnimatedContentTransitionScope.SlideDirection,
         animationSpec: FiniteAnimationSpec<IntOffset> = spring(
             visibilityThreshold = IntOffset.VisibilityThreshold
         ),
@@ -93,7 +90,7 @@ class AnimatedContentDelegatorScope<S>(private val delegate: AnimatedContentScop
     ) = delegate.slideIntoContainer(towards, animationSpec, initialOffset)
 
     fun slideOutOfContainer(
-        towards: AnimatedContentScope.SlideDirection,
+        towards: AnimatedContentTransitionScope.SlideDirection,
         animationSpec: FiniteAnimationSpec<IntOffset> = spring(
             visibilityThreshold = IntOffset.VisibilityThreshold
         ),

@@ -9,6 +9,21 @@ import io.libzy.recommendation.RecommendationService
 import io.libzy.repository.PreferencesRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.common.LibzyViewModel
+import io.libzy.ui.findalbum.query.QueryUiEvent.AddGenre
+import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeAcousticness
+import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeDanceability
+import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeEnergy
+import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeValence
+import io.libzy.ui.findalbum.query.QueryUiEvent.Continue
+import io.libzy.ui.findalbum.query.QueryUiEvent.GoBack
+import io.libzy.ui.findalbum.query.QueryUiEvent.RemoveGenre
+import io.libzy.ui.findalbum.query.QueryUiEvent.SelectFamiliarity
+import io.libzy.ui.findalbum.query.QueryUiEvent.SelectInstrumentalness
+import io.libzy.ui.findalbum.query.QueryUiEvent.SelectNoPreference
+import io.libzy.ui.findalbum.query.QueryUiEvent.SendDismissKeyboardAnalytics
+import io.libzy.ui.findalbum.query.QueryUiEvent.StartGenreSearch
+import io.libzy.ui.findalbum.query.QueryUiEvent.SubmitQuery
+import io.libzy.ui.findalbum.query.QueryUiEvent.UpdateSearchQuery
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -85,6 +100,26 @@ class QueryViewModel @Inject constructor(
         }
     }
 
+    fun processEvent(event: QueryUiEvent.ForViewModel) {
+        when (event) {
+            is SelectFamiliarity -> setFamiliarity(event.familiarity)
+            is SelectInstrumentalness -> setInstrumental(event.instrumental)
+            is ChangeAcousticness -> setAcousticness(event.acousticness)
+            is ChangeValence -> setValence(event.valence)
+            is ChangeEnergy -> setEnergy(event.energy)
+            is ChangeDanceability -> setDanceability(event.danceability)
+            is AddGenre -> addGenre(event.genre)
+            is RemoveGenre -> removeGenre(event.genre)
+            is StartGenreSearch -> startGenreSearch()
+            is UpdateSearchQuery -> searchGenres(event.searchQuery)
+            is SendDismissKeyboardAnalytics -> sendDismissKeyboardAnalyticsEvent()
+            is GoBack -> goBack()
+            is Continue -> goToNextStep()
+            is SelectNoPreference -> selectNoPreference()
+        }
+
+    }
+
     fun initCurrentStep() {
         updateUiState {
             copy(currentStep = currentStep.parameterType.asDefaultQueryStep())
@@ -101,24 +136,16 @@ class QueryViewModel @Inject constructor(
         }
     }
 
-    fun sendDismissKeyboardAnalyticsEvent() {
+    private fun sendDismissKeyboardAnalyticsEvent() {
         analyticsDispatcher.sendDismissKeyboardEvent(currentSearchQuery ?: "", currentlySelectedGenres)
     }
 
-    fun goToPreviousStep() {
+    private fun goToPreviousStep() {
         goToStep(uiState.currentStepIndex - 1)
     }
 
-    fun goToNextStep() {
-        with(uiState) {
-            val newStepIndex = currentStepIndex + 1
-            if (newStepIndex == stepOrder.size) {
-                analyticsDispatcher.sendSubmitQueryEvent(query)
-                produceUiEvent(QueryUiEvent.SUBMIT_QUERY)
-            } else {
-                goToStep(newStepIndex)
-            }
-        }
+    private fun goToNextStep() {
+        goToStep(uiState.currentStepIndex + 1)
     }
 
     private fun goToStep(newStepIndex: Int) {
@@ -131,7 +158,7 @@ class QueryViewModel @Inject constructor(
         sendQuestionViewAnalyticsEvent()
     }
 
-    fun startGenreSearch() {
+    private fun startGenreSearch() {
         uiState.currentStep.let { currentStep ->
             if (currentStep is QueryStep.Genres.Recommendations) {
                 updateUiState {
@@ -147,7 +174,7 @@ class QueryViewModel @Inject constructor(
         }
     }
 
-    fun stopGenreSearch() {
+    private fun stopGenreSearch() {
         if (uiState.currentStep is QueryStep.Genres.Search) {
             updateUiState {
                 copy(currentStep = QueryStep.Genres.Recommendations())
@@ -156,7 +183,7 @@ class QueryViewModel @Inject constructor(
         }
     }
 
-    fun searchGenres(searchQuery: String) {
+    private fun searchGenres(searchQuery: String) {
         updateUiState {
             copy(
                 currentStep = when (currentStep) {
@@ -167,7 +194,7 @@ class QueryViewModel @Inject constructor(
         }
     }
 
-    fun goBack() {
+    private fun goBack() {
         if (uiState.currentStep is QueryStep.Genres.Search) {
             stopGenreSearch()
         } else {
@@ -175,43 +202,43 @@ class QueryViewModel @Inject constructor(
         }
     }
 
-    fun setFamiliarity(familiarity: Query.Familiarity?) {
+    private fun setFamiliarity(familiarity: Query.Familiarity?) {
         updateUiState {
             copy(query = query.copy(familiarity = familiarity))
         }
     }
 
-    fun setInstrumental(instrumental: Boolean?) {
+    private fun setInstrumental(instrumental: Boolean?) {
         updateUiState {
             copy(query = query.copy(instrumental = instrumental))
         }
     }
 
-    fun setAcousticness(acousticness: Float?) {
+    private fun setAcousticness(acousticness: Float?) {
         updateUiState {
             copy(query = query.copy(acousticness = acousticness))
         }
     }
 
-    fun setValence(valence: Float?) {
+    private fun setValence(valence: Float?) {
         updateUiState {
             copy(query = query.copy(valence = valence))
         }
     }
 
-    fun setEnergy(energy: Float?) {
+    private fun setEnergy(energy: Float?) {
         updateUiState {
             copy(query = query.copy(energy = energy))
         }
     }
 
-    fun setDanceability(danceability: Float?) {
+    private fun setDanceability(danceability: Float?) {
         updateUiState {
             copy(query = query.copy(danceability = danceability))
         }
     }
 
-    fun setGenres(genres: Set<String>?) {
+    private fun setGenres(genres: Set<String>?) {
         updateUiState {
             val newGenres = genres?.takeUnless { it.isEmpty() }
             val newCurrentStep = when (currentStep) {
@@ -226,7 +253,7 @@ class QueryViewModel @Inject constructor(
         }
     }
 
-    fun addGenre(genre: String) {
+    private fun addGenre(genre: String) {
         val selectedGenres = currentlySelectedGenres.plus(genre)
         setGenres(selectedGenres)
 
@@ -239,7 +266,7 @@ class QueryViewModel @Inject constructor(
         )
     }
 
-    fun removeGenre(genre: String) {
+    private fun removeGenre(genre: String) {
         uiState.query.genres?.let {
             val selectedGenres = it.minus(genre)
             setGenres(selectedGenres)
@@ -267,4 +294,21 @@ class QueryViewModel @Inject constructor(
 
     private val currentlySelectedGenres: Set<String>
         get() = uiState.query.genres.orEmpty()
+
+    private fun selectNoPreference() {
+        when (uiState.currentStep) {
+            is QueryStep.Familiarity -> setFamiliarity(null)
+            is QueryStep.Instrumentalness -> setInstrumental(null)
+            is QueryStep.Acousticness -> setAcousticness(null)
+            is QueryStep.Valence -> setValence(null)
+            is QueryStep.Energy -> setEnergy(null)
+            is QueryStep.Danceability -> setDanceability(null)
+            is QueryStep.Genres -> setGenres(null)
+        }
+        if (uiState.onFinalStep) {
+            produceUiEvent(SubmitQuery)
+        } else {
+            goToNextStep()
+        }
+    }
 }

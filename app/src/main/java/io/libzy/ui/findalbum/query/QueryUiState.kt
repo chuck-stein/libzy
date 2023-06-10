@@ -2,6 +2,8 @@ package io.libzy.ui.findalbum.query
 
 import io.libzy.R
 import io.libzy.domain.Query
+import io.libzy.ui.findalbum.query.QueryUiEvent.Continue
+import io.libzy.ui.findalbum.query.QueryUiEvent.SubmitQuery
 
 data class QueryUiState(
     val stepOrder: List<Query.Parameter> = DEFAULT_STEP_ORDER,
@@ -11,9 +13,10 @@ data class QueryUiState(
     val loading: Boolean = false
 ) {
     val currentStepIndex = stepOrder.indexOfFirst { it == currentStep.parameterType }
-    private val onFinalStep = currentStepIndex == stepOrder.size - 1
+    val onFinalStep = currentStepIndex == stepOrder.lastIndex
     val showBackButton = currentStepIndex > 0 || currentStep is QueryStep.Genres.Search
     val continueButtonText = if (onFinalStep) R.string.ready_button else R.string.continue_button
+    val continueButtonClickEvent = if (onFinalStep) SubmitQuery else Continue
     val continueButtonEnabled = when (currentStep) {
         is QueryStep.Familiarity -> query.familiarity != null
         is QueryStep.Instrumentalness -> query.instrumental != null
