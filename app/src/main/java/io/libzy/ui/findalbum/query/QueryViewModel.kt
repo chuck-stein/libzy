@@ -35,7 +35,6 @@ import io.libzy.ui.findalbum.query.QueryUiEvent.UpdateSearchQuery
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -78,7 +77,6 @@ class QueryViewModel @Inject constructor(
         viewModelScope.launch {
             uiStateFlow
                 .map { it.query.copy(genres = null) }
-                .distinctUntilChanged()
                 .combine(libraryAlbumsFlow) { query, libraryAlbums ->
                     recommendationService.recommendGenres(query, libraryAlbums)
                 }.collect { recommendedGenres ->
