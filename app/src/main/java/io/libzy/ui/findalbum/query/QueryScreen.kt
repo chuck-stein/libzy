@@ -511,15 +511,17 @@ private fun CurrentQueryStep(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PagingIndicator(pagerState: PagerState) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        repeat(pagerState.pageCount) {
-            val selected = it == pagerState.currentPage
-            val color by animateColorAsState(if (selected) Color.White else Color.DarkGray)
-            Box(Modifier.padding(horizontal = 4.dp).padding(bottom = 16.dp).background(color, CircleShape).size(8.dp))
+    if (pagerState.pageCount > 1) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(pagerState.pageCount) {
+                val selected = it == pagerState.currentPage
+                val color by animateColorAsState(if (selected) Color.White else Color.DarkGray)
+                Box(Modifier.padding(horizontal = 4.dp).padding(bottom = 16.dp).background(color, CircleShape).size(8.dp))
+            }
         }
     }
 }
