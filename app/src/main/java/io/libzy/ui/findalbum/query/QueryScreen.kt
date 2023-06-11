@@ -659,7 +659,7 @@ private fun GenresStep(uiState: QueryUiState, onUiEvent: (QueryUiEvent) -> Unit)
             // If the search query changes, ensure the scroll position is at the top of the new search results.
             // Likewise, if the search query changes to/from null (indicating leaving or entering the search screen),
             // ensure the scroll position is at the top of the new screen's displayed genres.
-            val startingSearch = previousSearchQuery == null
+            val startingSearch = previousSearchQuery == null && newSearchQuery != null
             if (startingSearch) scrollState.animateScrollTo(0) else scrollState.scrollTo(0)
             previousSearchQuery = newSearchQuery
         }
