@@ -121,6 +121,7 @@ import io.libzy.ui.findalbum.query.QueryUiEvent.SelectInstrumentalness
 import io.libzy.ui.findalbum.query.QueryUiEvent.SelectNoPreference
 import io.libzy.ui.findalbum.query.QueryUiEvent.SendDismissKeyboardAnalytics
 import io.libzy.ui.findalbum.query.QueryUiEvent.SendQuestionViewAnalytics
+import io.libzy.ui.findalbum.query.QueryUiEvent.SendSubmitQueryAnalytics
 import io.libzy.ui.findalbum.query.QueryUiEvent.StartOver
 import io.libzy.ui.findalbum.query.QueryUiEvent.StartSearchingGenres
 import io.libzy.ui.findalbum.query.QueryUiEvent.StopSearchingGenres
@@ -158,6 +159,7 @@ fun QueryScreen(
     val submitQuery = {
         findAlbumFlowViewModel.setQuery(uiState.query)
         navController.navigate(Destination.Results.route)
+        viewModel.processEvent(SendSubmitQueryAnalytics)
         // stop searching genres so that when we return we are not back on the search screen,
         // but have a small delay first so that we don't see the screen flash to a different state before navigating
         viewModel.processEvent(StopSearchingGenres(sendAnalytics = false, delayFirst = true))

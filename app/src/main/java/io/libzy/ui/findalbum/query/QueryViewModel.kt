@@ -27,6 +27,7 @@ import io.libzy.ui.findalbum.query.QueryUiEvent.SelectInstrumentalness
 import io.libzy.ui.findalbum.query.QueryUiEvent.SelectNoPreference
 import io.libzy.ui.findalbum.query.QueryUiEvent.SendDismissKeyboardAnalytics
 import io.libzy.ui.findalbum.query.QueryUiEvent.SendQuestionViewAnalytics
+import io.libzy.ui.findalbum.query.QueryUiEvent.SendSubmitQueryAnalytics
 import io.libzy.ui.findalbum.query.QueryUiEvent.StartSearchingGenres
 import io.libzy.ui.findalbum.query.QueryUiEvent.StopSearchingGenres
 import io.libzy.ui.findalbum.query.QueryUiEvent.SubmitQuery
@@ -104,6 +105,7 @@ class QueryViewModel @Inject constructor(
             is SelectNoPreference -> selectNoPreference(event.queryParam)
             is SendDismissKeyboardAnalytics -> sendDismissKeyboardAnalyticsEvent()
             is SendQuestionViewAnalytics -> sendQuestionViewAnalyticsEvent(event.queryParam)
+            is SendSubmitQueryAnalytics -> analyticsDispatcher.sendSubmitQueryEvent(uiState.query)
         }
     }
 

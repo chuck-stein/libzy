@@ -19,6 +19,7 @@ sealed interface QueryUiEvent {
     data class SelectNoPreference(val queryParam: Query.Parameter) : ForViewModel
     object SendDismissKeyboardAnalytics : ForViewModel
     data class SendQuestionViewAnalytics(val queryParam: Query.Parameter) : ForViewModel
+    object SendSubmitQueryAnalytics : ForViewModel
 
     sealed interface ForView : QueryUiEvent
     object OpenSettings : ForView

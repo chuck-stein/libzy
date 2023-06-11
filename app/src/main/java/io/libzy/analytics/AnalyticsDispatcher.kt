@@ -128,8 +128,6 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
         sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating, FEEDBACK to feedback))
     }
 
-    // TODO: make sure we're sending this event any time query is submitted (no longer the case after pager refactor),
-    //  including if submit query event only happened within view layer
     fun sendSubmitQueryEvent(query: Query) {
         Identify().increment(NUM_QUERIES_SUBMITTED).updateUserProperties()
 
