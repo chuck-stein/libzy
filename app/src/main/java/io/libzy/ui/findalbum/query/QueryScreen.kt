@@ -482,7 +482,7 @@ private fun CurrentQueryStep(
                     initialValue = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
                     leftLabelResId = R.string.acoustic,
                     rightLabelResId = R.string.electric_electronic,
-                    onValueChange = { onUiEvent(ChangeAcousticness(it)) }
+                    onValueChange = { onUiEvent(ChangeAcousticness(1 - it)) } // higher slider value = lower acousticness
                 )
                 VALENCE -> SliderQueryStep(
                     initialValue = uiState.query.valence,
