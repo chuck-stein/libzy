@@ -15,10 +15,11 @@ data class QueryUiState(
     val genresToDisplay = when (genreSearchState) {
         is GenreSearchState.Searching -> genreOptions
             .filter {
-                genreSearchState.searchQuery.isBlank() || it.contains(genreSearchState.searchQuery, ignoreCase = true)
-            }.take(28)
+                genreSearchState.searchQuery.isBlank()
+                        || it.contains(genreSearchState.searchQuery.trim(), ignoreCase = true)
+            }.take(NUM_GENRES_TO_DISPLAY_WHILE_SEARCHING)
         is GenreSearchState.NotSearching -> genreOptions
-            .take(50) // TODO: calculate this (and 28 above) based on screen size rather than magic numbers: https://chilipot.atlassian.net/browse/LIB-272
+            .take(NUM_GENRES_TO_DISPLAY_WHILE_NOT_SEARCHING)
             .toSet()
             .plus(selectedGenres.plus(genreSearchState.recentlyRemovedGenres).sorted())
     }
@@ -47,3 +48,7 @@ enum class QueryScreenActionIcon {
     StartOver,
     ClearSearchQuery
 }
+
+// TODO: calculate these based on screen size rather than magic numbers: https://chilipot.atlassian.net/browse/LIB-272
+private const val NUM_GENRES_TO_DISPLAY_WHILE_SEARCHING = 50
+private const val NUM_GENRES_TO_DISPLAY_WHILE_NOT_SEARCHING = 28
