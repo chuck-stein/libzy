@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -15,9 +16,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,11 +29,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -241,6 +247,7 @@ private fun QueryScreen(uiState: QueryUiState, onUiEvent: (QueryUiEvent) -> Unit
                 CurrentQueryStep(uiState, queryStepPagerState, onUiEvent, Modifier.weight(1f))
                 ContinueButton(uiState, queryStepPagerState, currentQueryStep, onFinalQueryStep, onUiEvent)
                 NoPreferenceButton(onUiEvent, currentQueryStep, queryStepPagerState)
+                PagingIndicator(queryStepPagerState)
             }
         }
     }
@@ -497,6 +504,22 @@ private fun CurrentQueryStep(
                 )
                 GENRES -> GenresStep(uiState, onUiEvent)
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PagingIndicator(pagerState: PagerState) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(pagerState.pageCount) {
+            val selected = it == pagerState.currentPage
+            val color by animateColorAsState(if (selected) Color.White else Color.DarkGray)
+            Box(Modifier.padding(horizontal = 4.dp).padding(bottom = 16.dp).background(color, CircleShape).size(8.dp))
         }
     }
 }
