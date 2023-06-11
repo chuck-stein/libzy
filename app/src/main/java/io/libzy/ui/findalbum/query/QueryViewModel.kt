@@ -11,9 +11,8 @@ import io.libzy.domain.Query.Parameter.GENRES
 import io.libzy.domain.Query.Parameter.INSTRUMENTALNESS
 import io.libzy.domain.Query.Parameter.VALENCE
 import io.libzy.persistence.database.tuple.LibraryAlbum
-import io.libzy.persistence.prefs.DataStoreKeys.ENABLED_QUERY_PARAMS
 import io.libzy.recommendation.RecommendationService
-import io.libzy.repository.PreferencesRepository
+import io.libzy.repository.SettingsRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.common.LibzyViewModel
 import io.libzy.ui.findalbum.query.QueryUiEvent.AddGenre
@@ -42,7 +41,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class QueryViewModel @Inject constructor(
     userLibraryRepository: UserLibraryRepository,
-    private val preferencesRepository: PreferencesRepository,
+    private val settingsRepository: SettingsRepository,
     private val recommendationService: RecommendationService,
     private val analyticsDispatcher: AnalyticsDispatcher
 ) : LibzyViewModel<QueryUiState, QueryUiEvent>() {
@@ -56,20 +55,16 @@ class QueryViewModel @Inject constructor(
 
     private fun collectEnabledQueryParams() {
         viewModelScope.launch {
-            preferencesRepository.prefsFlowOf(ENABLED_QUERY_PARAMS).collect { enabledParams ->
-                initUiStateForEnabledQueryParams(enabledParams)
+            settingsRepository.enabledQueryParams.collect { enabledParams ->
+                val stepOrder = if (enabledParams == null) {
+                    QueryUiState.DEFAULT_STEP_ORDER
+                } else {
+                    QueryUiState.DEFAULT_STEP_ORDER.filter { it.stringValue in enabledParams }
+                }
+                updateUiState {
+                    QueryUiState(stepOrder = stepOrder)
+                }
             }
-        }
-    }
-
-    private fun initUiStateForEnabledQueryParams(enabledParams: Set<String>?) {
-        val stepOrder = if (enabledParams == null) {
-            QueryUiState.DEFAULT_STEP_ORDER
-        } else {
-            QueryUiState.DEFAULT_STEP_ORDER.filter { it.stringValue in enabledParams }
-        }
-        updateUiState {
-            QueryUiState(stepOrder = stepOrder)
         }
     }
 

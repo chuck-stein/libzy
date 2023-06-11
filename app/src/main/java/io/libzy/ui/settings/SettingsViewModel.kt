@@ -11,9 +11,9 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import io.libzy.R
 import io.libzy.domain.Query
-import io.libzy.persistence.prefs.DataStoreKeys.ENABLED_QUERY_PARAMS
-import io.libzy.persistence.prefs.DataStoreKeys.LAST_SYNC_TIMESTAMP_MILLIS
-import io.libzy.repository.PreferencesRepository
+import io.libzy.repository.PrefsStore
+import io.libzy.repository.SessionRepository
+import io.libzy.repository.SettingsRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.common.StateOnlyViewModel
 import io.libzy.ui.findalbum.query.QueryUiState
@@ -27,8 +27,10 @@ import javax.inject.Inject
 
 class SettingsViewModel @Inject constructor(
     private val sharedPrefs: SharedPreferences,
-    private val preferencesRepository: PreferencesRepository,
+    private val settingsRepository: SettingsRepository,
+    private val sessionRepository: SessionRepository,
     private val userLibraryRepository: UserLibraryRepository,
+    private val prefsStore: PrefsStore,
     private val workManager: WorkManager,
 ) : StateOnlyViewModel<SettingsUiState>() {
 
@@ -43,7 +45,7 @@ class SettingsViewModel @Inject constructor(
 
     private fun collectPreferences() {
         viewModelScope.launch {
-            preferencesRepository.prefsFlowOf(ENABLED_QUERY_PARAMS).collect { enabledQueryParams ->
+            settingsRepository.enabledQueryParams.collect { enabledQueryParams ->
                 updateUiState {
                     copy(
                         enabledQueryParams = enabledQueryParams
@@ -56,7 +58,7 @@ class SettingsViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            preferencesRepository.prefsFlowOf(LAST_SYNC_TIMESTAMP_MILLIS).collect { lastSyncTimestampMillis ->
+            sessionRepository.lastSyncTimestampMillis.collect { lastSyncTimestampMillis ->
                 updateUiState {
                     copy(
                         lastLibrarySyncDate = lastSyncTimestampMillis
@@ -94,7 +96,7 @@ class SettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            preferencesRepository.setEnabledQueryParams(enabledQueryParams)
+            settingsRepository.setEnabledQueryParams(enabledQueryParams)
         }
     }
 
@@ -118,7 +120,7 @@ class SettingsViewModel @Inject constructor(
     fun logOut() {
         viewModelScope.launch {
             sharedPrefs.edit { clear() }
-            preferencesRepository.clearPrefs()
+            prefsStore.clear()
             userLibraryRepository.clearLibraryData()
             workManager.cancelUniqueWork(LibrarySyncWorker.WORK_NAME)
             updateUiState {

@@ -13,7 +13,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.repository.PreferencesRepository
+import io.libzy.repository.SessionRepository
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.ui.common.LibzyViewModel
@@ -32,7 +32,7 @@ class ConnectSpotifyViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val workManager: WorkManager,
     private val sharedPrefs: SharedPreferences,
-    private val preferencesRepository: PreferencesRepository
+    private val sessionRepository: SessionRepository
 ) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
     override val initialUiState = ConnectSpotifyUiState(
@@ -66,7 +66,7 @@ class ConnectSpotifyViewModel @Inject constructor(
     }
 
     private suspend fun handleLibrarySyncSuccess() {
-        preferencesRepository.spotifyConnectedState.collect { spotifyConnected ->
+        sessionRepository.spotifyConnectedState.collect { spotifyConnected ->
             if (spotifyConnected) {
                 produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_CONNECTED)
                 enqueuePeriodicLibrarySync()

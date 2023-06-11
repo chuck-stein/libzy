@@ -16,7 +16,7 @@ import io.libzy.analytics.CrashlyticsTree
 import io.libzy.di.AndroidModule
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
-import io.libzy.repository.PreferencesRepository
+import io.libzy.repository.SessionRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
 import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
@@ -36,7 +36,7 @@ class LibzyApplication : Application(), Configuration.Provider {
     lateinit var userLibraryRepository: UserLibraryRepository
 
     @Inject
-    lateinit var preferencesRepository: PreferencesRepository
+    lateinit var sessionRepository: SessionRepository
 
     @Inject
     lateinit var analyticsDispatcher: AnalyticsDispatcher
@@ -64,7 +64,7 @@ class LibzyApplication : Application(), Configuration.Provider {
         // can't use the injected sharedPrefs because it will not have been injected yet when this method is called
         val sharedPrefs = AndroidModule().provideSharedPrefs(this)
         workerFactory.addFactory(
-            LibrarySyncWorker.Factory(userLibraryRepository, preferencesRepository, analyticsDispatcher, sharedPrefs)
+            LibrarySyncWorker.Factory(userLibraryRepository, sessionRepository, analyticsDispatcher, sharedPrefs)
         )
 
         return Configuration.Builder()
@@ -115,7 +115,7 @@ class LibzyApplication : Application(), Configuration.Provider {
      */
     private fun scheduleLibrarySync() {
         applicationScope.launch {
-            if (preferencesRepository.spotifyConnectedState.value) {
+            if (sessionRepository.isSpotifyConnected()) {
                 val workRequest =
                     PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL)
                         .build()

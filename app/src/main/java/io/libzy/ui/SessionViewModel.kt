@@ -12,7 +12,7 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.repository.PreferencesRepository
+import io.libzy.repository.SessionRepository
 import io.libzy.repository.UserProfileRepository
 import io.libzy.spotify.auth.SpotifyAccessToken
 import io.libzy.spotify.auth.SpotifyAuthCallback
@@ -31,14 +31,14 @@ import javax.inject.Inject
 class SessionViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val userProfileRepository: UserProfileRepository,
-    private val preferencesRepository: PreferencesRepository,
+    private val sessionRepository: SessionRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val workManager: WorkManager,
     private val sharedPrefs: SharedPreferences,
     appContext: Context
 ) : EventsOnlyViewModel<SessionUiEvent>(), SpotifyAuthClientProxy {
 
-    fun isSpotifyConnected() = preferencesRepository.isSpotifyConnected()
+    fun isSpotifyConnected() = sessionRepository.isSpotifyConnected()
 
     private var refreshSpotifyAuthJob: Job? = null
 

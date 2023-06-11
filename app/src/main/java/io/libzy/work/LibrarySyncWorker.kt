@@ -18,7 +18,7 @@ import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
 import io.libzy.config.NotificationIds
 import io.libzy.persistence.prefs.SharedPrefKeys
-import io.libzy.repository.PreferencesRepository
+import io.libzy.repository.SessionRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.Destination
 import io.libzy.util.appInForeground
@@ -35,7 +35,7 @@ class LibrarySyncWorker(
     appContext: Context,
     params: WorkerParameters,
     private val userLibraryRepository: UserLibraryRepository,
-    private val preferencesRepository: PreferencesRepository,
+    private val sessionRepository: SessionRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val sharedPrefs: SharedPreferences
 ) : CoroutineWorker(appContext, params) {
@@ -96,7 +96,7 @@ class LibrarySyncWorker(
 
     private suspend fun afterLibrarySync(numAlbumsSynced: TimedValue<Int>) {
         if (isInitialSync) {
-            preferencesRepository.setSpotifyConnected(true)
+            sessionRepository.setSpotifyConnected(true)
             sharedPrefs.edit {
                 putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SYNC_IN_PROGRESS, false)
             }
@@ -106,7 +106,7 @@ class LibrarySyncWorker(
                 tapDestinationUri = Destination.Query.deepLinkUri
             )
         }
-        preferencesRepository.setLastSyncTimestamp(System.currentTimeMillis())
+        sessionRepository.setLastSyncTimestamp(System.currentTimeMillis())
         Timber.i("Successfully synced Spotify library data")
         analyticsDispatcher.sendSyncLibraryDataEvent(
             LibrarySyncResult.SUCCESS,
@@ -183,7 +183,7 @@ class LibrarySyncWorker(
 
     class Factory(
         private val userLibraryRepository: UserLibraryRepository,
-        private val preferencesRepository: PreferencesRepository,
+        private val sessionRepository: SessionRepository,
         private val analyticsDispatcher: AnalyticsDispatcher,
         private val sharedPrefs: SharedPreferences
     ) : WorkerFactory() {
@@ -196,7 +196,7 @@ class LibrarySyncWorker(
 
             return when (workerClassName) {
                 LibrarySyncWorker::class.java.name -> LibrarySyncWorker(
-                    appContext, workerParameters, userLibraryRepository, preferencesRepository, analyticsDispatcher, sharedPrefs
+                    appContext, workerParameters, userLibraryRepository, sessionRepository, analyticsDispatcher, sharedPrefs
                 )
                 else -> null
             }
