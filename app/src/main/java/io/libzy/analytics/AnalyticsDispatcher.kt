@@ -16,7 +16,6 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.DANCEABILITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ENERGY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FAMILIARITY
 import io.libzy.analytics.AnalyticsConstants.EventProperties.FEEDBACK
-import io.libzy.analytics.AnalyticsConstants.EventProperties.FROM_CURRENT_OPTIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.GENRES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.INSTRUMENTAL
@@ -129,6 +128,8 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
         sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating, FEEDBACK to feedback))
     }
 
+    // TODO: make sure we're sending this event any time query is submitted (no longer the case after pager refactor),
+    //  including if submit query event only happened within view layer
     fun sendSubmitQueryEvent(query: Query) {
         Identify().increment(NUM_QUERIES_SUBMITTED).updateUserProperties()
 
@@ -221,14 +222,12 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
 
     fun sendSelectGenreEvent(
         genre: String,
-        fromCurrentOptions: Boolean,
         currentlySearching: Boolean,
         currentSearchQuery: String?,
         currentlySelectedGenres: Set<String>
     ) {
         sendEvent(SELECT_GENRE, mapOf(
             GENRE to genre,
-            FROM_CURRENT_OPTIONS to fromCurrentOptions,
             CURRENTLY_SEARCHING to currentlySearching,
             CURRENT_SEARCH_QUERY to currentSearchQuery,
             CURRENTLY_SELECTED_GENRES to currentlySelectedGenres
@@ -237,21 +236,19 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
 
     fun sendDeselectGenreEvent(
         genre: String,
-        fromCurrentOptions: Boolean,
         currentlySearching: Boolean,
         currentSearchQuery: String?,
         currentlySelectedGenres: Set<String>
     ) {
         sendEvent(DESELECT_GENRE, mapOf(
             GENRE to genre,
-            FROM_CURRENT_OPTIONS to fromCurrentOptions,
             CURRENTLY_SEARCHING to currentlySearching,
             CURRENT_SEARCH_QUERY to currentSearchQuery,
             CURRENTLY_SELECTED_GENRES to currentlySelectedGenres
         ))
     }
 
-    fun sendDismissKeyboardEvent(currentSearchQuery: String, currentlySelectedGenres: Set<String>) {
+    fun sendDismissKeyboardEvent(currentSearchQuery: String?, currentlySelectedGenres: Set<String>) {
         sendEvent(DISMISS_KEYBOARD, mapOf(
             CURRENT_SEARCH_QUERY to currentSearchQuery,
             CURRENTLY_SELECTED_GENRES to currentlySelectedGenres

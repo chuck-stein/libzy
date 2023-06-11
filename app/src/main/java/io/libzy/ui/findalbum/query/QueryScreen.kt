@@ -2,7 +2,6 @@ package io.libzy.ui.findalbum.query
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -15,7 +14,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -27,6 +26,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -58,6 +60,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -71,8 +74,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -86,8 +87,14 @@ import io.libzy.domain.Query
 import io.libzy.domain.Query.Familiarity.CURRENT_FAVORITE
 import io.libzy.domain.Query.Familiarity.RELIABLE_CLASSIC
 import io.libzy.domain.Query.Familiarity.UNDERAPPRECIATED_GEM
+import io.libzy.domain.Query.Parameter.ACOUSTICNESS
+import io.libzy.domain.Query.Parameter.DANCEABILITY
+import io.libzy.domain.Query.Parameter.ENERGY
+import io.libzy.domain.Query.Parameter.FAMILIARITY
+import io.libzy.domain.Query.Parameter.GENRES
+import io.libzy.domain.Query.Parameter.INSTRUMENTALNESS
+import io.libzy.domain.Query.Parameter.VALENCE
 import io.libzy.ui.Destination
-import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.Chip
 import io.libzy.ui.common.component.EventHandler
@@ -97,8 +104,9 @@ import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.common.component.SelectableButton
 import io.libzy.ui.common.component.StartOverIconButton
-import io.libzy.ui.common.util.AnimatedContent
 import io.libzy.ui.common.util.StatefulAnimatedVisibility
+import io.libzy.ui.common.util.goToNextPage
+import io.libzy.ui.common.util.goToPreviousPage
 import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.findalbum.query.QueryUiEvent.AddGenre
@@ -106,20 +114,22 @@ import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeAcousticness
 import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeDanceability
 import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeEnergy
 import io.libzy.ui.findalbum.query.QueryUiEvent.ChangeValence
-import io.libzy.ui.findalbum.query.QueryUiEvent.GoBack
 import io.libzy.ui.findalbum.query.QueryUiEvent.OpenSettings
 import io.libzy.ui.findalbum.query.QueryUiEvent.RemoveGenre
 import io.libzy.ui.findalbum.query.QueryUiEvent.SelectFamiliarity
 import io.libzy.ui.findalbum.query.QueryUiEvent.SelectInstrumentalness
 import io.libzy.ui.findalbum.query.QueryUiEvent.SelectNoPreference
 import io.libzy.ui.findalbum.query.QueryUiEvent.SendDismissKeyboardAnalytics
-import io.libzy.ui.findalbum.query.QueryUiEvent.StartGenreSearch
+import io.libzy.ui.findalbum.query.QueryUiEvent.SendQuestionViewAnalytics
 import io.libzy.ui.findalbum.query.QueryUiEvent.StartOver
+import io.libzy.ui.findalbum.query.QueryUiEvent.StartSearchingGenres
+import io.libzy.ui.findalbum.query.QueryUiEvent.StopSearchingGenres
 import io.libzy.ui.findalbum.query.QueryUiEvent.SubmitQuery
 import io.libzy.ui.findalbum.query.QueryUiEvent.UpdateSearchQuery
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import java.time.LocalTime
 
 /**
@@ -145,24 +155,12 @@ fun QueryScreen(
         findAlbumFlowViewModel.setQuery(uiState.query)
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.sendQuestionViewAnalyticsEvent()
-    }
-
-    // TODO: re-evaluate this -- shouldn't update state on every recomposition
-    // Initialize the current step in the flow on initial composition.
-    // Can't do this using LaunchedEffect(Unit) because then a composition can render
-    // before the state becomes initialized, leading to unintended effects such as the keyboard
-    // showing if a genre search was previously in progress and not reset before the first render.
-    var initializedCurrentStep by remember { mutableStateOf(false) }
-    if (!initializedCurrentStep) {
-        viewModel.initCurrentStep()
-        initializedCurrentStep = true
-    }
-
     val submitQuery = {
         findAlbumFlowViewModel.setQuery(uiState.query)
         navController.navigate(Destination.Results.route)
+        // stop searching genres so that when we return we are not back on the search screen,
+        // but have a small delay first so that we don't see the screen flash to a different state before navigating
+        viewModel.processEvent(StopSearchingGenres(sendAnalytics = false, delayFirst = true))
     }
 
     EventHandler(viewModel.uiEvents) {
@@ -188,105 +186,144 @@ fun QueryScreen(
 /**
  * **Stateless** Query Screen, displaying a series of questions about what the user is in the mood to listen to.
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
-private fun QueryScreen(
-    uiState: QueryUiState,
-    onUiEvent: (QueryUiEvent) -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-    val keyboardVisible = WindowInsets.isImeVisible
+private fun QueryScreen(uiState: QueryUiState, onUiEvent: (QueryUiEvent) -> Unit) {
+    val queryStepPagerState = rememberPagerState { uiState.stepOrder.size }
+    val currentQueryStep = uiState.stepOrder[queryStepPagerState.currentPage]
+    val onFirstQueryStep = queryStepPagerState.currentPage == 0
+    val onFinalQueryStep = queryStepPagerState.currentPage == uiState.stepOrder.lastIndex
+    val showBackButton = !onFirstQueryStep || uiState.searchingGenres
 
-    val onBackClick = {
-        if (keyboardVisible) focusManager.clearFocus()
-        onUiEvent(GoBack)
+    val focusManager = LocalFocusManager.current
+    val genreSearchBarFocusRequester = remember { FocusRequester() }
+    val keyboardVisible = WindowInsets.isImeVisible
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(queryStepPagerState.currentPage) {
+        onUiEvent(SendQuestionViewAnalytics(currentQueryStep))
+        onUiEvent(StopSearchingGenres(sendAnalytics = false))
+    }
+
+    val onBackClick: () -> Unit = {
+        if (keyboardVisible) {
+            focusManager.clearFocus()
+        }
+        if (uiState.searchingGenres) {
+            onUiEvent(StopSearchingGenres(sendAnalytics = true))
+        } else {
+            coroutineScope.launch {
+                queryStepPagerState.goToPreviousPage()
+            }
+        }
     }
 
     LoadedContent(uiState.loading) {
-        BackHandler(enabled = uiState.showBackButton, onBack = onBackClick)
+        BackHandler(enabled = showBackButton, onBack = onBackClick)
 
         LibzyScaffold(
             navigationIcon = {
-                AnimatedVisibility(visible = uiState.showBackButton, enter = fadeIn(), exit = fadeOut()) {
-                    BackIcon(onBackClick, enabled = uiState.showBackButton)
+                AnimatedVisibility(visible = showBackButton, enter = fadeIn(), exit = fadeOut()) {
+                    BackIcon(onBackClick, enabled = showBackButton)
                 }
             },
             actionIcons = {
-                val iconRotation = remember { Animatable(0f) }
-                val actionIconState = rememberUpdatedState(uiState.actionIcon)
-                LaunchedEffect(iconRotation, actionIconState) {
-                    snapshotFlow { actionIconState.value }.collect {
-                        iconRotation.animateTo(iconRotation.targetValue - 360f, animationSpec = tween())
-                    }
-                }
-
-                Crossfade(
-                    targetState = uiState.actionIcon,
-                    modifier = Modifier.rotate(iconRotation.value)
-                ) { actionIcon ->
-                    when (actionIcon) {
-                        QueryScreenActionIcon.Settings -> IconButton(onClick = { onUiEvent(OpenSettings) }) {
-                            LibzyIcon(LibzyIconTheme.Settings, contentDescription = stringResource(R.string.settings))
-                        }
-                        QueryScreenActionIcon.StartOver -> StartOverIconButton { onUiEvent(StartOver) }
-                        null -> {}
-                    }
-                }
+                QueryScreenActionIcons(onFirstQueryStep, genreSearchBarFocusRequester, uiState, onUiEvent)
             },
             title = {
-                StatefulAnimatedVisibility(
-                    visible = uiState.currentStep is QueryStep.Genres.Search,
-                    stateToRemember = (uiState.currentStep as? QueryStep.Genres.Search)?.searchQuery ?: "",
-                    enter = fadeIn(
-                        animationSpec = tween(
-                            delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
-                            durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
-                            easing = LinearOutSlowInEasing
-                        )
-                    ) + slideInVertically(
-                        initialOffsetY = { fullHeight -> fullHeight },
-                        animationSpec = tween(
-                            delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
-                            durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
-                            easing = LinearOutSlowInEasing
-                        )
-                    ),
-                    exit = fadeOut()
-                ) { searchQuery ->
-                    GenreSearchBar(
-                        searchQuery = searchQuery,
-                        onUiEvent = onUiEvent
-                    )
-                }
+                QueryScreenTitleBar(genreSearchBarFocusRequester, uiState, onUiEvent)
             }
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
-                QueryScreenHeaders(visible = uiState.currentStep !is QueryStep.Genres.Search)
-
-                CurrentQueryStep(uiState, onUiEvent, Modifier.weight(1f))
-
-                LibzyButton(uiState.continueButtonText, Modifier.padding(bottom = 16.dp), uiState.continueButtonEnabled) {
-                    onUiEvent(uiState.continueButtonClickEvent)
-                }
-
-                TextButton(
-                    onClick = { onUiEvent(SelectNoPreference) },
-                    modifier = Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)
-                ) {
-                    Text(stringResource(R.string.no_preference).uppercase())
-                }
+                QueryScreenHeaders(visible = !uiState.searchingGenres)
+                CurrentQueryStep(uiState, queryStepPagerState, onUiEvent, Modifier.weight(1f))
+                ContinueButton(uiState, queryStepPagerState, currentQueryStep, onFinalQueryStep, onUiEvent)
+                NoPreferenceButton(onUiEvent, currentQueryStep, queryStepPagerState)
             }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun GenreSearchBar(
-    searchQuery: String,
+private fun QueryScreenActionIcons(
+    onFirstQueryStep: Boolean,
+    genreSearchBarFocusRequester: FocusRequester,
+    uiState: QueryUiState,
     onUiEvent: (QueryUiEvent) -> Unit
 ) {
-    val focusRequester = remember { FocusRequester() }
+    val actionIcon = when {
+        uiState.searchingGenres && uiState.genreSearchQuery.isNullOrBlank() -> null
+        uiState.searchingGenres -> QueryScreenActionIcon.ClearSearchQuery
+        onFirstQueryStep -> QueryScreenActionIcon.Settings
+        else -> QueryScreenActionIcon.StartOver
+    }
+
+    val iconRotation = remember { Animatable(0f) }
+    val actionIconState = rememberUpdatedState(actionIcon)
+    LaunchedEffect(iconRotation, actionIconState) {
+        var previousActionIcon = actionIconState.value
+        snapshotFlow { actionIconState.value }.collect { newActionIcon ->
+            if (newActionIcon == QueryScreenActionIcon.Settings || previousActionIcon == QueryScreenActionIcon.Settings) {
+                iconRotation.animateTo(iconRotation.targetValue - 360f, animationSpec = tween())
+            }
+            previousActionIcon = newActionIcon
+        }
+    }
+
+    Crossfade(
+        targetState = actionIcon,
+        modifier = Modifier.rotate(iconRotation.value)
+    ) { currentActionIcon ->
+        when (currentActionIcon) {
+            QueryScreenActionIcon.Settings -> IconButton(onClick = { onUiEvent(OpenSettings) }) {
+                LibzyIcon(LibzyIconTheme.Settings, contentDescription = stringResource(R.string.settings))
+            }
+            QueryScreenActionIcon.StartOver -> StartOverIconButton { onUiEvent(StartOver) }
+            QueryScreenActionIcon.ClearSearchQuery -> IconButton(
+                onClick = {
+                    onUiEvent(UpdateSearchQuery(("")))
+                    genreSearchBarFocusRequester.requestFocus()
+                }
+            ) {
+                LibzyIcon(LibzyIconTheme.Close, stringResource(R.string.cd_clear_search_query))
+            }
+            null -> {}
+        }
+    }
+}
+
+@Composable
+private fun QueryScreenTitleBar(
+    genreSearchBarFocusRequester: FocusRequester,
+    uiState: QueryUiState,
+    onUiEvent: (QueryUiEvent) -> Unit
+) {
+    StatefulAnimatedVisibility(
+        visible = uiState.searchingGenres,
+        stateToRemember = uiState.genreSearchQuery ?: "",
+        enter = fadeIn(
+            animationSpec = tween(
+                delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                easing = LinearOutSlowInEasing
+            )
+        ) + slideInVertically(
+            initialOffsetY = { fullHeight -> fullHeight },
+            animationSpec = tween(
+                delayMillis = SEARCH_TRANSITION_PT_1_DURATION_MILLIS,
+                durationMillis = SEARCH_TRANSITION_PT_2_DURATION_MILLIS,
+                easing = LinearOutSlowInEasing
+            )
+        ),
+        exit = fadeOut()
+    ) { searchQuery ->
+        GenreSearchBar(searchQuery, genreSearchBarFocusRequester, onUiEvent)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun GenreSearchBar(searchQuery: String, focusRequester: FocusRequester, onUiEvent: (QueryUiEvent) -> Unit) {
     val focusManager = LocalFocusManager.current
     var keyboardPreviouslyVisible by remember { mutableStateOf(false) }
     val keyboardVisible = WindowInsets.isImeVisible
@@ -308,21 +345,6 @@ private fun GenreSearchBar(
         value = searchQuery,
         onValueChange = { onUiEvent(UpdateSearchQuery(it.take(GENRE_SEARCH_CHARACTER_LIMIT))) },
         placeholder = { Text(stringResource(R.string.search_genres), style = textStyle) },
-        trailingIcon = {
-            AnimatedVisibility(
-                visible = searchQuery.isNotEmpty(),
-                modifier = Modifier.padding(start = 30.dp),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                IconButton(onClick = {
-                    onUiEvent(UpdateSearchQuery(("")))
-                    focusRequester.requestFocus()
-                }) {
-                    LibzyIcon(LibzyIconTheme.Close, stringResource(R.string.cd_clear_search_query))
-                }
-            }
-        },
         singleLine = true,
         textStyle = textStyle,
         colors = TextFieldDefaults.textFieldColors(
@@ -377,64 +399,101 @@ private fun QueryScreenHeaders(visible: Boolean) {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ContinueButton(
+    uiState: QueryUiState,
+    queryStepPagerState: PagerState,
+    currentQueryStep: Query.Parameter,
+    onFinalQueryStep: Boolean,
+    onUiEvent: (QueryUiEvent) -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    LibzyButton(
+        textResId = if (onFinalQueryStep) R.string.ready_button else R.string.continue_button,
+        modifier = Modifier.padding(bottom = 16.dp),
+        enabled = when (currentQueryStep) {
+            FAMILIARITY -> uiState.query.familiarity != null
+            INSTRUMENTALNESS -> uiState.query.instrumental != null
+            ACOUSTICNESS -> uiState.query.acousticness != null
+            VALENCE -> uiState.query.valence != null
+            ENERGY -> uiState.query.energy != null
+            DANCEABILITY -> uiState.query.danceability != null
+            GENRES -> uiState.query.genres != null
+        }
+    ) {
+        if (onFinalQueryStep) {
+            onUiEvent(SubmitQuery)
+        } else {
+            coroutineScope.launch {
+                queryStepPagerState.goToNextPage()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun NoPreferenceButton(
+    onUiEvent: (QueryUiEvent) -> Unit,
+    currentQueryStep: Query.Parameter,
+    queryStepPagerState: PagerState
+) {
+    val coroutineScope = rememberCoroutineScope()
+    TextButton(
+        onClick = {
+            onUiEvent(SelectNoPreference(currentQueryStep))
+            coroutineScope.launch {
+                queryStepPagerState.goToNextPage()
+            }
+        },
+        modifier = Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)
+    ) {
+        Text(stringResource(R.string.no_preference).uppercase())
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun CurrentQueryStep(
     uiState: QueryUiState,
+    pagerState: PagerState,
     onUiEvent: (QueryUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier) {
-        AnimatedContent(
-            targetState = uiState.currentStep,
-            key = uiState.currentStep.parameterType,
-            transitionSpec = {
-                val slideDirection = if (uiState.navigatingForward) { // TODO: use Pager instead of AnimatedContent and `navigatingForward`
-                    AnimatedContentTransitionScope.SlideDirection.Left
-                } else {
-                    AnimatedContentTransitionScope.SlideDirection.Right
-                }
-                slideIntoContainer(slideDirection) togetherWith slideOutOfContainer(slideDirection)
-            }
-        ) { currentStep ->
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = HORIZONTAL_INSET.dp), contentAlignment = Alignment.Center
-            ) {
-                when (currentStep) {
-                    is QueryStep.Familiarity -> FamiliarityStep(uiState.query.familiarity, onUiEvent)
-                    is QueryStep.Instrumentalness -> InstrumentalnessStep(uiState.query.instrumental, onUiEvent)
-                    is QueryStep.Acousticness -> SliderQueryStep(
-                        initialValue = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
-                        leftLabelResId = R.string.acoustic,
-                        rightLabelResId = R.string.electric_electronic,
-                        onValueChange = { onUiEvent(ChangeAcousticness(it)) }
-                    )
-                    is QueryStep.Valence -> SliderQueryStep(
-                        initialValue = uiState.query.valence,
-                        leftLabelResId = R.string.negative_emotion,
-                        rightLabelResId = R.string.positive_emotion,
-                        onValueChange = { onUiEvent(ChangeValence(it)) }
-                    )
-                    is QueryStep.Energy -> SliderQueryStep(
-                        initialValue = uiState.query.energy,
-                        leftLabelResId = R.string.chill,
-                        rightLabelResId = R.string.energetic,
-                        onValueChange = { onUiEvent(ChangeEnergy(it)) }
-                    )
-                    is QueryStep.Danceability -> SliderQueryStep(
-                        initialValue = uiState.query.danceability,
-                        leftLabelResId = R.string.arrhythmic,
-                        rightLabelResId = R.string.danceable,
-                        onValueChange = { onUiEvent(ChangeDanceability(it)) }
-                    )
-                    is QueryStep.Genres -> GenresStep(
-                        genresStep = currentStep,
-                        selectedGenres = uiState.query.genres.orEmpty(),
-                        onUiEvent = onUiEvent,
-                    )
-                }
+    HorizontalPager(state = pagerState, modifier = modifier.fillMaxSize()) { currentStepIndex ->
+        Box(
+            modifier = Modifier.fillMaxSize().padding(horizontal = HORIZONTAL_INSET.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            when (uiState.stepOrder[currentStepIndex]) {
+                FAMILIARITY -> FamiliarityStep(uiState.query.familiarity, onUiEvent)
+                INSTRUMENTALNESS -> InstrumentalnessStep(uiState.query.instrumental, onUiEvent)
+                ACOUSTICNESS -> SliderQueryStep(
+                    initialValue = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
+                    leftLabelResId = R.string.acoustic,
+                    rightLabelResId = R.string.electric_electronic,
+                    onValueChange = { onUiEvent(ChangeAcousticness(it)) }
+                )
+                VALENCE -> SliderQueryStep(
+                    initialValue = uiState.query.valence,
+                    leftLabelResId = R.string.negative_emotion,
+                    rightLabelResId = R.string.positive_emotion,
+                    onValueChange = { onUiEvent(ChangeValence(it)) }
+                )
+                ENERGY -> SliderQueryStep(
+                    initialValue = uiState.query.energy,
+                    leftLabelResId = R.string.chill,
+                    rightLabelResId = R.string.energetic,
+                    onValueChange = { onUiEvent(ChangeEnergy(it)) }
+                )
+                DANCEABILITY -> SliderQueryStep(
+                    initialValue = uiState.query.danceability,
+                    leftLabelResId = R.string.arrhythmic,
+                    rightLabelResId = R.string.danceable,
+                    onValueChange = { onUiEvent(ChangeDanceability(it)) }
+                )
+                GENRES -> GenresStep(uiState, onUiEvent)
             }
         }
     }
@@ -555,26 +614,10 @@ private fun SliderQueryStep(
 @OptIn(ExperimentalLayoutApi::class)
 @ExperimentalAnimationApi
 @Composable
-private fun GenresStep(
-    genresStep: QueryStep.Genres,
-    selectedGenres: Set<String>,
-    onUiEvent: (QueryUiEvent) -> Unit
-) {
+private fun GenresStep(uiState: QueryUiState, onUiEvent: (QueryUiEvent) -> Unit) {
     val focusManager = LocalFocusManager.current
     val keyboardVisible = WindowInsets.isImeVisible
     val scrollState = rememberScrollState()
-    val genresToDisplay = genresStep.genreOptions.take(genresStep.numGenreOptionsToShow).let { genreOptions ->
-        when (genresStep) {
-            is QueryStep.Genres.Recommendations -> {
-                // If we're not searching, then we should display all selected genres,
-                // even if they aren't part of genreOptions, and keep them displayed if they were just deselected.
-                // Sort them to preserve order across recompositions.
-                val selectedAndDeselectedGenres = selectedGenres.plus(genresStep.recentlyRemovedGenres).sorted()
-                genreOptions.toSet().plus(selectedAndDeselectedGenres)
-            }
-            else -> genreOptions
-        }
-    }
 
     LaunchedEffect(scrollState, keyboardVisible) {
         snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboardVisible }.collect {
@@ -582,11 +625,10 @@ private fun GenresStep(
         }
     }
 
-    // wrapping genresStep in State so that LaunchedEffect can reference its most recent value without relaunching
-    val genresStepState = rememberUpdatedState(genresStep)
-    LaunchedEffect(scrollState, genresStepState) {
+    val searchQuery = rememberUpdatedState(uiState.genreSearchQuery)
+    LaunchedEffect(scrollState, searchQuery) {
         var previousSearchQuery: String? = null
-        snapshotFlow { (genresStepState.value as? QueryStep.Genres.Search)?.searchQuery }.collect { newSearchQuery ->
+        snapshotFlow { searchQuery.value }.collect { newSearchQuery ->
             // If the search query changes, ensure the scroll position is at the top of the new search results.
             // Likewise, if the search query changes to/from null (indicating leaving or entering the search screen),
             // ensure the scroll position is at the top of the new screen's displayed genres.
@@ -598,19 +640,20 @@ private fun GenresStep(
 
     Column {
         SearchGenresButton(
-            visible = genresStep is QueryStep.Genres.Recommendations,
-            onSearchGenresClick = { onUiEvent(StartGenreSearch) },
+            visible = !uiState.searchingGenres,
+            onSearchGenresClick = { onUiEvent(StartSearchingGenres) },
             modifier = Modifier.padding(top = 24.dp, bottom = 6.dp)
         )
 
-        if (genresStep is QueryStep.Genres.Search && genresStep.genreOptions.isEmpty()) {
+        if (uiState.genreSearchState is GenreSearchState.Searching && uiState.genresToDisplay.isEmpty()) {
             Text(
-                stringResource(R.string.no_genre_results, genresStep.searchQuery),
+                stringResource(R.string.no_genre_results, uiState.genreSearchState.searchQuery),
                 style = MaterialTheme.typography.h6,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         } else {
             // TODO: add visual scroll bar when it is supported
+            // TODO: use Compose 1.4 FlowRow
             FlowRow(
                 modifier = Modifier
                     .fillMaxSize()
@@ -620,8 +663,8 @@ private fun GenresStep(
                 mainAxisSpacing = 10.dp,
                 crossAxisSpacing = 16.dp,
             ) {
-                genresToDisplay.forEach { genre ->
-                    val selected = selectedGenres.contains(genre)
+                uiState.genresToDisplay.forEach { genre ->
+                    val selected = uiState.selectedGenres.contains(genre)
                     Chip(selected = selected, text = genre, onClick = {
                         if (selected) onUiEvent(RemoveGenre(genre)) else onUiEvent(AddGenre(genre))
                     })
@@ -667,50 +710,6 @@ private fun SearchGenresButton(visible: Boolean, onSearchGenresClick: () -> Unit
             Text(stringResource(R.string.search_genres))
             Spacer(modifier = Modifier.weight(1f))
         }
-    }
-}
-
-@ExperimentalAnimationApi
-@Preview(device = Devices.PIXEL_4_XL)
-@Composable
-private fun AcousticnessQueryScreen() {
-    LibzyContent {
-        QueryScreen(
-            uiState = QueryUiState(stepOrder = QueryUiState.DEFAULT_STEP_ORDER, currentStep = QueryStep.Acousticness),
-            onUiEvent = {}
-        )
-    }
-}
-
-@ExperimentalAnimationApi
-@Preview(device = Devices.PIXEL_4_XL)
-@Composable
-private fun GenresQueryScreen() {
-    LibzyContent {
-        QueryScreen(
-            uiState = QueryUiState(
-                stepOrder = QueryUiState.DEFAULT_STEP_ORDER,
-                currentStep = QueryStep.Genres.Recommendations(
-                    genreOptions = List(60) { index ->
-                        when (index) {
-                            0 -> "rock"
-                            1 -> "pop"
-                            2 -> "hip hop"
-                            3 -> "electronica"
-                            4 -> "funk"
-                            5 -> "heavy metal"
-                            6 -> "progressive rock"
-                            7 -> "indie pop"
-                            8 -> "neo soul"
-                            9 -> "trap"
-                            10 -> "r&b"
-                            else -> "genre $index"
-                        }
-                    }
-                )
-            ),
-            onUiEvent = {}
-        )
     }
 }
 

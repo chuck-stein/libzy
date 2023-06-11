@@ -302,14 +302,6 @@ object AnalyticsConstants {
          * (or false if just viewing recommendations) for [Events.SELECT_GENRE] or [Events.DESELECT_GENRE].
          */
         const val CURRENTLY_SEARCHING = "currently searching"
-
-        /**
-         * A [Boolean] property representing whether the genre that has just been selected or deselected for
-         * [Events.SELECT_GENRE] or [Events.DESELECT_GENRE] was part of the current recommendations / search results.
-         * False if it is only on-screen because it was already selected at the time the current
-         * recommendations / search results were populated.
-         */
-        const val FROM_CURRENT_OPTIONS = "from current options"
     }
     
     object UserProperties {
