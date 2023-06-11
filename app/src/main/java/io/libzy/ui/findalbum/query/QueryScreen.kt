@@ -135,9 +135,11 @@ import io.libzy.ui.findalbum.query.QueryUiEvent.SubmitQuery
 import io.libzy.ui.findalbum.query.QueryUiEvent.UpdateSearchQuery
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import java.time.LocalTime
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * **Stateful** Query Screen, displaying a series of questions about what the user is in the mood to listen to.
@@ -646,9 +648,14 @@ private fun GenresStep(uiState: QueryUiState, onUiEvent: (QueryUiEvent) -> Unit)
     val keyboardVisible = WindowInsets.isImeVisible
     val scrollState = rememberScrollState()
 
-    LaunchedEffect(scrollState, keyboardVisible) {
-        snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboardVisible }.collect {
-            focusManager.clearFocus() // close the keyboard if it is open when the user starts scrolling
+    if (uiState.searchingGenres) {
+        LaunchedEffect(scrollState, keyboardVisible) {
+            // Close the keyboard if it is open when the user starts scrolling. But wait for the start search animation
+            // to finish beforehand, to avoid catching false positives from the auto-scroll during this transition.
+            delay(SEARCH_TRANSITION_DURATION_MILLIS.milliseconds)
+            snapshotFlow { scrollState.isScrollInProgress }.filter { it && keyboardVisible }.collect {
+                focusManager.clearFocus()
+            }
         }
     }
 
