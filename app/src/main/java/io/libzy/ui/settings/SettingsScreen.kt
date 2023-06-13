@@ -61,14 +61,13 @@ fun SettingsScreen(navController: NavController, viewModelFactory: ViewModelProv
     val viewModel: SettingsViewModel = viewModel(factory = viewModelFactory)
     val uiState by viewModel.uiStateFlow.collectAsState()
 
-    LaunchedEffect(uiState.logOutState) {
-        if (uiState.logOutState == LogOutState.LoggedOut) {
+    if (uiState.logOutState == LogOutState.LoggedOut) {
+        LaunchedEffect(Unit) {
             navController.navigate(Destination.Query.route) {
                 popUpTo(Destination.Query.route) {
                     inclusive = true
                 }
             }
-            viewModel.resetLogOutState()
         }
     }
 

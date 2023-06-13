@@ -36,51 +36,68 @@ class SettingsViewModel @Inject constructor(
     override val initialUiState = SettingsUiState(loading = true)
 
     init {
-        collectPreferences()
-        collectLibrarySyncState()
-    }
-
-    private fun collectPreferences() {
         viewModelScope.launch {
-            settingsRepository.enabledQueryParams.collect { enabledQueryParams ->
-                updateUiState {
-                    copy(
-                        enabledQueryParams = enabledQueryParams
-                            ?.map { Query.Parameter.fromString(it) }
-                            ?.toSet()
-                            ?: QueryUiState.DEFAULT_STEP_ORDER.toSet(),
-                        loading = false
-                    )
-                }
-            }
+            presentEnabledQueryParams()
         }
         viewModelScope.launch {
-            sessionRepository.lastSyncTimestampMillis.collect { lastSyncTimestampMillis ->
-                updateUiState {
-                    copy(
-                        lastLibrarySyncDate = lastSyncTimestampMillis
-                            ?.let { lastSyncDateFormat.format(it) }
-                            ?.toTextResource()
-                            ?: R.string.unknown.toTextResource(),
-                        loading = false
-                    )
-                }
+            presentLibrarySyncState()
+        }
+        viewModelScope.launch {
+            presentLastSyncTimestamp()
+        }
+        viewModelScope.launch {
+            handleLogOut()
+        }
+    }
+
+    private suspend fun presentEnabledQueryParams() {
+        settingsRepository.enabledQueryParams.collect { enabledQueryParams ->
+            updateUiState {
+                copy(
+                    enabledQueryParams = enabledQueryParams
+                        ?.map { Query.Parameter.fromString(it) }
+                        ?.toSet()
+                        ?: QueryUiState.DEFAULT_STEP_ORDER.toSet(),
+                    loading = false
+                )
             }
         }
     }
 
-    private fun collectLibrarySyncState() {
-        viewModelScope.launch {
-            workManager
-                .getWorkInfosForUniqueWorkLiveData(LibrarySyncWorker.WORK_NAME)
-                .asFlow()
-                .flatten()
-                .map { it.state }
-                .collect { librarySyncState ->
-                    updateUiState {
-                        copy(syncingLibrary = librarySyncState == WorkInfo.State.RUNNING)
-                    }
+    private suspend fun presentLibrarySyncState() {
+        workManager
+            .getWorkInfosForUniqueWorkLiveData(LibrarySyncWorker.WORK_NAME)
+            .asFlow()
+            .flatten()
+            .map { it.state }
+            .collect { librarySyncState ->
+                updateUiState {
+                    copy(syncingLibrary = librarySyncState == WorkInfo.State.RUNNING)
                 }
+            }
+    }
+
+    private suspend fun presentLastSyncTimestamp() {
+        sessionRepository.lastSyncTimestampMillis.collect { lastSyncTimestampMillis ->
+            updateUiState {
+                copy(
+                    lastLibrarySyncDate = lastSyncTimestampMillis
+                        ?.let { lastSyncDateFormat.format(it) }
+                        ?.toTextResource()
+                        ?: R.string.unknown.toTextResource(),
+                    loading = false
+                )
+            }
+        }
+    }
+
+    private suspend fun handleLogOut() {
+        sessionRepository.spotifyConnectedState.collect { spotifyConnected ->
+            if (!spotifyConnected) {
+                updateUiState {
+                    copy(logOutState = LogOutState.LoggedOut)
+                }
+            }
         }
     }
 
@@ -119,15 +136,6 @@ class SettingsViewModel @Inject constructor(
             prefsStore.clear()
             userLibraryRepository.clearLibraryData()
             workManager.cancelUniqueWork(LibrarySyncWorker.WORK_NAME)
-            updateUiState {
-                copy(logOutState = LogOutState.LoggedOut)
-            }
-        }
-    }
-
-    fun resetLogOutState() {
-        updateUiState {
-            copy(logOutState = LogOutState.None)
         }
     }
 }
