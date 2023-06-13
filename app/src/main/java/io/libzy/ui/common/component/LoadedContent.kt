@@ -10,13 +10,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 
+/**
+ * Display the given [content] once [loading] becomes false.
+ *
+ * @param enableProgressIndicator Whether we should show a progress indicator while [loading].
+ * Set to false to avoid flashing the indicator for a split second if the loading time should not be noticeable.
+ */
 @Composable
-fun LoadedContent(loading: Boolean, content: @Composable () -> Unit) {
-    if (loading) {
+fun LoadedContent(loading: Boolean, enableProgressIndicator: Boolean = true, content: @Composable () -> Unit) {
+    if (!loading) {
+        content()
+    } else if (enableProgressIndicator) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
         }
-    } else {
-        content()
     }
 }

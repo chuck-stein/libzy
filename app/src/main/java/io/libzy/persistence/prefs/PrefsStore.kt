@@ -1,10 +1,14 @@
-package io.libzy.repository
+package io.libzy.persistence.prefs
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -37,5 +41,14 @@ class PrefsStore @Inject constructor(private val dataStore: DataStore<Preference
 
     suspend fun clear() {
         edit { prefs -> prefs.clear() }
+    }
+
+    object Keys {
+        val SPOTIFY_CONNECTED = booleanPreferencesKey("spotify.connected")
+        val SPOTIFY_USER_ID = stringPreferencesKey("spotify.user.id")
+        val SPOTIFY_AUTH_TOKEN = stringPreferencesKey("spotify.auth.token")
+        val SPOTIFY_AUTH_EXPIRATION_TIMESTAMP_SECONDS = longPreferencesKey("spotify.auth.expiration.timestamp.seconds")
+        val LAST_SYNC_TIMESTAMP_MILLIS = longPreferencesKey("spotify.sync.timestamp.millis")
+        val ENABLED_QUERY_PARAMS = stringSetPreferencesKey("query.params.enabled")
     }
 }

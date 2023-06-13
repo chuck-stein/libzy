@@ -1,7 +1,5 @@
 package io.libzy.ui.connect
 
-import android.content.SharedPreferences
-import androidx.core.content.edit
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -12,7 +10,6 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import io.libzy.analytics.AnalyticsDispatcher
-import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.repository.SessionRepository
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
@@ -24,6 +21,7 @@ import io.libzy.util.wrapResult
 import io.libzy.work.LibrarySyncWorker
 import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,13 +29,10 @@ class ConnectSpotifyViewModel @Inject constructor(
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val workManager: WorkManager,
-    private val sharedPrefs: SharedPreferences,
     private val sessionRepository: SessionRepository
 ) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
-    override val initialUiState = ConnectSpotifyUiState(
-        librarySyncInProgress = sharedPrefs.getBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SYNC_IN_PROGRESS, false)
-    )
+    override val initialUiState = ConnectSpotifyUiState(loading = true, librarySyncInProgress = false)
 
     init {
         viewModelScope.launch {
@@ -52,6 +47,11 @@ class ConnectSpotifyViewModel @Inject constructor(
         workManager
             .getWorkInfosByTagLiveData(INITIAL_LIBRARY_SYNC_WORK_TAG)
             .asFlow()
+            .onEach {
+                updateUiState {
+                    copy(loading = false)
+                }
+            }
             .flatten()
             .map { it.state }
             .collect { librarySyncState ->
@@ -79,10 +79,9 @@ class ConnectSpotifyViewModel @Inject constructor(
     }
 
     fun onConnectSpotifyClick() {
-        val currentlyConnectedUserId = sharedPrefs.getString(SharedPrefKeys.SPOTIFY_USER_ID, null)
-        analyticsDispatcher.sendClickConnectSpotifyEvent(currentlyConnectedUserId)
-
         viewModelScope.launch {
+            analyticsDispatcher.sendClickConnectSpotifyEvent(sessionRepository.getSpotifyUserId())
+
             wrapResult {
                 spotifyAuthDispatcher.requestAuthorization(withTimeout = false) { setShowDialog(true) }
             }.handle(SpotifyAuthException::class) {
@@ -110,10 +109,6 @@ class ConnectSpotifyViewModel @Inject constructor(
 
             updateUiState {
                 copy(librarySyncInProgress = true)
-            }
-
-            sharedPrefs.edit {
-                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SYNC_IN_PROGRESS, true)
             }
         }
     }

@@ -1,7 +1,8 @@
 package io.libzy.repository
 
 import io.libzy.domain.Query
-import io.libzy.persistence.prefs.DataStoreKeys.ENABLED_QUERY_PARAMS
+import io.libzy.persistence.prefs.PrefsStore
+import io.libzy.persistence.prefs.PrefsStore.Keys.ENABLED_QUERY_PARAMS
 import javax.inject.Inject
 
 class SettingsRepository @Inject constructor(private val prefsStore: PrefsStore) {

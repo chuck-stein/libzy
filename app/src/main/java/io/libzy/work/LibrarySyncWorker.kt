@@ -2,11 +2,9 @@ package io.libzy.work
 
 import android.app.NotificationManager
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
 import android.net.Uri
 import androidx.core.app.NotificationCompat
-import androidx.core.content.edit
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.ListenableWorker
@@ -17,13 +15,11 @@ import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
 import io.libzy.config.NotificationIds
-import io.libzy.persistence.prefs.SharedPrefKeys
 import io.libzy.repository.SessionRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.Destination
 import io.libzy.util.appInForeground
 import io.libzy.util.createNotificationTapAction
-import io.libzy.util.currentTimeSeconds
 import timber.log.Timber
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
@@ -36,8 +32,7 @@ class LibrarySyncWorker(
     params: WorkerParameters,
     private val userLibraryRepository: UserLibraryRepository,
     private val sessionRepository: SessionRepository,
-    private val analyticsDispatcher: AnalyticsDispatcher,
-    private val sharedPrefs: SharedPreferences
+    private val analyticsDispatcher: AnalyticsDispatcher
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
@@ -53,8 +48,7 @@ class LibrarySyncWorker(
     private val isInitialSync = inputData.getBoolean(IS_INITIAL_SYNC, false)
 
     override suspend fun doWork(): Result {
-        val authExpirationTimestamp = sharedPrefs.getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
-        if (currentTimeSeconds() > authExpirationTimestamp && !appInForeground()) {
+        if (sessionRepository.isSpotifyAuthExpired() && !appInForeground()) {
             // If auth has expired and the app is in the background,
             // fail the library sync job since we need to be in the foreground to refresh auth
             analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialSync)
@@ -88,18 +82,12 @@ class LibrarySyncWorker(
 
         if (isInitialSync) {
             setForeground(createInitialSyncForegroundInfo())
-            sharedPrefs.edit {
-                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SYNC_IN_PROGRESS, true)
-            }
         }
     }
 
     private suspend fun afterLibrarySync(numAlbumsSynced: TimedValue<Int>) {
         if (isInitialSync) {
             sessionRepository.setSpotifyConnected(true)
-            sharedPrefs.edit {
-                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SYNC_IN_PROGRESS, false)
-            }
             notifyLibrarySyncEnded(
                 notificationTitleResId = R.string.initial_library_sync_succeeded_notification_title,
                 notificationTextResId = R.string.initial_library_sync_succeeded_notification_text,
@@ -122,9 +110,6 @@ class LibrarySyncWorker(
         Timber.e(exception, "Failed to sync Spotify library data")
         analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialSync)
         if (isInitialSync) {
-            sharedPrefs.edit {
-                putBoolean(SharedPrefKeys.SPOTIFY_INITIAL_SYNC_IN_PROGRESS, false)
-            }
             notifyLibrarySyncEnded(
                 notificationTitleResId = R.string.initial_library_sync_failed_notification_title,
                 notificationTextResId = R.string.initial_library_sync_failed_notification_text,
@@ -185,7 +170,6 @@ class LibrarySyncWorker(
         private val userLibraryRepository: UserLibraryRepository,
         private val sessionRepository: SessionRepository,
         private val analyticsDispatcher: AnalyticsDispatcher,
-        private val sharedPrefs: SharedPreferences
     ) : WorkerFactory() {
 
         override fun createWorker(
@@ -196,7 +180,7 @@ class LibrarySyncWorker(
 
             return when (workerClassName) {
                 LibrarySyncWorker::class.java.name -> LibrarySyncWorker(
-                    appContext, workerParameters, userLibraryRepository, sessionRepository, analyticsDispatcher, sharedPrefs
+                    appContext, workerParameters, userLibraryRepository, sessionRepository, analyticsDispatcher
                 )
                 else -> null
             }

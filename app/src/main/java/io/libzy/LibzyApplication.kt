@@ -4,7 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.DelegatingWorkerFactory
@@ -13,7 +12,6 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.CrashlyticsTree
-import io.libzy.di.AndroidModule
 import io.libzy.di.AppComponent
 import io.libzy.di.DaggerAppComponent
 import io.libzy.repository.SessionRepository
@@ -45,9 +43,6 @@ class LibzyApplication : Application(), Configuration.Provider {
     lateinit var workManager: WorkManager
 
     @Inject
-    lateinit var sharedPrefs: SharedPreferences
-
-    @Inject
     lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
@@ -61,10 +56,8 @@ class LibzyApplication : Application(), Configuration.Provider {
 
     override fun getWorkManagerConfiguration(): Configuration {
         val workerFactory = DelegatingWorkerFactory()
-        // can't use the injected sharedPrefs because it will not have been injected yet when this method is called
-        val sharedPrefs = AndroidModule().provideSharedPrefs(this)
         workerFactory.addFactory(
-            LibrarySyncWorker.Factory(userLibraryRepository, sessionRepository, analyticsDispatcher, sharedPrefs)
+            LibrarySyncWorker.Factory(userLibraryRepository, sessionRepository, analyticsDispatcher)
         )
 
         return Configuration.Builder()

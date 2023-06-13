@@ -1,7 +1,6 @@
 package io.libzy.analytics
 
 import android.app.Application
-import android.content.SharedPreferences
 import android.content.res.Resources
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
@@ -62,9 +61,12 @@ import io.libzy.domain.Query
 import io.libzy.domain.RecommendationCategory
 import io.libzy.domain.title
 import io.libzy.persistence.database.tuple.LibraryAlbum
-import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.repository.SessionRepository
 import io.libzy.util.plus
 import io.libzy.util.toString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -76,7 +78,10 @@ import kotlin.math.roundToInt
  * with any method parameters needed to send along event properties.
  */
 @Singleton
-class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPreferences) {
+class AnalyticsDispatcher @Inject constructor(
+    private val sessionRepository: SessionRepository,
+    private val coroutineScope: CoroutineScope
+) {
     private val amplitude = Amplitude.getInstance()
 
     fun initialize(application: Application, apiKey: String) {
@@ -85,7 +90,11 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
             .initialize(application, apiKey)
             .enableForegroundTracking(application)
 
-        sharedPrefs.getString(SharedPrefKeys.SPOTIFY_USER_ID, null)?.let { setUserId(it) }
+        coroutineScope.launch {
+            sessionRepository.spotifyUserId.filterNotNull().collect {
+                amplitude.userId = it
+            }
+        }
     }
 
     // ~~~~~~~~~~~~~~~~~~ User Properties  ~~~~~~~~~~~~~~~~~~
@@ -101,10 +110,6 @@ class AnalyticsDispatcher @Inject constructor(private val sharedPrefs: SharedPre
      * Shorthand for incrementing a numerical user property by 1
      */
     private fun Identify.increment(property: String) = add(property, 1)
-
-    fun setUserId(userId: String) {
-        amplitude.userId = userId
-    }
 
     fun setUserDisplayName(displayName: String) {
         Identify().set(DISPLAY_NAME, displayName).updateUserProperties()

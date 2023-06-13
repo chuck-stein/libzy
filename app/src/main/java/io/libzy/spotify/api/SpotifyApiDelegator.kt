@@ -1,6 +1,5 @@
 package io.libzy.spotify.api
 
-import android.content.SharedPreferences
 import com.adamratzman.spotify.SpotifyApiOptions
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.SpotifyClientApiBuilder
@@ -16,9 +15,8 @@ import com.adamratzman.spotify.models.AudioFeatures
 import com.adamratzman.spotify.models.PlayHistory
 import com.adamratzman.spotify.models.SavedAlbum
 import com.adamratzman.spotify.models.Track
-import io.libzy.persistence.prefs.SharedPrefKeys
+import io.libzy.repository.SessionRepository
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
-import io.libzy.util.currentTimeSeconds
 import io.libzy.util.handle
 import io.libzy.util.handleAny
 import io.libzy.util.unwrap
@@ -33,7 +31,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SpotifyApiDelegator @Inject constructor(
-    private val sharedPrefs: SharedPreferences,
+    private val sessionRepository: SessionRepository,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     applicationScope: CoroutineScope
 ) {
@@ -62,12 +60,9 @@ class SpotifyApiDelegator @Inject constructor(
         _apiDelegate ?: createApiDelegateIfTokenAvailable() ?: createApiDelegateWithNewToken()
 
     private suspend fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
-        with(sharedPrefs) {
-            val savedAccessToken = getString(SharedPrefKeys.SPOTIFY_AUTH_TOKEN, null)
-            val tokenExpirationTimestamp = getLong(SharedPrefKeys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP, 0)
-            if (savedAccessToken != null && currentTimeSeconds() < tokenExpirationTimestamp) {
-                _apiDelegate = createApiDelegate(savedAccessToken)
-            }
+        val savedAccessToken = sessionRepository.getSpotifyAuthToken()
+        if (savedAccessToken != null && !sessionRepository.isSpotifyAuthExpired()) {
+            _apiDelegate = createApiDelegate(savedAccessToken)
         }
         return _apiDelegate
     }

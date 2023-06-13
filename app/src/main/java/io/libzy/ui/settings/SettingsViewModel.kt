@@ -1,8 +1,6 @@
 package io.libzy.ui.settings
 
-import android.content.SharedPreferences
 import android.icu.text.DateFormat
-import androidx.core.content.edit
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -11,7 +9,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import io.libzy.R
 import io.libzy.domain.Query
-import io.libzy.repository.PrefsStore
+import io.libzy.persistence.prefs.PrefsStore
 import io.libzy.repository.SessionRepository
 import io.libzy.repository.SettingsRepository
 import io.libzy.repository.UserLibraryRepository
@@ -26,7 +24,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class SettingsViewModel @Inject constructor(
-    private val sharedPrefs: SharedPreferences,
     private val settingsRepository: SettingsRepository,
     private val sessionRepository: SessionRepository,
     private val userLibraryRepository: UserLibraryRepository,
@@ -119,7 +116,6 @@ class SettingsViewModel @Inject constructor(
 
     fun logOut() {
         viewModelScope.launch {
-            sharedPrefs.edit { clear() }
             prefsStore.clear()
             userLibraryRepository.clearLibraryData()
             workManager.cancelUniqueWork(LibrarySyncWorker.WORK_NAME)

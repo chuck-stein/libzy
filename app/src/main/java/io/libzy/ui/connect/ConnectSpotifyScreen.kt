@@ -41,6 +41,7 @@ import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
+import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
@@ -101,12 +102,14 @@ private fun ConnectSpotifyScreen(
     scaffoldState: ScaffoldState,
     onConnectSpotifyClick: () -> Unit
 ) {
-    LibzyScaffold(scaffoldState = scaffoldState, showTopBar = false) {
-        Crossfade(targetState = uiState.librarySyncInProgress) { librarySyncInProgress ->
-            if (!librarySyncInProgress) {
-                WelcomePage(onConnectSpotifyClick)
-            } else {
-                LibrarySyncProgress()
+    LoadedContent(uiState.loading, enableProgressIndicator = false) {
+        LibzyScaffold(scaffoldState = scaffoldState, showTopBar = false) {
+            Crossfade(targetState = uiState.librarySyncInProgress) { librarySyncInProgress ->
+                if (!librarySyncInProgress) {
+                    WelcomePage(onConnectSpotifyClick)
+                } else {
+                    LibrarySyncProgress()
+                }
             }
         }
     }
