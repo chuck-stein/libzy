@@ -104,11 +104,11 @@ private fun ConnectSpotifyScreen(
 ) {
     LoadedContent(uiState.loading, enableProgressIndicator = false) {
         LibzyScaffold(scaffoldState = scaffoldState, showTopBar = false) {
-            Crossfade(targetState = uiState.librarySyncInProgress) { librarySyncInProgress ->
-                if (!librarySyncInProgress) {
-                    WelcomePage(onConnectSpotifyClick)
-                } else {
+            Crossfade(targetState = uiState.showSyncProgress) { showSyncProgress ->
+                if (showSyncProgress) {
                     LibrarySyncProgress()
+                } else {
+                    WelcomePage(onConnectSpotifyClick)
                 }
             }
         }
@@ -193,7 +193,7 @@ private fun LibrarySyncProgress() {
 private fun ConnectSpotifyScreenPreview() {
     LibzyContent {
         ConnectSpotifyScreen(
-            uiState = ConnectSpotifyUiState(librarySyncInProgress = false),
+            uiState = ConnectSpotifyUiState(showSyncProgress = false),
             scaffoldState = rememberScaffoldState(),
             onConnectSpotifyClick = {}
         )
@@ -205,7 +205,7 @@ private fun ConnectSpotifyScreenPreview() {
 private fun LibrarySyncingPreview() {
     LibzyContent {
         ConnectSpotifyScreen(
-            uiState = ConnectSpotifyUiState(librarySyncInProgress = true),
+            uiState = ConnectSpotifyUiState(showSyncProgress = true),
             scaffoldState = rememberScaffoldState(),
             onConnectSpotifyClick = {}
         )

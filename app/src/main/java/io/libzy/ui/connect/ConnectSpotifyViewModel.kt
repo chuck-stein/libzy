@@ -6,7 +6,8 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkInfo
+import androidx.work.WorkInfo.State.CANCELLED
+import androidx.work.WorkInfo.State.FAILED
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import io.libzy.analytics.AnalyticsDispatcher
@@ -14,6 +15,7 @@ import io.libzy.repository.SessionRepository
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.ui.common.LibzyViewModel
+import io.libzy.ui.connect.ConnectSpotifyUiEvent.SPOTIFY_SYNC_FAILED
 import io.libzy.util.flatten
 import io.libzy.util.handle
 import io.libzy.util.unwrap
@@ -32,7 +34,7 @@ class ConnectSpotifyViewModel @Inject constructor(
     private val sessionRepository: SessionRepository
 ) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
-    override val initialUiState = ConnectSpotifyUiState(loading = true, librarySyncInProgress = false)
+    override val initialUiState = ConnectSpotifyUiState(loading = true, showSyncProgress = false)
 
     init {
         viewModelScope.launch {
@@ -56,11 +58,11 @@ class ConnectSpotifyViewModel @Inject constructor(
             .map { it.state }
             .collect { librarySyncState ->
                 updateUiState {
-                    copy(librarySyncInProgress = !librarySyncState.isFinished)
+                    copy(showSyncProgress = !librarySyncState.isFinished || sessionRepository.isSpotifyConnected())
                 }
 
-                if (librarySyncState == WorkInfo.State.FAILED || librarySyncState == WorkInfo.State.CANCELLED) {
-                    produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_SYNC_FAILED)
+                if (librarySyncState == FAILED || librarySyncState == CANCELLED) {
+                    produceUiEvent(SPOTIFY_SYNC_FAILED)
                 }
             }
     }
@@ -93,7 +95,7 @@ class ConnectSpotifyViewModel @Inject constructor(
     }
 
     private fun startInitialLibrarySync() {
-        if (uiState.librarySyncInProgress) return
+        if (uiState.showSyncProgress) return
 
         viewModelScope.launch {
             val workRequest = OneTimeWorkRequestBuilder<LibrarySyncWorker>()
@@ -108,7 +110,7 @@ class ConnectSpotifyViewModel @Inject constructor(
             )
 
             updateUiState {
-                copy(librarySyncInProgress = true)
+                copy(showSyncProgress = true)
             }
         }
     }
