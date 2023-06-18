@@ -26,6 +26,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_MEDIUM_TERM_FAVO
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_RECENTLY_PLAYED
 import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_SHORT_TERM_FAVORITE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.LIBRARY_SYNC_TIME
+import io.libzy.analytics.AnalyticsConstants.EventProperties.MESSAGE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SYNCED
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_CATEGORIES
@@ -159,7 +160,8 @@ class AnalyticsDispatcher @Inject constructor(
         result: LibrarySyncResult,
         isInitialSync: Boolean,
         numAlbumsSynced: Int? = null,
-        librarySyncTime: Double? = null
+        librarySyncTime: Double? = null,
+        message: String? = null
     ) {
         numAlbumsSynced?.let {
             Identify().set(NUM_ALBUMS_IN_LIBRARY, it).updateUserProperties()
@@ -169,7 +171,8 @@ class AnalyticsDispatcher @Inject constructor(
             RESULT to result.value,
             IS_INITIAL_SYNC to isInitialSync,
             NUM_ALBUMS_SYNCED to numAlbumsSynced,
-            LIBRARY_SYNC_TIME to librarySyncTime?.roundToInt()
+            LIBRARY_SYNC_TIME to librarySyncTime?.roundToInt(),
+            MESSAGE to message
         )
         sendEvent(SYNC_LIBRARY_DATA, eventProperties, outOfSession = true)
     }

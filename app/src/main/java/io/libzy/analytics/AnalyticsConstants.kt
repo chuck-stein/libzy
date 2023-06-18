@@ -128,6 +128,12 @@ object AnalyticsConstants {
         const val RESULT = "result"
 
         /**
+         * A [String] property representing an informational message to go along with [Events.SYNC_LIBRARY_DATA].
+         * For example, if the library sync failed, this message will include the reason for failure.
+         */
+        const val MESSAGE = "message"
+
+        /**
          * A [String] property representing the user's selection of familiarity for [Events.SUBMIT_QUERY]
          * or [Events.VIEW_ALBUM_RESULTS]. Should be the name of one of the [Familiarity] enum values.
          * Null means no preference.
