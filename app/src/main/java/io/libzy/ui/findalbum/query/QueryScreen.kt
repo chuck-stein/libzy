@@ -481,25 +481,25 @@ private fun CurrentQueryStep(
                 FAMILIARITY -> FamiliarityStep(uiState.query.familiarity, onUiEvent)
                 INSTRUMENTALNESS -> InstrumentalnessStep(uiState.query.instrumental, onUiEvent)
                 ACOUSTICNESS -> SliderQueryStep(
-                    initialValue = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
+                    value = uiState.query.acousticness?.let { 1 - it }, // higher acousticness = lower slider value
                     leftLabelResId = R.string.acoustic,
                     rightLabelResId = R.string.electric_electronic,
                     onValueChange = { onUiEvent(ChangeAcousticness(1 - it)) } // higher slider value = lower acousticness
                 )
                 VALENCE -> SliderQueryStep(
-                    initialValue = uiState.query.valence,
+                    value = uiState.query.valence,
                     leftLabelResId = R.string.negative_emotion,
                     rightLabelResId = R.string.positive_emotion,
                     onValueChange = { onUiEvent(ChangeValence(it)) }
                 )
                 ENERGY -> SliderQueryStep(
-                    initialValue = uiState.query.energy,
+                    value = uiState.query.energy,
                     leftLabelResId = R.string.chill,
                     rightLabelResId = R.string.energetic,
                     onValueChange = { onUiEvent(ChangeEnergy(it)) }
                 )
                 DANCEABILITY -> SliderQueryStep(
-                    initialValue = uiState.query.danceability,
+                    value = uiState.query.danceability,
                     leftLabelResId = R.string.arrhythmic,
                     rightLabelResId = R.string.danceable,
                     onValueChange = { onUiEvent(ChangeDanceability(it)) }
@@ -592,12 +592,12 @@ private fun InstrumentalnessStep(
 
 @Composable
 private fun SliderQueryStep(
-    initialValue: Float?,
+    value: Float?,
     @StringRes leftLabelResId: Int,
     @StringRes rightLabelResId: Int,
     onValueChange: (Float) -> Unit
 ) {
-    var currentValue by remember { mutableStateOf(initialValue) }
+    var currentValue by remember(value) { mutableStateOf(value) }
     val sliderColor = if (currentValue != null) MaterialTheme.colors.primary else MaterialTheme.colors.secondary
     val horizontalSpacing = 8.dp
 
