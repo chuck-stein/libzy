@@ -1,6 +1,8 @@
 package io.libzy.repository
 
-import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi
+import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.LONG_TERM
+import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.MEDIUM_TERM
+import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.SHORT_TERM
 import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.AudioFeatures
 import io.libzy.persistence.database.UserLibraryDatabase
@@ -13,6 +15,8 @@ import io.libzy.spotify.api.SpotifyApiDelegator
 import io.libzy.util.percentageToFloat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -41,32 +45,27 @@ class UserLibraryRepository @Inject constructor(
      * @return the number of albums synced from the user's Spotify library
      */
     suspend fun syncLibraryData(): Int = withContext(Dispatchers.IO) {
-        Timber.v("Fetching recently played tracks")
-        val recentlyPlayedTracks = spotifyApi.fetchPlayHistory().map { it.track }
-        Timber.v("Fetching top tracks -- short term")
-        val topTracksShortTerm = spotifyApi.fetchTopTracks(ClientPersonalizationApi.TimeRange.SHORT_TERM)
-        Timber.v("Fetching top tracks -- medium term")
-        val topTracksMediumTerm = spotifyApi.fetchTopTracks(ClientPersonalizationApi.TimeRange.MEDIUM_TERM)
-        Timber.v("Fetching top tracks -- long term")
-        val topTracksLongTerm = spotifyApi.fetchTopTracks(ClientPersonalizationApi.TimeRange.LONG_TERM)
+        val recentlyPlayedTracks = async { spotifyApi.fetchPlayHistory().map { it.track } }
+        val topTracksShortTerm = async { spotifyApi.fetchTopTracks(SHORT_TERM) }
+        val topTracksMediumTerm = async { spotifyApi.fetchTopTracks(MEDIUM_TERM) }
+        val topTracksLongTerm = async { spotifyApi.fetchTopTracks(LONG_TERM) }
+        val albums = async { spotifyApi.fetchAllSavedAlbums().map { savedAlbum -> savedAlbum.album } }
 
-        Timber.v("Fetching saved albums")
-        val albums = spotifyApi.fetchAllSavedAlbums().map { savedAlbum -> savedAlbum.album }
+        val dbAlbums = albums.await().map { album ->
+            async {
+                toDbAlbum(
+                    album,
+                    recentlyPlayedTracks.await().map { it.id },
+                    topTracksShortTerm.await().map { it.id },
+                    topTracksMediumTerm.await().map { it.id },
+                    topTracksLongTerm.await().map { it.id }
+                )
+            }
+        }.awaitAll()
 
-        val dbAlbums = albums.map { album ->
-            toDbAlbum(
-                album,
-                recentlyPlayedTracks.map { it.id },
-                topTracksShortTerm.map { it.id },
-                topTracksMediumTerm.map { it.id },
-                topTracksLongTerm.map { it.id }
-            )
-        }
-
-        Timber.v("Scanning genres in saved albums")
         val dbGenres = mutableSetOf<DbGenre>()
         val albumGenreJunctions = mutableSetOf<AlbumGenreJunction>()
-        if (dbAlbums.isNotEmpty()) fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums)
+        if (dbAlbums.isNotEmpty()) fillGenreDataFromAlbums(dbGenres, albumGenreJunctions, albums.await())
 
         Timber.v("Saving library data in local database")
         database.runInTransaction { // TODO: ensure nested transactions work as expected
@@ -74,7 +73,7 @@ class UserLibraryRepository @Inject constructor(
             database.genreDao.replaceAll(dbGenres)
             database.albumGenreJunctionDao.replaceAll(albumGenreJunctions)
         }
-        return@withContext albums.size
+        return@withContext albums.await().size
     }
 
     private suspend fun getAlbumAudioFeatures(album: Album): AudioFeaturesTuple {
@@ -105,6 +104,7 @@ class UserLibraryRepository @Inject constructor(
         albumGenreJunctions: MutableSet<AlbumGenreJunction>,
         albums: List<Album>
     ) {
+        Timber.v("Scanning genres in saved albums")
         val albumsByArtists = mutableMapOf<String, MutableSet<String>>()
         for (album in albums) {
             for (genre in album.genres) {

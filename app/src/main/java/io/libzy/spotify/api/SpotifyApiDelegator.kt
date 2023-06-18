@@ -81,16 +81,19 @@ class SpotifyApiDelegator @Inject constructor(
     }
 
     suspend fun fetchPlayHistory(): List<PlayHistory> = doSafeApiCall {
+        Timber.v("Fetching recently played tracks")
         getApiDelegate().player.getRecentlyPlayed(API_ITEM_LIMIT_LOW).items
     }
 
     suspend fun fetchTopTracks(timeRange: ClientPersonalizationApi.TimeRange): List<Track> = doSafeApiCall {
+        Timber.v("Fetching top tracks -- ${timeRange.id}")
         getApiDelegate().personalization
             .getTopTracks(API_ITEM_LIMIT_LOW_MAX_PAGING, timeRange = timeRange)
             .getAllItems().filterNotNull()
     }
 
     suspend fun fetchAllSavedAlbums(): List<SavedAlbum> = doSafeApiCall {
+        Timber.v("Fetching saved albums")
         getApiDelegate().library.getSavedAlbums().getAllItems().filterNotNull()
     }
 
