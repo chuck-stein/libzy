@@ -4,7 +4,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
@@ -20,13 +19,13 @@ import io.libzy.ui.settings.SettingsScreen
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun LibzyNavGraph(viewModelFactory: ViewModelProvider.Factory, isSpotifyConnected: () -> Boolean, exitApp: () -> Unit) {
+fun LibzyNavGraph(uiState: SessionUiState, viewModelFactory: ViewModelProvider.Factory, exitApp: () -> Unit) {
     val navController = rememberNavController()
 
     // define a helper for adding destinations to the graph
     fun NavGraphBuilder.composable(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
         composable(destination.route, destination.arguments, destination.deepLinks) { backStackEntry ->
-            val redirectToConnectSpotify = remember { destination.requiresSpotifyConnection && !isSpotifyConnected() }
+            val redirectToConnectSpotify = destination.requiresSpotifyConnection && !uiState.isSpotifyConnected
             LaunchedEffect(redirectToConnectSpotify) {
                 if (redirectToConnectSpotify) navController.navigate(Destination.ConnectSpotify.route)
             }

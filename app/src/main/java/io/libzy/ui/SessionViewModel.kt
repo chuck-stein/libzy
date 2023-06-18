@@ -16,7 +16,7 @@ import io.libzy.spotify.auth.SpotifyAuthCallback
 import io.libzy.spotify.auth.SpotifyAuthClientProxy
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthException
-import io.libzy.ui.common.EventsOnlyViewModel
+import io.libzy.ui.common.LibzyViewModel
 import io.libzy.work.LibrarySyncWorker
 import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
 import kotlinx.coroutines.Job
@@ -31,9 +31,9 @@ class SessionViewModel @Inject constructor(
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val workManager: WorkManager,
     appContext: Context
-) : EventsOnlyViewModel<SessionUiEvent>(), SpotifyAuthClientProxy {
+) : LibzyViewModel<SessionUiState, SessionUiEvent>(), SpotifyAuthClientProxy {
 
-    fun isSpotifyConnected() = sessionRepository.isSpotifyConnected()
+    override val initialUiState = SessionUiState(sessionRepository.isSpotifyConnected())
 
     private var refreshSpotifyAuthJob: Job? = null
 
@@ -49,6 +49,10 @@ class SessionViewModel @Inject constructor(
 
     init {
         spotifyAuthDispatcher.authClientProxy = this
+
+        viewModelScope.launch {
+            updateSessionState()
+        }
     }
 
     override fun onCleared() {
@@ -56,9 +60,17 @@ class SessionViewModel @Inject constructor(
         spotifyAuthDispatcher.authClientProxy = null
     }
 
+    private suspend fun updateSessionState() {
+        sessionRepository.spotifyConnectedState.collect { spotifyConnected ->
+            updateUiState {
+                copy(isSpotifyConnected = spotifyConnected)
+            }
+        }
+    }
+
     fun onNewSpotifyAuthAvailable() {
         viewModelScope.launch {
-            val shouldRefreshAuth = isSpotifyConnected()
+            val shouldRefreshAuth = sessionRepository.isSpotifyConnected()
                     && sessionRepository.isSpotifyAuthExpired()
                     && refreshSpotifyAuthJob?.isActive != true
             if (shouldRefreshAuth) {

@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.runtime.collectAsState
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -49,7 +50,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LibzyContent {
-                LibzyNavGraph(viewModelFactory, viewModel::isSpotifyConnected, ::finish)
+                LibzyNavGraph(
+                    uiState = viewModel.uiStateFlow.collectAsState().value,
+                    viewModelFactory = viewModelFactory,
+                    exitApp = ::finish
+                )
             }
         }
     }
