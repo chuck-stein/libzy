@@ -104,7 +104,7 @@ class RecommendationService @Inject constructor() {
         recommendationCategories: MutableList<RecommendationCategory>
     ) {
         val fullyRelevantAlbums = possibleAlbums.filter { it.isFullyRelevant }
-        if (fullyRelevantAlbums.isNotEmpty()) {
+        if (fullyRelevantAlbums.isNotEmpty() && !fullyRelevantAlbums.matchDifferentGenres()) {
             val fullyRelevantCategory = RecommendationCategory(
                 relevance = RecommendationCategory.Relevance.Full,
                 albumResults = fullyRelevantAlbums
@@ -114,6 +114,15 @@ class RecommendationService @Inject constructor() {
             recommendationCategories.add(fullyRelevantCategory)
             possibleAlbums.minusAssign(fullyRelevantAlbums.toSet())
         }
+    }
+
+    private fun List<PossibleAlbumRecommendation>.matchDifferentGenres(): Boolean {
+        val genresAllAlbumsShare = mapNotNull { album ->
+            album.matchedParameters.filterIsInstance<GenreRelevanceParameter>().firstOrNull()?.matchedGenres
+        }.reduceOrNull { sharedGenres, albumGenres ->
+            sharedGenres.intersect(albumGenres)
+        }
+        return genresAllAlbumsShare?.isEmpty() == true
     }
 
     /**
@@ -322,10 +331,10 @@ class RecommendationService @Inject constructor() {
         recommendationCategories: MutableList<RecommendationCategory>
     ) {
         val categoryComparator =
-            compareBy<Map.Entry<RecommendationCategory.Relevance.Partial, Set<PossibleAlbumRecommendation>>> { (_, albumsInCategory) ->
-                albumsInCategory.size > 1
-            }.thenBy { (category, _) ->
+            compareBy<Map.Entry<RecommendationCategory.Relevance.Partial, Set<PossibleAlbumRecommendation>>> { (category, _) ->
                 category.numRelevantParameters
+            }.thenBy { (_, albumsInCategory) ->
+                albumsInCategory.size > 1
             }.thenBy { (_, albumsInCategory) ->
                 albumsInCategory.map { it.overallRelevance }.average()
             }
@@ -339,7 +348,7 @@ class RecommendationService @Inject constructor() {
 
         do {
             val chosenCategory = possibleCategories
-                .filterValues { it.size >= MIN_ALBUMS_PER_CATEGORY }
+                .filterValues { it.isNotEmpty() }
                 .maxWithOrNull(categoryComparator)
 
             chosenCategory?.let { (categoryRelevance, albumsInChosenCategory) ->
@@ -424,7 +433,6 @@ private data class GenreRelevanceParameter(
     override val relevance = if (isRelevant) 1f else 0f
 }
 
-
 /**
  * The minimum threshold of how relevant a [SpectrumBasedRelevanceParameter] must be to the user's mood,
  * in order to consider the album relevant in regards to that parameter.
@@ -440,8 +448,3 @@ private const val SPECTRUM_BASED_PARAM_MAX_VAL = 1
  * in order for that album to be recommended.
  */
 private const val OVERALL_RELEVANCE_THRESHOLD = 0.5
-
-/**
- * The minimum number of albums that can constitute a [RecommendationCategory].
- */
-private const val MIN_ALBUMS_PER_CATEGORY = 2
