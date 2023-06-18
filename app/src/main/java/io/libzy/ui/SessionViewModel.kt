@@ -1,6 +1,8 @@
 package io.libzy.ui
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -30,6 +32,7 @@ class SessionViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val workManager: WorkManager,
+    private val connectivityManager: ConnectivityManager,
     appContext: Context
 ) : LibzyViewModel<SessionUiState, SessionUiEvent>(), SpotifyAuthClientProxy {
 
@@ -70,10 +73,7 @@ class SessionViewModel @Inject constructor(
 
     fun onNewSpotifyAuthAvailable() {
         viewModelScope.launch {
-            val shouldRefreshAuth = sessionRepository.isSpotifyConnected()
-                    && sessionRepository.isSpotifyAuthExpired()
-                    && refreshSpotifyAuthJob?.isActive != true
-            if (shouldRefreshAuth) {
+            if (shouldRefreshAuth()) {
                 refreshSpotifyAuthJob = launch {
                     spotifyAuthDispatcher.requestAuthorization()
                     val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
@@ -86,6 +86,14 @@ class SessionViewModel @Inject constructor(
             }
         }
     }
+
+    private suspend fun shouldRefreshAuth() = sessionRepository.isSpotifyConnected()
+            && sessionRepository.isSpotifyAuthExpired()
+            && connectedToNetwork()
+            && refreshSpotifyAuthJob?.isActive != true
+
+    private fun connectedToNetwork() = connectivityManager
+        .getNetworkCapabilities(connectivityManager.activeNetwork)?.hasCapability(NET_CAPABILITY_VALIDATED) == true
 
     override fun initiateSpotifyAuthRequest(
         callback: SpotifyAuthCallback,
