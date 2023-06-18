@@ -51,7 +51,9 @@ class LibrarySyncWorker(
         if (sessionRepository.isSpotifyAuthExpired() && !appInForeground()) {
             // If auth has expired and the app is in the background,
             // fail the library sync job since we need to be in the foreground to refresh auth
-            analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialSync)
+            analyticsDispatcher.sendSyncLibraryDataEvent(
+                LibrarySyncResult.FAILURE, isInitialSync, message = "auth expired and app not foregrounded"
+            )
             return Result.failure()
         }
         beforeLibrarySync()
@@ -65,7 +67,9 @@ class LibrarySyncWorker(
                 // TODO: find a better way to always catch all server errors
                 return if (!isInitialSync && isServerError(statusCode)) {
                     Timber.e(e, "Failed to sync Spotify library data due to a server error. Retrying...")
-                    analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.RETRY, isInitialSync = false)
+                    analyticsDispatcher.sendSyncLibraryDataEvent(
+                        LibrarySyncResult.RETRY, isInitialSync = false, message = "Spotify error $statusCode"
+                    )
                     Result.retry()
                 } else fail(e)
             }
@@ -104,11 +108,11 @@ class LibrarySyncWorker(
         )
     }
 
-    private fun isServerError(statusCode: Int?) = statusCode != null && statusCode >= 500 && statusCode < 600
+    private fun isServerError(statusCode: Int?) = statusCode != null && statusCode in 500..599
 
     private fun fail(exception: Exception): Result {
         Timber.e(exception, "Failed to sync Spotify library data")
-        analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialSync)
+        analyticsDispatcher.sendSyncLibraryDataEvent(LibrarySyncResult.FAILURE, isInitialSync, message = exception.message)
         if (isInitialSync) {
             notifyLibrarySyncEnded(
                 notificationTitleResId = R.string.initial_library_sync_failed_notification_title,
