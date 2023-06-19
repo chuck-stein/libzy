@@ -63,6 +63,8 @@ obj/
 .idea/assetWizardSettings.xml
 .idea/navEditor.xml
 .idea/codeStyles/Project.xml
+.idea/deploymentTargetDropDown.xml
+.idea/jarRepositories.xml
 
 # OS-specific files
 .DS_Store
