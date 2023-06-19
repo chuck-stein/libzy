@@ -342,7 +342,6 @@ private fun AlbumResultsCategories(
     }
 }
 
-// TODO: handle rotation by maintaining position such that still looking at albums that were previously on screen
 @Composable
 private fun AlbumResultsGrid(
     albumResults: List<AlbumResult>,

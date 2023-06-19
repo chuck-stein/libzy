@@ -21,7 +21,6 @@ class SpotifyAppRemoteService @Inject constructor(private val context: Context) 
 
     private val remoteState = MutableStateFlow<RemoteState>(RemoteState.Inactive)
 
-    // TODO: get these values from ApiKeys class: https://chilipot.atlassian.net/browse/LIB-278
     private val connectionParams =
         ConnectionParams.Builder(context.getString(R.string.spotify_client_id))
             .setRedirectUri(context.getString(R.string.spotify_auth_redirect_uri))

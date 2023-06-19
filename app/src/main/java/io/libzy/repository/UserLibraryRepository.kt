@@ -78,6 +78,7 @@ class UserLibraryRepository @Inject constructor(
 
     private suspend fun getAlbumAudioFeatures(album: Album): AudioFeaturesTuple {
         Timber.v("Fetching audio features for ${album.name}")
+        // TODO: at some point we should invalidate cached audioFeatures in case Spotify's audio analysis has updated
         val cachedAudioFeatures = withContext(Dispatchers.IO) { database.albumDao.getAudioFeatures(album.id) }
         if (cachedAudioFeatures != null) return cachedAudioFeatures
 
