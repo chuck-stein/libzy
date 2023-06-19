@@ -422,7 +422,7 @@ private fun ContinueButton(
     val coroutineScope = rememberCoroutineScope()
     LibzyButton(
         textResId = if (onFinalQueryStep) R.string.ready_button else R.string.continue_button,
-        modifier = Modifier.padding(bottom = 16.dp),
+        modifier = Modifier.padding(bottom = 4.dp),
         enabled = when (currentQueryStep) {
             FAMILIARITY -> uiState.query.familiarity != null
             INSTRUMENTALNESS -> uiState.query.instrumental != null
@@ -458,7 +458,7 @@ private fun NoPreferenceButton(
                 queryStepPagerState.goToNextPage()
             }
         },
-        modifier = Modifier.padding(bottom = 16.dp).padding(horizontal = HORIZONTAL_INSET.dp)
+        modifier = Modifier.padding(bottom = 8.dp).padding(horizontal = HORIZONTAL_INSET.dp)
     ) {
         Text(stringResource(R.string.no_preference).uppercase())
     }
