@@ -33,7 +33,6 @@ class RecommendationService @Inject constructor() {
         return genresToRelevance.keys.sortedByDescending { genresToRelevance[it] }
     }
 
-    // TODO: ensure I'm following every step listed in: https://chilipot.atlassian.net/browse/LIB-281
     /**
      * Recommend albums from the given list according to their relevance to the given mood-based [query].
      * Recommendations are divided into categories, each representing a match to a certain portion of the query.
@@ -222,7 +221,7 @@ class RecommendationService @Inject constructor() {
                                 )
                             }
                             else -> {
-                                // no-op (TODO: can remove this else branch if we are when-ing over a child sealed interface Query.Parameter.Adjective or something similar, after a refactor
+                                // no-op
                             }
                         }
                     }
@@ -304,9 +303,11 @@ class RecommendationService @Inject constructor() {
                 }
 
                 threeAdjectiveCombos.forEach { adjectives ->
-                    RecommendationCategory.Relevance.Partial(
-                        adjectives = adjectives,
-                        genre = genre
+                    placeAlbumInCategory(
+                        RecommendationCategory.Relevance.Partial(
+                            adjectives = adjectives,
+                            genre = genre
+                        )
                     )
                 }
             }
