@@ -86,9 +86,8 @@ class UserLibraryRepository @Inject constructor(
         val audioFeaturesOfTracks = spotifyApi.fetchAudioFeaturesOfTracks(albumTrackIds).filterNotNull()
         if (audioFeaturesOfTracks.isEmpty()) return AudioFeaturesTuple(0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F)
 
-        // TODO: handle NaN case if averaging an empty list
         fun findAudioFeatureAverage(getSpecificAudioFeature: (AudioFeatures) -> Float): Float =
-            audioFeaturesOfTracks.map(getSpecificAudioFeature).average().toFloat()
+            audioFeaturesOfTracks.map(getSpecificAudioFeature).average().toFloat().takeUnless { it.isNaN() } ?: 0.5f
 
         return AudioFeaturesTuple(
             findAudioFeatureAverage { it.valence },
