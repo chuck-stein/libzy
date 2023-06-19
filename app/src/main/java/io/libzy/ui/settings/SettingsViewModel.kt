@@ -7,6 +7,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import io.libzy.BuildConfig
 import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.persistence.prefs.PrefsStore
@@ -32,7 +33,10 @@ class SettingsViewModel @Inject constructor(
 
     private val lastSyncDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
 
-    override val initialUiState = SettingsUiState(loading = true)
+    override val initialUiState = SettingsUiState(
+        loading = true,
+        appVersion = "App Version: ${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})".toTextResource()
+    )
 
     init {
         viewModelScope.launch {

@@ -13,7 +13,9 @@ fun Int.toTextResource() = TextResource.Id(this)
 fun String.toTextResource() = TextResource.Value(this)
 
 @Composable
-fun resolveText(textResource: TextResource) = when (textResource) {
-    is TextResource.Id -> stringResource(textResource.resId)
-    is TextResource.Value -> textResource.text
+fun TextResource.resolveText() = when (this) {
+    is TextResource.Id -> stringResource(resId)
+    is TextResource.Value -> text
 }
+
+val emptyTextResource = TextResource.Value("")

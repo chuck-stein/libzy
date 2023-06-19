@@ -3,6 +3,7 @@ package io.libzy.ui.settings
 import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.util.TextResource
+import io.libzy.util.emptyTextResource
 import io.libzy.util.toTextResource
 
 data class SettingsUiState(
@@ -10,7 +11,8 @@ data class SettingsUiState(
     val lastLibrarySyncDate: TextResource = R.string.unknown.toTextResource(),
     val syncingLibrary: Boolean = false,
     val logOutState: LogOutState = LogOutState.None,
-    val loading: Boolean = false,
+    val appVersion: TextResource = emptyTextResource,
+    val loading: Boolean = false
 )
 
 enum class LogOutState {

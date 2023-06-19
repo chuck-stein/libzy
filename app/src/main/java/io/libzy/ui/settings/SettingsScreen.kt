@@ -92,11 +92,15 @@ private fun SettingsScreen(uiState: SettingsUiState, onUiEvent: (SettingsUiEvent
             navigationIcon = { BackIcon(onClick = { onUiEvent(ReturnToQuery) }) },
             title = { Text(stringResource(R.string.settings)) }
         ) {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 AskMeAboutSection(uiState.enabledQueryParams, onUiEvent)
                 LibrarySyncSection(uiState.lastLibrarySyncDate, uiState.syncingLibrary, onUiEvent)
                 Spacer(Modifier.weight(1f))
                 LogOutSection(uiState.logOutState, onUiEvent)
+                AppVersionSection(uiState.appVersion)
             }
         }
     }
@@ -129,7 +133,7 @@ private fun LibrarySyncSection(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
         ) {
-            Text(resolveText(lastLibrarySyncDate), style = MaterialTheme.typography.body1)
+            Text(lastLibrarySyncDate.resolveText(), style = MaterialTheme.typography.body1)
             Spacer(Modifier.weight(1f))
             LibrarySyncButton(syncingLibrary, onUiEvent)
         }
@@ -151,7 +155,7 @@ private fun LibrarySyncButton(syncingLibrary: Boolean, onUiEvent: (SettingsUiEve
 }
 
 @Composable
-private fun ColumnScope.LogOutSection(logOutState: LogOutState, onUiEvent: (SettingsUiEvent) -> Unit) {
+private fun LogOutSection(logOutState: LogOutState, onUiEvent: (SettingsUiEvent) -> Unit) {
     LibzyButton(
         textResId = R.string.log_out,
         colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
@@ -162,7 +166,7 @@ private fun ColumnScope.LogOutSection(logOutState: LogOutState, onUiEvent: (Sett
                 contentDescription = null
             )
         },
-        modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp, bottom = 32.dp)
+        modifier = Modifier.padding(vertical = 16.dp)
     ) {
         onUiEvent(OpenLogOutConfirmation)
     }
@@ -184,6 +188,15 @@ private fun ColumnScope.LogOutSection(logOutState: LogOutState, onUiEvent: (Sett
             text = { Text(stringResource(R.string.log_out_dialog_description), textAlign = TextAlign.Start) }
         )
     }
+}
+
+@Composable
+private fun AppVersionSection(appVersion: TextResource) {
+    Text(
+        text = appVersion.resolveText(),
+        style = MaterialTheme.typography.caption,
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
 }
 
 @Composable

@@ -83,4 +83,10 @@ private val LibzyTypography = Typography(
         textAlign = TextAlign.Center,
         letterSpacing = 1.1.sp
     ),
+    caption = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        letterSpacing = 0.4.sp,
+        color = LibzyColors.Gray
+    )
 )
