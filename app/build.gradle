@@ -161,7 +161,6 @@ dependencies {
     def accompanist_version = "0.24.9-beta"
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-insets-ui:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-flowlayout:$accompanist_version"
 
     // Glide
     def glide_version = "4.12.0"

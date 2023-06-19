@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -87,7 +88,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import com.google.accompanist.flowlayout.FlowRow
 import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.domain.Query.Familiarity.CURRENT_FAVORITE
@@ -687,15 +687,14 @@ private fun GenresStep(uiState: QueryUiState, onUiEvent: (QueryUiEvent) -> Unit)
             )
         } else {
             // TODO: add visual scroll bar when it is supported
-            // TODO: use Compose 1.4 FlowRow
             FlowRow(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = 18.dp, bottom = 24.dp)
                     .verticalScroll(scrollState)
                     .weight(1f),
-                mainAxisSpacing = 10.dp,
-                crossAxisSpacing = 16.dp,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 uiState.genresToDisplay.forEach { genre ->
                     val selected = uiState.selectedGenres.contains(genre)
