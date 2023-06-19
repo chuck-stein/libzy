@@ -57,9 +57,9 @@ class QueryViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.enabledQueryParams.collect { enabledParams ->
                 val stepOrder = if (enabledParams == null) {
-                    QueryUiState.DEFAULT_STEP_ORDER
+                    Query.Parameter.defaultOrder
                 } else {
-                    QueryUiState.DEFAULT_STEP_ORDER.filter { it.stringValue in enabledParams }
+                    Query.Parameter.defaultOrder.filter { it.stringValue in enabledParams }
                 }
                 updateUiState {
                     QueryUiState(stepOrder = stepOrder)

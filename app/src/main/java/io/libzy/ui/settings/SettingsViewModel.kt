@@ -14,7 +14,6 @@ import io.libzy.repository.SessionRepository
 import io.libzy.repository.SettingsRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.common.StateOnlyViewModel
-import io.libzy.ui.findalbum.query.QueryUiState
 import io.libzy.util.flatten
 import io.libzy.util.toTextResource
 import io.libzy.work.LibrarySyncWorker
@@ -57,7 +56,7 @@ class SettingsViewModel @Inject constructor(
                     enabledQueryParams = enabledQueryParams
                         ?.map { Query.Parameter.fromString(it) }
                         ?.toSet()
-                        ?: QueryUiState.DEFAULT_STEP_ORDER.toSet(),
+                        ?: Query.Parameter.defaultOrder.toSet(),
                     loading = false
                 )
             }

@@ -36,6 +36,8 @@ data class Query(
 
         companion object {
 
+            val defaultOrder = Parameter.values().toList()
+
             fun fromString(stringValue: String) = values().find {
                 it.stringValue == stringValue
             } ?: throw IllegalArgumentException("Unknown query parameter: '$stringValue'")

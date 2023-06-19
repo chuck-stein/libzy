@@ -45,7 +45,6 @@ import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.common.util.hideIf
-import io.libzy.ui.findalbum.query.QueryUiState
 import io.libzy.ui.settings.SettingsUiEvent.CloseLogOutConfirmation
 import io.libzy.ui.settings.SettingsUiEvent.LogOut
 import io.libzy.ui.settings.SettingsUiEvent.OpenLogOutConfirmation
@@ -106,7 +105,7 @@ private fun SettingsScreen(uiState: SettingsUiState, onUiEvent: (SettingsUiEvent
 @Composable
 private fun AskMeAboutSection(enabledQueryParams: Set<Query.Parameter>, onUiEvent: (SettingsUiEvent) -> Unit) {
     SettingsSection(headerTextResId = R.string.ask_me_about) {
-        QueryUiState.DEFAULT_STEP_ORDER.forEach { queryParam ->
+        Query.Parameter.defaultOrder.forEach { queryParam ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = queryParam in enabledQueryParams,

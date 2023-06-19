@@ -3,7 +3,7 @@ package io.libzy.ui.findalbum.query
 import io.libzy.domain.Query
 
 data class QueryUiState(
-    val stepOrder: List<Query.Parameter> = DEFAULT_STEP_ORDER,
+    val stepOrder: List<Query.Parameter> = Query.Parameter.defaultOrder,
     val query: Query = Query(),
     val loading: Boolean = false,
     val genreOptions: List<String> = emptyList(),
@@ -22,19 +22,6 @@ data class QueryUiState(
             .take(NUM_GENRES_TO_DISPLAY_WHILE_NOT_SEARCHING)
             .toSet()
             .plus(selectedGenres.plus(genreSearchState.recentlyRemovedGenres).sorted())
-    }
-
-    companion object {
-        // TODO: decouple this from QueryUiState, and rename to something that makes sense when just referencing it as a set of params rather than an order
-        val DEFAULT_STEP_ORDER = listOf(
-            Query.Parameter.FAMILIARITY,
-            Query.Parameter.INSTRUMENTALNESS,
-            Query.Parameter.ACOUSTICNESS,
-            Query.Parameter.VALENCE,
-            Query.Parameter.ENERGY,
-            Query.Parameter.DANCEABILITY,
-            Query.Parameter.GENRES
-        )
     }
 }
 
