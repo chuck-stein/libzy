@@ -24,6 +24,8 @@ import io.libzy.util.wrapResultForOutput
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -47,17 +49,17 @@ class SpotifyApiDelegator @Inject constructor(
     // do not access the delegate directly -- use getApiDelegate() which initializes it if null
     private var _apiDelegate: SpotifyClientApi? = null
 
+    private val apiDelegateMutex = Mutex()
+
     init {
         applicationScope.launch {
             createApiDelegateIfTokenAvailable()
         }
     }
 
-    // TODO: make this thread-safe by holding a lock during execution,
-    //  in case it is called again while we are still creating the delegate,
-    //  as to note start creating a new one
-    private suspend fun getApiDelegate() =
+    private suspend fun getApiDelegate() = apiDelegateMutex.withLock {
         _apiDelegate ?: createApiDelegateIfTokenAvailable() ?: createApiDelegateWithNewToken()
+    }
 
     private suspend fun createApiDelegateIfTokenAvailable(): SpotifyClientApi? {
         val savedAccessToken = sessionRepository.getSpotifyAuthToken()
