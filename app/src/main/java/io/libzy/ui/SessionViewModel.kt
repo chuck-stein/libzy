@@ -75,7 +75,9 @@ class SessionViewModel @Inject constructor(
         viewModelScope.launch {
             if (shouldRefreshAuth()) {
                 refreshSpotifyAuthJob = launch {
+                    updateUiState { copy(loading = true) }
                     spotifyAuthDispatcher.requestAuthorization()
+                    updateUiState { copy(loading = false) }
                     val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
                     workManager.enqueueUniquePeriodicWork(
                         LibrarySyncWorker.WORK_NAME,

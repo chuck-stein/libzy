@@ -10,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -19,6 +20,7 @@ import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.LibzyApplication
+import io.libzy.ui.common.component.LoadedContent
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -50,11 +52,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LibzyContent {
-                LibzyNavGraph(
-                    uiState = viewModel.uiStateFlow.collectAsState().value,
-                    viewModelFactory = viewModelFactory,
-                    exitApp = ::finish
-                )
+                val uiState by viewModel.uiStateFlow.collectAsState()
+                LoadedContent(uiState.loading) {
+                    LibzyNavGraph(uiState, viewModelFactory, exitApp = ::finish)
+                }
             }
         }
     }
