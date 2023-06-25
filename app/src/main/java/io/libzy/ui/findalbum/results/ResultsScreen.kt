@@ -2,12 +2,12 @@ package io.libzy.ui.findalbum.results
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -79,6 +79,7 @@ import io.libzy.domain.RecommendationCategory
 import io.libzy.domain.title
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
+import io.libzy.ui.common.component.AlbumArtwork
 import io.libzy.ui.common.component.AutoResizeText
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.EventHandler
@@ -87,7 +88,6 @@ import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
 import io.libzy.ui.common.component.StartOverIconButton
-import io.libzy.ui.common.util.loadRemoteImage
 import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyColors
@@ -334,7 +334,12 @@ private fun AlbumResultsCategories(
                 LazyRow(contentPadding = PaddingValues(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp)) {
                     items(category.albumResults.size) { albumIndex ->
                         val albumResult = category.albumResults[albumIndex]
-                        AlbumResultListItem(albumResult, onAlbumClick)
+                        AlbumResultListItem(
+                            albumResult = albumResult,
+                            onAlbumClick = onAlbumClick,
+                            modifier = Modifier.width(DEFAULT_ALBUM_ART_WIDTH.dp + ALBUM_RESULT_PADDING.dp * 2),
+                            albumArtModifier = { Modifier.size(DEFAULT_ALBUM_ART_WIDTH.dp) }
+                        )
                     }
                 }
             }
@@ -357,52 +362,46 @@ private fun AlbumResultsGrid(
         contentPadding = PaddingValues(bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp)
     ) {
         items(albumResults) { albumResult ->
-            AlbumResultListItem(albumResult, onAlbumClick, width = gridWidth / numColumns)
+            val albumResultWidth = (gridWidth / numColumns).dp
+            AlbumResultListItem(
+                albumResult = albumResult,
+                onAlbumClick = onAlbumClick,
+                modifier = Modifier.width(albumResultWidth),
+                albumArtModifier = { Modifier.size(albumResultWidth - ALBUM_RESULT_PADDING.dp * 2) }
+            )
         }
     }
 }
 
 @Composable
-private fun AlbumResultListItem(
+fun AlbumResultListItem(
     albumResult: AlbumResult,
     onAlbumClick: (String) -> Unit,
-    width: Int = DEFAULT_ALBUM_RESULT_WIDTH
+    modifier: Modifier = Modifier,
+    maxLinesPerLabel: Int = 3,
+    albumArtModifier: ColumnScope.() -> Modifier = { Modifier }
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(width.dp)
+        modifier = modifier
             .clickable { onAlbumClick(albumResult.spotifyUri) }
             .padding(ALBUM_RESULT_PADDING.dp)
     ) {
-        AlbumArtwork(albumResult.artworkUrl, size = width - (ALBUM_RESULT_PADDING * 2))
+        AlbumArtwork(albumResult.artworkUrl, albumArtModifier())
         Text(
             text = albumResult.title,
             style = MaterialTheme.typography.body2,
-            maxLines = 3,
+            maxLines = maxLinesPerLabel,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 6.dp)
         )
         Text(
             text = albumResult.artists,
             style = MaterialTheme.typography.body2,
-            maxLines = 3,
+            maxLines = maxLinesPerLabel,
             overflow = TextOverflow.Ellipsis,
             color = LibzyColors.Gray
         )
-    }
-}
-
-@Composable
-private fun AlbumArtwork(artworkUrl: String?, size: Int) {
-    val artworkContentDescription = stringResource(R.string.cd_album_artwork)
-    val artworkModifier = Modifier.size(size.dp)
-
-    val artworkBitmap = loadRemoteImage(artworkUrl)
-    if (artworkBitmap != null) {
-        Image(artworkBitmap, artworkContentDescription, artworkModifier)
-    } else {
-        Image(painterResource(R.drawable.placeholder_album_art), artworkContentDescription, artworkModifier)
     }
 }
 
@@ -550,26 +549,6 @@ private fun ResultsScreenPreview() {
 
 @Preview(device = Devices.PIXEL_4_XL)
 @Composable
-private fun NoResultsScreenPreview() {
-    LibzyContent {
-        ResultsScreen(
-            uiState = ResultsUiState.Loaded(recommendationCategories = emptyList()),
-            scaffoldState = rememberScaffoldState(),
-            onBackClick = {},
-            onAlbumClick = {},
-            onStartOverClick = {},
-            onOpenSpotifyClick = {},
-            onRateResultsDismissed = {},
-            onRateResultsClick = {},
-            onRateResultsSubmit = { _, _ -> }
-        )
-    }
-}
-
-@ExperimentalFoundationApi
-@ExperimentalAnimationApi
-@Preview(device = Devices.PIXEL_4_XL)
-@Composable
 private fun ResultsScreenOneCategoryPixel4XlPreview() {
     LibzyContent {
         ResultsScreen(
@@ -586,8 +565,6 @@ private fun ResultsScreenOneCategoryPixel4XlPreview() {
     }
 }
 
-@ExperimentalFoundationApi
-@ExperimentalAnimationApi
 @Preview(device = Devices.PIXEL_C)
 @Composable
 private fun ResultsScreenOneCategoryPixelCPreview() {
@@ -606,8 +583,6 @@ private fun ResultsScreenOneCategoryPixelCPreview() {
     }
 }
 
-@ExperimentalFoundationApi
-@ExperimentalAnimationApi
 @Preview(device = Devices.PIXEL_3A)
 @Composable
 private fun ResultsScreenOneCategoryPixel3APreview() {
@@ -626,8 +601,6 @@ private fun ResultsScreenOneCategoryPixel3APreview() {
     }
 }
 
-@ExperimentalFoundationApi
-@ExperimentalAnimationApi
 @Preview(device = Devices.NEXUS_5)
 @Composable
 private fun ResultsScreenOneCategoryNexus5Preview() {
@@ -646,7 +619,24 @@ private fun ResultsScreenOneCategoryNexus5Preview() {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
+@Preview(device = Devices.PIXEL_4_XL)
+@Composable
+private fun NoResultsScreenPreview() {
+    LibzyContent {
+        ResultsScreen(
+            uiState = ResultsUiState.Loaded(recommendationCategories = emptyList()),
+            scaffoldState = rememberScaffoldState(),
+            onBackClick = {},
+            onAlbumClick = {},
+            onStartOverClick = {},
+            onOpenSpotifyClick = {},
+            onRateResultsDismissed = {},
+            onRateResultsClick = {},
+            onRateResultsSubmit = { _, _ -> }
+        )
+    }
+}
+
 @Preview(device = Devices.PIXEL_4_XL)
 @Composable
 private fun ResultsScreenFeedbackDialogPreview() {
@@ -678,6 +668,6 @@ const val RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT =
     RECOMMENDATION_LIST_BOTTOM_PADDING + RECOMMENDATION_CATEGORY_BOTTOM_PADDING
 const val ALBUM_RESULT_PADDING = 10
 const val MIN_ALBUM_RESULT_WIDTH = 150
-const val DEFAULT_ALBUM_RESULT_WIDTH = 160
+const val DEFAULT_ALBUM_ART_WIDTH = 150
 const val FEEDBACK_DIALOG_CONTENT_VERTICAL_PADDING = 12
 const val FEEDBACK_TEXT_FIELD_HEIGHT = 72

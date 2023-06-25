@@ -38,6 +38,18 @@
     <string name="syncing_library_heading">Syncing your Spotify library…</string>
     <string name="syncing_library_subheading">This may take a few minutes, so feel free to come back later</string>
 
+    <!-- Onboarding Screen -->
+    <string name="onboarding_header">Browsing your digital record collection</string>
+    <string name="onboarding_step_1">Libzy will help you narrow down a large music library into recommended albums, based on your current mood.</string>
+    <string name="onboarding_step_2">We\'ll ask you a series of questions about what you want to listen to.</string>
+    <string name="onboarding_step_3">You can select "no preference" for any question.</string>
+    <string name="onboarding_step_4">We\'ll recommend albums from your Spotify library based on your answers.</string>
+    <string name="onboarding_step_5">Tap one of the recommended albums to start playing it on Spotify. It\'s that easy!</string>
+    <string name="onboarding_step_6">Click the "start over" icon at any time to reset your answers and try a different mood.</string>
+    <string name="onboarding_step_7">Click the settings icon at any time to customize which questions we ask you, or to manually re-sync your Spotify library.</string>
+    <string name="next">NEXT</string>
+    <string name="lets_go">LET\'S GO</string>
+
     <!-- Query Screen -->
     <string name="morning_greeting_text">Good morning!</string>
     <string name="afternoon_greeting_text">Good afternoon!</string>
@@ -90,6 +102,7 @@
 
     <!-- Settings Screen -->
     <string name="settings">Settings</string>
+    <string name="tutorial">Tutorial</string>
     <string name="log_out">Log Out</string>
     <string name="log_out_dialog_description">Are you sure you want to disconnect your Spotify account? The next time you log in with this account we will need to sync your entire library.</string>
     <string name="last_sync_date_label">Spotify library last synced:</string>

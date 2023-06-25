@@ -2,6 +2,7 @@ package io.libzy.repository
 
 import io.libzy.persistence.prefs.PrefsStore
 import io.libzy.persistence.prefs.PrefsStore.Keys.LAST_SYNC_TIMESTAMP_MILLIS
+import io.libzy.persistence.prefs.PrefsStore.Keys.ONBOARDING_COMPLETED
 import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP_SECONDS
 import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_AUTH_TOKEN
 import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_CONNECTED
@@ -60,6 +61,17 @@ class SessionRepository @Inject constructor(
         prefsStore.edit { prefs ->
             prefs[SPOTIFY_AUTH_TOKEN] = accessToken.token
             prefs[SPOTIFY_AUTH_EXPIRATION_TIMESTAMP_SECONDS] = currentTimeSeconds() + accessToken.expiresIn
+        }
+    }
+
+    val onboardingCompletedState = prefsStore.getFlowOf(ONBOARDING_COMPLETED, default = false)
+        .stateIn(coroutineScope, SharingStarted.Eagerly, initialValue = false)
+
+    fun isOnboardingCompleted() = onboardingCompletedState.value
+
+    suspend fun setOnboardingCompleted(isOnboardingCompleted: Boolean) {
+        prefsStore.edit { prefs ->
+            prefs[ONBOARDING_COMPLETED] = isOnboardingCompleted
         }
     }
 }

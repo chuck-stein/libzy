@@ -50,5 +50,6 @@ class PrefsStore @Inject constructor(private val dataStore: DataStore<Preference
         val SPOTIFY_AUTH_EXPIRATION_TIMESTAMP_SECONDS = longPreferencesKey("spotify.auth.expiration.timestamp.seconds")
         val LAST_SYNC_TIMESTAMP_MILLIS = longPreferencesKey("spotify.sync.timestamp.millis")
         val ENABLED_QUERY_PARAMS = stringSetPreferencesKey("query.params.enabled")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding.completed")
     }
 }

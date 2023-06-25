@@ -1,9 +1,13 @@
 package io.libzy.ui
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyTheme
@@ -19,11 +23,17 @@ import io.libzy.ui.theme.LibzyTheme
 @Composable
 fun LibzyContent(content: @Composable () -> Unit) {
     LibzyTheme {
+        val activity = LocalContext.current as? Activity
+        LaunchedEffect(activity) {
+            activity?.window?.let { WindowCompat.setDecorFitsSystemWindows(it, false) }
+        }
+
         val systemUiController = rememberSystemUiController()
         SideEffect {
             systemUiController.setStatusBarColor(Color.Transparent)
             systemUiController.setNavigationBarColor(LibzyColors.ForcedTransparency)
         }
+
         BackgroundGradient(content)
     }
 }

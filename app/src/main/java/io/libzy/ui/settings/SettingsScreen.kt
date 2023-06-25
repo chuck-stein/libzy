@@ -2,7 +2,6 @@ package io.libzy.ui.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -14,13 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -42,12 +41,15 @@ import io.libzy.domain.Query
 import io.libzy.ui.Destination
 import io.libzy.ui.common.component.BackIcon
 import io.libzy.ui.common.component.LibzyButton
+import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.common.util.hideIf
+import io.libzy.ui.common.util.surfaceBackground
 import io.libzy.ui.settings.SettingsUiEvent.CloseLogOutConfirmation
 import io.libzy.ui.settings.SettingsUiEvent.LogOut
 import io.libzy.ui.settings.SettingsUiEvent.OpenLogOutConfirmation
+import io.libzy.ui.settings.SettingsUiEvent.OpenTutorial
 import io.libzy.ui.settings.SettingsUiEvent.ReturnToQuery
 import io.libzy.ui.settings.SettingsUiEvent.SyncLibrary
 import io.libzy.ui.settings.SettingsUiEvent.ToggleQueryParam
@@ -73,6 +75,7 @@ fun SettingsScreen(navController: NavController, viewModelFactory: ViewModelProv
     SettingsScreen(uiState) { uiEvent ->
         when (uiEvent) {
             is ReturnToQuery -> navController.popBackStack()
+            is OpenTutorial -> navController.navigate(Destination.Onboarding.route)
             is SyncLibrary -> viewModel.syncLibrary()
             is OpenLogOutConfirmation -> viewModel.openLogOutConfirmation()
             is CloseLogOutConfirmation -> viewModel.closeLogOutConfirmation()
@@ -90,6 +93,11 @@ private fun SettingsScreen(uiState: SettingsUiState, onUiEvent: (SettingsUiEvent
         }
         LibzyScaffold(
             navigationIcon = { BackIcon(onClick = { onUiEvent(ReturnToQuery) }) },
+            actionIcons = {
+                IconButton(onClick = { onUiEvent(OpenTutorial) }) {
+                    LibzyIcon(painterResource(R.drawable.ic_help), contentDescription = stringResource(R.string.tutorial))
+                }
+            },
             title = { Text(stringResource(R.string.settings)) }
         ) {
             Column(
@@ -207,7 +215,7 @@ private fun SettingsSection(
     Box(
         modifier = Modifier
             .padding(16.dp)
-            .background(MaterialTheme.colors.surface.copy(alpha = 0.8f), RoundedCornerShape(8.dp))
+            .surfaceBackground()
             .padding(16.dp)
             .fillMaxWidth()
     ) {

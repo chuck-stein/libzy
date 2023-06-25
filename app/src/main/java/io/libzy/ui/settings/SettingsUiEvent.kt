@@ -4,6 +4,7 @@ import io.libzy.domain.Query
 
 sealed interface SettingsUiEvent {
     object ReturnToQuery : SettingsUiEvent
+    object OpenTutorial : SettingsUiEvent
     data class ToggleQueryParam(val param: Query.Parameter) : SettingsUiEvent
     object SyncLibrary : SettingsUiEvent
     object OpenLogOutConfirmation : SettingsUiEvent

@@ -9,6 +9,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.toFontFamily
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import io.libzy.R
@@ -36,46 +37,55 @@ private val LibzyTypography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 60.sp,
         textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Heading
     ),
     h2 = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 48.sp,
         textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Heading
     ),
     h3 = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 36.sp,
         textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Heading
     ),
     h4 = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 28.sp,
         textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Heading
     ),
     h5 = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 22.sp,
         textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Heading
     ),
     h6 = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 20.sp,
         textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Heading
     ),
     body1 = TextStyle(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Paragraph
     ),
     body2 = TextStyle(
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Paragraph
     ),
     subtitle1 = TextStyle(
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Light,
         fontSize = 18.sp,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        lineBreak = LineBreak.Paragraph
     ),
     button = TextStyle(
         fontWeight = FontWeight.Bold,

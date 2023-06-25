@@ -11,7 +11,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.flowWithLifecycle
@@ -48,7 +47,6 @@ class MainActivity : ComponentActivity() {
         (applicationContext as LibzyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         collectSpotifyAuthRequests()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             LibzyContent {

@@ -31,6 +31,7 @@ class UserLibraryRepository @Inject constructor(
 ) {
 
     val albums = database.albumDao.getAllAlbums()
+    val genres = database.albumGenreJunctionDao.getAllGenresSortedByNumAssociatedAlbums()
 
     fun clearLibraryData() {
         coroutineScope.launch(Dispatchers.IO) {

@@ -5,10 +5,12 @@ import io.libzy.domain.Query
 data class QueryUiState(
     val stepOrder: List<Query.Parameter> = Query.Parameter.defaultOrder,
     val query: Query = Query(),
-    val loading: Boolean = false,
     val genreOptions: List<String> = emptyList(),
-    val genreSearchState: GenreSearchState = GenreSearchState.NotSearching()
+    val genreSearchState: GenreSearchState = GenreSearchState.NotSearching(),
+    val loadingStepOrder: Boolean,
+    val awaitingOnboarding: Boolean,
 ) {
+    val loading = loadingStepOrder || awaitingOnboarding
     val genreSearchQuery = (genreSearchState as? GenreSearchState.Searching)?.searchQuery
     val searchingGenres = genreSearchState is GenreSearchState.Searching
     val selectedGenres = query.genres.orEmpty()

@@ -12,6 +12,7 @@ import io.libzy.domain.Query.Parameter.INSTRUMENTALNESS
 import io.libzy.domain.Query.Parameter.VALENCE
 import io.libzy.persistence.database.tuple.LibraryAlbum
 import io.libzy.recommendation.RecommendationService
+import io.libzy.repository.SessionRepository
 import io.libzy.repository.SettingsRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.ui.common.LibzyViewModel
@@ -42,44 +43,56 @@ import kotlin.time.Duration.Companion.milliseconds
 class QueryViewModel @Inject constructor(
     userLibraryRepository: UserLibraryRepository,
     private val settingsRepository: SettingsRepository,
+    private val sessionRepository: SessionRepository,
     private val recommendationService: RecommendationService,
     private val analyticsDispatcher: AnalyticsDispatcher
 ) : LibzyViewModel<QueryUiState, QueryUiEvent>() {
 
-    override val initialUiState = QueryUiState(loading = true)
+    override val initialUiState = QueryUiState(loadingStepOrder = true, awaitingOnboarding = true)
 
     init {
-        collectEnabledQueryParams()
-        collectGenreRecommendations(userLibraryRepository.albums)
+        viewModelScope.launch {
+            loadStepOrder()
+        }
+        viewModelScope.launch {
+            awaitOnboarding()
+        }
+        viewModelScope.launch {
+            updateGenreRecommendations(userLibraryRepository.albums)
+        }
     }
 
-    private fun collectEnabledQueryParams() {
-        viewModelScope.launch {
-            settingsRepository.enabledQueryParams.collect { enabledParams ->
-                val stepOrder = if (enabledParams == null) {
-                    Query.Parameter.defaultOrder
-                } else {
-                    Query.Parameter.defaultOrder.filter { it.stringValue in enabledParams }
-                }
-                updateUiState {
-                    QueryUiState(stepOrder = stepOrder)
-                }
+    private suspend fun loadStepOrder() {
+        settingsRepository.enabledQueryParams.collect { enabledParams ->
+            val stepOrder = if (enabledParams == null) {
+                Query.Parameter.defaultOrder
+            } else {
+                Query.Parameter.defaultOrder.filter { it.stringValue in enabledParams }
+            }
+            updateUiState {
+                copy(stepOrder = stepOrder, loadingStepOrder = false)
             }
         }
     }
 
-    private fun collectGenreRecommendations(libraryAlbumsFlow: Flow<List<LibraryAlbum>>) {
-        viewModelScope.launch {
-            uiStateFlow
-                .map { it.query.copy(genres = null) }
-                .combine(libraryAlbumsFlow) { query, libraryAlbums ->
-                    recommendationService.recommendGenres(query, libraryAlbums)
-                }.collect { recommendedGenres ->
-                    updateUiState {
-                        copy(genreOptions = recommendedGenres)
-                    }
-                }
+    private suspend fun awaitOnboarding() {
+        sessionRepository.onboardingCompletedState.collect { onboardingComplete ->
+            updateUiState {
+                copy(awaitingOnboarding = !onboardingComplete)
+            }
         }
+    }
+
+    private suspend fun updateGenreRecommendations(libraryAlbumsFlow: Flow<List<LibraryAlbum>>) {
+        uiStateFlow
+            .map { it.query.copy(genres = null) }
+            .combine(libraryAlbumsFlow) { query, libraryAlbums ->
+                recommendationService.recommendGenres(query, libraryAlbums)
+            }.collect { recommendedGenres ->
+                updateUiState {
+                    copy(genreOptions = recommendedGenres)
+                }
+            }
     }
 
     fun processEvent(event: QueryUiEvent.ForViewModel) {

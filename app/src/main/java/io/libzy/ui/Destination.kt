@@ -13,6 +13,7 @@ sealed class Destination {
     open val arguments: List<NamedNavArgument> = emptyList()
     open val deepLinks: List<NavDeepLink> = emptyList()
     open val requiresSpotifyConnection = true
+    open val requiresOnboarding = true
 
     protected fun createDeepLinkUri(): Uri = Uri.Builder()
         .scheme("libzy")
@@ -33,6 +34,11 @@ sealed class Destination {
         val deepLinkUri = createDeepLinkUri()
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
         override val requiresSpotifyConnection = false
+        override val requiresOnboarding = false
+    }
+    object Onboarding : Destination() {
+        override val route = "onboarding"
+        override val requiresOnboarding = false
     }
     object FindAlbumFlow : Destination() {
         override val route = "findAlbum"

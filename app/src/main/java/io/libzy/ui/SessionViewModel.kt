@@ -36,7 +36,10 @@ class SessionViewModel @Inject constructor(
     appContext: Context
 ) : LibzyViewModel<SessionUiState, SessionUiEvent>(), SpotifyAuthClientProxy {
 
-    override val initialUiState = SessionUiState(sessionRepository.isSpotifyConnected())
+    override val initialUiState = SessionUiState(
+        isSpotifyConnected = sessionRepository.isSpotifyConnected(),
+        isOnboardingCompleted = sessionRepository.isOnboardingCompleted()
+    )
 
     private var refreshSpotifyAuthJob: Job? = null
 
@@ -52,10 +55,7 @@ class SessionViewModel @Inject constructor(
 
     init {
         spotifyAuthDispatcher.authClientProxy = this
-
-        viewModelScope.launch {
-            updateSessionState()
-        }
+        updateSessionState()
     }
 
     override fun onCleared() {
@@ -63,10 +63,19 @@ class SessionViewModel @Inject constructor(
         spotifyAuthDispatcher.authClientProxy = null
     }
 
-    private suspend fun updateSessionState() {
-        sessionRepository.spotifyConnectedState.collect { spotifyConnected ->
-            updateUiState {
-                copy(isSpotifyConnected = spotifyConnected)
+    private fun updateSessionState() {
+        viewModelScope.launch {
+            sessionRepository.spotifyConnectedState.collect { spotifyConnected ->
+                updateUiState {
+                    copy(isSpotifyConnected = spotifyConnected)
+                }
+            }
+        }
+        viewModelScope.launch {
+            sessionRepository.onboardingCompletedState.collect { onboardingCompleted ->
+                updateUiState {
+                    copy(isOnboardingCompleted = onboardingCompleted)
+                }
             }
         }
     }

@@ -14,6 +14,7 @@ import androidx.navigation.navigation
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.findalbum.query.QueryScreen
 import io.libzy.ui.findalbum.results.ResultsScreen
+import io.libzy.ui.onboarding.OnboardingScreen
 import io.libzy.ui.settings.SettingsScreen
 
 @ExperimentalAnimationApi
@@ -26,8 +27,12 @@ fun LibzyNavGraph(uiState: SessionUiState, viewModelFactory: ViewModelProvider.F
     fun NavGraphBuilder.composable(destination: Destination, content: @Composable (NavBackStackEntry) -> Unit) {
         composable(destination.route, destination.arguments, destination.deepLinks) { backStackEntry ->
             val redirectToConnectSpotify = destination.requiresSpotifyConnection && !uiState.isSpotifyConnected
+            val redirectToOnboarding = !redirectToConnectSpotify && destination.requiresOnboarding && !uiState.isOnboardingCompleted
             LaunchedEffect(redirectToConnectSpotify) {
                 if (redirectToConnectSpotify) navController.navigate(Destination.ConnectSpotify.route)
+            }
+            LaunchedEffect(redirectToOnboarding) {
+                if (redirectToOnboarding) navController.navigate(Destination.Onboarding.route)
             }
             if (!redirectToConnectSpotify) content(backStackEntry)
         }
@@ -37,6 +42,9 @@ fun LibzyNavGraph(uiState: SessionUiState, viewModelFactory: ViewModelProvider.F
     NavHost(navController, route = Destination.NavHost.route, startDestination = Destination.FindAlbumFlow.route) {
         composable(Destination.ConnectSpotify) {
             ConnectSpotifyScreen(navController, viewModelFactory, exitApp)
+        }
+        composable(Destination.Onboarding) {
+            OnboardingScreen(navController, viewModelFactory, exitApp)
         }
         navigation(route = Destination.FindAlbumFlow.route, startDestination = Destination.Query.route) {
             composable(Destination.Query) { backStackEntry ->
