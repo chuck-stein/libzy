@@ -50,11 +50,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -88,6 +85,7 @@ import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
 import io.libzy.ui.common.component.StartOverIconButton
+import io.libzy.ui.common.util.fadingEdge
 import io.libzy.ui.common.util.restartFindAlbumFlow
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.theme.LibzyColors
@@ -284,29 +282,23 @@ private fun ResultsScreen(
 }
 
 private fun Modifier.resultsGradient() = this
-    .graphicsLayer { alpha = 0.99f } // workaround to enable alpha compositing
-    .drawWithContent {
-        drawContent()
-        drawRect(
-            // gradient to fade out top of recommendation list
-            brush = Brush.verticalGradient(
-                colors = listOf(Color.Transparent, Color.Black),
-                endY = RECOMMENDATION_LIST_TOP_PADDING.dp.toPx(),
-            ),
-            blendMode = BlendMode.DstIn,
+    .fadingEdge {
+        // gradient to fade out top of recommendation list
+        Brush.verticalGradient(
+            colors = listOf(Color.Transparent, Color.Black),
+            endY = RECOMMENDATION_LIST_TOP_PADDING.dp.toPx(),
         )
-        drawRect(
-            // gradient to fade out bottom of recommendation list
-            brush = Brush.verticalGradient(
-                colors = listOf(
-                    Color.Black,
-                    Color.Black.copy(alpha = 0.4f),
-                    Color.Black.copy(alpha = 0.1f),
-                    Color.Transparent
-                ),
-                startY = size.height - RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT.dp.toPx()
+    }
+    .fadingEdge {
+        // gradient to fade out bottom of recommendation list
+        Brush.verticalGradient(
+            colors = listOf(
+                Color.Black,
+                Color.Black.copy(alpha = 0.4f),
+                Color.Black.copy(alpha = 0.1f),
+                Color.Transparent
             ),
-            blendMode = BlendMode.DstIn,
+            startY = size.height - RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT.dp.toPx()
         )
     }
 
