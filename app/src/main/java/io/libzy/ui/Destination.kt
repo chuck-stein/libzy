@@ -53,5 +53,7 @@ sealed class Destination {
     }
     object Settings : Destination() {
         override val route = "settings"
+        val deepLinkUri = createDeepLinkUri()
+        override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
 }
