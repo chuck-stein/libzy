@@ -1,8 +1,8 @@
 package io.libzy.repository
 
-import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.LONG_TERM
-import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.MEDIUM_TERM
-import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.SHORT_TERM
+import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.LongTerm
+import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.MediumTerm
+import com.adamratzman.spotify.endpoints.client.ClientPersonalizationApi.TimeRange.ShortTerm
 import com.adamratzman.spotify.models.Album
 import com.adamratzman.spotify.models.AudioFeatures
 import io.libzy.persistence.database.UserLibraryDatabase
@@ -47,9 +47,9 @@ class UserLibraryRepository @Inject constructor(
      */
     suspend fun syncLibraryData(): Int = withContext(Dispatchers.IO) {
         val recentlyPlayedTracks = async { spotifyApi.fetchPlayHistory().map { it.track } }
-        val topTracksShortTerm = async { spotifyApi.fetchTopTracks(SHORT_TERM) }
-        val topTracksMediumTerm = async { spotifyApi.fetchTopTracks(MEDIUM_TERM) }
-        val topTracksLongTerm = async { spotifyApi.fetchTopTracks(LONG_TERM) }
+        val topTracksShortTerm = async { spotifyApi.fetchTopTracks(ShortTerm) }
+        val topTracksMediumTerm = async { spotifyApi.fetchTopTracks(MediumTerm) }
+        val topTracksLongTerm = async { spotifyApi.fetchTopTracks(LongTerm) }
         val albums = async { spotifyApi.fetchAllSavedAlbums().map { savedAlbum -> savedAlbum.album } }
 
         val dbAlbums = albums.await().map { album ->
