@@ -69,6 +69,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -128,6 +129,25 @@ class AnalyticsDispatcher @Inject constructor(
     ) {
         val eventPropertiesJson = eventProperties?.let { JSONObject(eventProperties) }
         amplitude.logEvent(eventName, eventPropertiesJson, outOfSession)
+        Timber.i(buildEventString(eventName, eventProperties, outOfSession))
+    }
+
+    private fun buildEventString(
+        eventName: String,
+        eventProperties: Map<String, Any?>? = null,
+        outOfSession: Boolean = false
+    ) = buildString {
+        append("EVENT: ")
+        append(eventName)
+        if (outOfSession) {
+            append(" (out of session)")
+        }
+        eventProperties?.forEach { (propertyName, propertyValue) ->
+            appendLine()
+            append(propertyName)
+            append(" = ")
+            append(propertyValue)
+        }
     }
 
     fun sendRateAlbumResultsEvent(rating: Int, feedback: String?) {
