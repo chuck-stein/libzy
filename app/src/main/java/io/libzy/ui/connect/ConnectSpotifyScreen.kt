@@ -18,7 +18,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.Text
-import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +44,6 @@ import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
-import io.libzy.ui.theme.LibzyIconTheme
 import kotlinx.coroutines.launch
 
 /**
@@ -126,10 +124,10 @@ private fun WelcomePage(onConnectSpotifyClick: () -> Unit) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
-                imageVector = LibzyIconTheme.LibraryMusic, // TODO: replace with actual app icon once done
+                painter = painterResource(R.drawable.ic_libzy_logo),
                 contentDescription = stringResource(R.string.cd_libzy_icon),
-                tint = LibzyColors.OffWhite,
-                modifier = Modifier.fillMaxSize(0.25f)
+                tint = Color.White,
+                modifier = Modifier.fillMaxSize(0.3f)
             )
             Text(stringResource(R.string.welcome_to_libzy), style = MaterialTheme.typography.h3)
             Text(

@@ -128,7 +128,7 @@ class LibrarySyncWorker(
         val notificationTitle = applicationContext.getString(R.string.initial_library_sync_notification_title)
 
         val notification = NotificationCompat.Builder(applicationContext, notificationChannelId)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_libzy_logo)
             .setContentTitle(notificationTitle)
             .setContentIntent(applicationContext.createNotificationTapAction(notificationDeepLinkUri))
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
@@ -156,7 +156,7 @@ class LibrarySyncWorker(
         val notificationChannelId = applicationContext.getString(R.string.library_sync_update_notification_channel_id)
 
         val notification = NotificationCompat.Builder(applicationContext, notificationChannelId)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_libzy_logo)
             .setContentTitle(notificationTitle)
             .setContentText(notificationText)
             .setContentIntent(applicationContext.createNotificationTapAction(tapDestinationUri))
