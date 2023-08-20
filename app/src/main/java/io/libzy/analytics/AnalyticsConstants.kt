@@ -7,6 +7,7 @@ import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.findalbum.query.QueryScreen
 import io.libzy.ui.findalbum.results.ResultsScreen
 import io.libzy.ui.library.ExpandLibraryScreen
+import io.libzy.ui.onboarding.OnboardingScreen
 import io.libzy.work.LibrarySyncWorker
 
 /**
@@ -100,6 +101,11 @@ object AnalyticsConstants {
          * When the user opens Spotify via the "Open Spotify" floating action button
          */
         const val OPEN_SPOTIFY = "open spotify"
+
+        /**
+         * When the user views one of the several onboarding steps in [OnboardingScreen]
+         */
+        const val VIEW_ONBOARDING_STEP = "view onboarding step"
     }
 
     object EventProperties {
@@ -366,6 +372,11 @@ object AnalyticsConstants {
          * within Spotify to open (if any) for [Events.OPEN_SPOTIFY]
          */
         const val URI = "uri"
+
+        /**
+         * Which number onboarding step the user viewed in [Events.VIEW_ONBOARDING_STEP]
+         */
+        const val STEP_NUM = "step num"
     }
     
     object UserProperties {

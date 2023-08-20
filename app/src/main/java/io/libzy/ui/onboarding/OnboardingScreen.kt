@@ -65,6 +65,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
+import io.libzy.analytics.AnalyticsConstants.EventProperties.STEP_NUM
+import io.libzy.analytics.AnalyticsConstants.Events.VIEW_ONBOARDING_STEP
+import io.libzy.analytics.LocalAnalytics
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.ALBUM_LIST_ITEM_PADDING
@@ -123,6 +126,7 @@ fun OnboardingScreen(
     onUiEvent: (OnboardingUiEvent) -> Unit = {}
 ) {
     val onboardingStepPager = rememberPagerState(initialStepIndex, pageCount = { 7 })
+    OnboardingAnalyticsDispatcher(onboardingStepPager)
 
     LibzyScaffold(showTopBar = false) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -133,6 +137,18 @@ fun OnboardingScreen(
             PagingIndicator(onboardingStepPager, Modifier.padding(bottom = 16.dp))
             Spacer(Modifier.weight(1f))
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun OnboardingAnalyticsDispatcher(onboardingStepPager: PagerState) {
+    val analytics = LocalAnalytics.current
+    LaunchedEffect(onboardingStepPager.currentPage) {
+        analytics.sendEvent(
+            eventName = VIEW_ONBOARDING_STEP,
+            eventProperties = mapOf(STEP_NUM to onboardingStepPager.currentPage + 1)
+        )
     }
 }
 
