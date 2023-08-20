@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -64,10 +65,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
-import io.libzy.domain.AlbumResult
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
+import io.libzy.ui.common.component.ALBUM_LIST_ITEM_PADDING
 import io.libzy.ui.common.component.AlbumArtwork
+import io.libzy.ui.common.component.AlbumListItem
+import io.libzy.ui.common.component.AlbumUiState
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
@@ -75,12 +78,10 @@ import io.libzy.ui.common.component.PagingIndicator
 import io.libzy.ui.common.util.fadingMarquee
 import io.libzy.ui.common.util.goToNextPage
 import io.libzy.ui.common.util.surfaceBackground
-import io.libzy.ui.findalbum.results.ALBUM_RESULT_PADDING
-import io.libzy.ui.findalbum.results.AlbumResultListItem
 import io.libzy.ui.onboarding.OnboardingUiEvent.CompleteOnboarding
-import io.libzy.ui.onboarding.OnboardingUiEvent.PlayAlbum
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyIconTheme
+import io.libzy.util.toTextResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sin
@@ -100,9 +101,7 @@ fun OnboardingScreen(navController: NavController, viewModelFactory: ViewModelPr
         }
     }
 
-    if (uiState.onboardingMandatory) {
-        BackHandler(onBack = exitApp)
-    }
+    BackHandler(enabled = uiState.onboardingMandatory, onBack = exitApp)
 
     LaunchedEffect(uiState) {
         if (uiState.onboardingCompleted) {
@@ -236,7 +235,7 @@ private fun ColumnScope.OnboardingVisual(
         1 -> QuestionIconCarousel(modifier)
         2 -> PreferenceSelectionIcons(isCurrentStep, modifier)
         3 -> ExampleAlbumRecommendations(uiState.albumArtUrlsForExampleRecommendations, isCurrentStep, modifier)
-        4 -> ExampleAlbumResult(uiState.exampleAlbumResult, onUiEvent, modifier)
+        4 -> ExampleAlbumResult(uiState.exampleAlbumRecommendation, onUiEvent, modifier)
         5 -> PulsingIcon(LibzyIconTheme.RestartAlt, modifier)
         6 -> SpinningIcon(LibzyIconTheme.Settings, modifier)
     }
@@ -364,30 +363,31 @@ private fun ColumnScope.ExampleAlbumRecommendations(
     modifier: Modifier
 ) {
     var recommendationGroupIndex by remember { mutableStateOf(0) }
-    val gridArrangement = Arrangement.spacedBy(8.dp)
+    val gridArrangement = Arrangement.Center
 
     Crossfade(
         targetState = recommendationGroupIndex,
         animationSpec = tween(durationMillis = 1000),
         modifier = modifier
             .weight(1f)
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
+        label = "crossfade between example album recommendations"
     ) { index ->
         if (index in albumArtUrls.indices) {
             val albumArtUrlsForCurrentGroup = albumArtUrls[index]
             val topRowAlbumArtUrls = albumArtUrlsForCurrentGroup.take(albumArtUrlsForCurrentGroup.size / 2)
             val bottomRowAlbumArtUrls = albumArtUrlsForCurrentGroup.takeLast(albumArtUrlsForCurrentGroup.size / 2)
 
-            Column(Modifier.fillMaxWidth(), gridArrangement, Alignment.CenterHorizontally) {
+            Column(Modifier.wrapContentSize(), gridArrangement, Alignment.CenterHorizontally) {
                 Spacer(Modifier.weight(1f))
                 Row(horizontalArrangement = gridArrangement) {
                     topRowAlbumArtUrls.forEach {
-                        AlbumArtwork(it, Modifier.weight(1f))
+                        AlbumArtwork(it, Modifier.weight(1f).padding(4.dp))
                     }
                 }
                 Row(horizontalArrangement = gridArrangement) {
                     bottomRowAlbumArtUrls.forEach {
-                        AlbumArtwork(it, Modifier.weight(1f))
+                        AlbumArtwork(it, Modifier.weight(1f).padding(4.dp))
                     }
                 }
                 Spacer(Modifier.weight(1f))
@@ -405,20 +405,19 @@ private fun ColumnScope.ExampleAlbumRecommendations(
 
 @Composable
 private fun ColumnScope.ExampleAlbumResult(
-    albumResult: AlbumResult?,
+    album: AlbumUiState?,
     onUiEvent: (OnboardingUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (albumResult != null) {
+    if (album != null) {
         Spacer(Modifier.weight(1f))
         BoxWithConstraints(modifier.align(Alignment.CenterHorizontally)) {
             val albumArtWidth = maxWidth * 0.4f
-            AlbumResultListItem(
-                albumResult = albumResult,
-                onAlbumClick = { onUiEvent(PlayAlbum) },
-                modifier = Modifier.width(albumArtWidth + ALBUM_RESULT_PADDING.dp),
-                maxLinesPerLabel = 2,
-                albumArtModifier = { Modifier.size(albumArtWidth) }
+            AlbumListItem(
+                album = album,
+                onAlbumClick = { if (it is OnboardingUiEvent) onUiEvent(it) },
+                modifier = Modifier.width(albumArtWidth + ALBUM_LIST_ITEM_PADDING.dp),
+                maxLinesPerLabel = 2
             )
         }
         Spacer(Modifier.weight(1f))
@@ -427,13 +426,14 @@ private fun ColumnScope.ExampleAlbumResult(
 
 @Composable
 private fun ColumnScope.PulsingIcon(icon: ImageVector, modifier: Modifier) {
-    val scale by rememberInfiniteTransition().animateFloat(
+    val scale by rememberInfiniteTransition(label = "pulsing icon transition").animateFloat(
         initialValue = 0.7f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
-        )
+        ),
+        label = "pulsing icon scale"
     )
     LibzyIcon(
         imageVector = icon,
@@ -500,10 +500,11 @@ private val previewUiState = OnboardingUiState(
             "https://i.scdn.co/image/ab67616d0000b273c55d2f306d5dffbc66f67c52"
         )
     ),
-    exampleAlbumResult = AlbumResult(
-        title = "Bitches Brew",
-        artists = "Miles Davis",
+    exampleAlbumRecommendation = AlbumUiState(
+        title = "Bitches Brew".toTextResource(),
+        artists = "Miles Davis".toTextResource(),
         spotifyUri = "",
+        spotifyId = "",
         artworkUrl = "https://i.scdn.co/image/ab67616d0000b2733f29c5269be5a4e9c4611d7a"
     )
 )

@@ -10,4 +10,5 @@ sealed interface SettingsUiEvent {
     object OpenLogOutConfirmation : SettingsUiEvent
     object CloseLogOutConfirmation : SettingsUiEvent
     object LogOut : SettingsUiEvent
+    object ExpandLibrary : SettingsUiEvent
 }

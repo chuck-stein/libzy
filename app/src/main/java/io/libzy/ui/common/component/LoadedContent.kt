@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.libzy.ui.common.util.hideIf
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
 
 /**
@@ -18,11 +19,14 @@ import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
  */
 @Composable
 fun LoadedContent(loading: Boolean, enableProgressIndicator: Boolean = true, content: @Composable () -> Unit) {
-    if (!loading) {
-        content()
-    } else if (enableProgressIndicator) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(Modifier.hideIf(loading)) {
+            content()
         }
+        CircularProgressIndicator(
+            modifier = Modifier
+                .size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp)
+                .hideIf(!loading || !enableProgressIndicator)
+        )
     }
 }

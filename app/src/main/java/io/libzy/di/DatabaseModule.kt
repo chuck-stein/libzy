@@ -18,8 +18,6 @@ class DatabaseModule {
             applicationContext,
             UserLibraryDatabase::class.java,
             applicationContext.getString(R.string.database_file_name)
-        )
-            .fallbackToDestructiveMigration() // TODO: create an actual migration strategy
-            .build()
+        ).build()
 
 }

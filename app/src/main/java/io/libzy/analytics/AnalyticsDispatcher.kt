@@ -59,11 +59,11 @@ import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRAR
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTED
 import io.libzy.domain.Query
-import io.libzy.domain.RecommendationCategory
-import io.libzy.domain.title
 import io.libzy.persistence.database.tuple.LibraryAlbum
 import io.libzy.repository.SessionRepository
+import io.libzy.ui.findalbum.results.RecommendationCategoryUiState
 import io.libzy.util.plus
+import io.libzy.util.resolveText
 import io.libzy.util.toString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterNotNull
@@ -122,7 +122,7 @@ class AnalyticsDispatcher @Inject constructor(
     /**
      * Send an event with the given name and properties to Amplitude.
      */
-    private fun sendEvent(
+    fun sendEvent(
         eventName: String,
         eventProperties: Map<String, Any?>? = null,
         outOfSession: Boolean = false
@@ -162,12 +162,12 @@ class AnalyticsDispatcher @Inject constructor(
 
     fun sendViewAlbumResultsEvent(
         query: Query,
-        recommendationCategories: List<RecommendationCategory>,
+        recommendationCategories: List<RecommendationCategoryUiState>,
         resources: Resources
     ) {
         val categoryMap = recommendationCategories.associate { category ->
             // prepend titles with underscore so all category event properties appear in Amplitude UI next to each other
-            "_${category.title(resources)}" to category.albumResults.map { "${it.artists} - ${it.title}" }
+            "_${category.title.resolveText(resources)}" to category.albums.map { "${it.artists} - ${it.title}" }
         }
         sendEvent(VIEW_ALBUM_RESULTS, query.toEventPropertyMap().plus(categoryMap).plus(
             CATEGORIES to categoryMap.keys.map { it.drop(1) }, // remove underscore prefix

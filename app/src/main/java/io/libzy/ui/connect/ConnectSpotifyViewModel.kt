@@ -2,10 +2,9 @@ package io.libzy.ui.connect
 
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingPeriodicWorkPolicy.KEEP
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkInfo.State.CANCELLED
 import androidx.work.WorkInfo.State.FAILED
 import androidx.work.WorkManager
@@ -13,15 +12,12 @@ import androidx.work.workDataOf
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.repository.SessionRepository
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
-import io.libzy.spotify.auth.SpotifyAuthException
+import io.libzy.spotify.auth.SpotifyAuthResult
 import io.libzy.ui.common.LibzyViewModel
 import io.libzy.ui.connect.ConnectSpotifyUiEvent.SPOTIFY_SYNC_FAILED
 import io.libzy.util.flatten
-import io.libzy.util.handle
-import io.libzy.util.unwrap
-import io.libzy.util.wrapResult
 import io.libzy.work.LibrarySyncWorker
-import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
+import io.libzy.work.enqueuePeriodicLibrarySync
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -71,7 +67,7 @@ class ConnectSpotifyViewModel @Inject constructor(
         sessionRepository.spotifyConnectedState.collect { spotifyConnected ->
             if (spotifyConnected) {
                 produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_CONNECTED)
-                enqueuePeriodicLibrarySync()
+                workManager.enqueuePeriodicLibrarySync(existingWorkPolicy = KEEP, withInitialDelay = true)
             }
         }
     }
@@ -84,12 +80,9 @@ class ConnectSpotifyViewModel @Inject constructor(
         viewModelScope.launch {
             analyticsDispatcher.sendClickConnectSpotifyEvent(sessionRepository.getSpotifyUserId())
 
-            wrapResult {
-                spotifyAuthDispatcher.requestAuthorization(withTimeout = false) { setShowDialog(true) }
-            }.handle(SpotifyAuthException::class) {
-                produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED)
-            }.unwrap {
-                startInitialLibrarySync()
+            when (spotifyAuthDispatcher.requestAuthorization(withTimeout = false) { setShowDialog(true) }) {
+                is SpotifyAuthResult.Failure -> produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED)
+                is SpotifyAuthResult.Success -> startInitialLibrarySync()
             }
         }
     }
@@ -113,19 +106,6 @@ class ConnectSpotifyViewModel @Inject constructor(
                 copy(showSyncProgress = true)
             }
         }
-    }
-
-    private fun enqueuePeriodicLibrarySync() {
-        val workRequest =
-            PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL)
-                .setInitialDelay(LIBRARY_SYNC_INTERVAL)
-                .build()
-
-        workManager.enqueueUniquePeriodicWork(
-            LibrarySyncWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
     }
 
     companion object {

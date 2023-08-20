@@ -2,25 +2,23 @@ package io.libzy.ui
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED
 import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE
 import androidx.work.WorkManager
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.repository.SessionRepository
+import io.libzy.repository.UserLibraryRepository
 import io.libzy.repository.UserProfileRepository
 import io.libzy.spotify.auth.SpotifyAccessToken
 import io.libzy.spotify.auth.SpotifyAuthCallback
 import io.libzy.spotify.auth.SpotifyAuthClientProxy
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
-import io.libzy.spotify.auth.SpotifyAuthException
 import io.libzy.ui.common.LibzyViewModel
-import io.libzy.work.LibrarySyncWorker
-import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
+import io.libzy.util.connectedToNetwork
+import io.libzy.work.enqueuePeriodicLibrarySync
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -29,6 +27,7 @@ import javax.inject.Inject
 class SessionViewModel @Inject constructor(
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val userProfileRepository: UserProfileRepository,
+    private val userLibraryRepository: UserLibraryRepository,
     private val sessionRepository: SessionRepository,
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val workManager: WorkManager,
@@ -38,7 +37,8 @@ class SessionViewModel @Inject constructor(
 
     override val initialUiState = SessionUiState(
         isSpotifyConnected = sessionRepository.isSpotifyConnected(),
-        isOnboardingCompleted = sessionRepository.isOnboardingCompleted()
+        isOnboardingCompleted = sessionRepository.isOnboardingCompleted(),
+        areEnoughAlbumsSaved = userLibraryRepository.areEnoughAlbumsSaved()
     )
 
     private var refreshSpotifyAuthJob: Job? = null
@@ -50,7 +50,12 @@ class SessionViewModel @Inject constructor(
             appContext.getString(R.string.spotify_client_id),
             AuthorizationResponse.Type.TOKEN,
             appContext.getString(R.string.spotify_auth_redirect_uri)
-        ).setScopes(arrayOf("user-library-read", "app-remote-control", "user-read-recently-played", "user-top-read"))
+        ).setScopes(
+            arrayOf(
+                "user-library-read", "user-library-modify", "app-remote-control",
+                "user-read-recently-played", "user-top-read"
+            )
+        )
     }
 
     init {
@@ -78,6 +83,13 @@ class SessionViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            userLibraryRepository.enoughAlbumsSavedFlow.collect { enoughAlbumsSaved ->
+                updateUiState {
+                    copy(areEnoughAlbumsSaved = enoughAlbumsSaved)
+                }
+            }
+        }
     }
 
     fun onNewSpotifyAuthAvailable() {
@@ -87,12 +99,7 @@ class SessionViewModel @Inject constructor(
                     updateUiState { copy(loading = true) }
                     spotifyAuthDispatcher.requestAuthorization()
                     updateUiState { copy(loading = false) }
-                    val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
-                    workManager.enqueueUniquePeriodicWork(
-                        LibrarySyncWorker.WORK_NAME,
-                        ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                        workRequest
-                    )
+                    workManager.enqueuePeriodicLibrarySync(existingWorkPolicy = CANCEL_AND_REENQUEUE)
                 }
             }
         }
@@ -100,11 +107,8 @@ class SessionViewModel @Inject constructor(
 
     private suspend fun shouldRefreshAuth() = sessionRepository.isSpotifyConnected()
             && sessionRepository.isSpotifyAuthExpired()
-            && connectedToNetwork()
+            && connectivityManager.connectedToNetwork()
             && refreshSpotifyAuthJob?.isActive != true
-
-    private fun connectedToNetwork() = connectivityManager
-        .getNetworkCapabilities(connectivityManager.activeNetwork)?.hasCapability(NET_CAPABILITY_VALIDATED) == true
 
     override fun initiateSpotifyAuthRequest(
         callback: SpotifyAuthCallback,
@@ -136,9 +140,8 @@ class SessionViewModel @Inject constructor(
     }
 
     private fun handleSpotifyAuthFailure(reason: String) {
-        val exception = SpotifyAuthException("Error performing Spotify authorization: $reason")
-        spotifyAuthCallback?.onFailure(exception)
-        Timber.e(exception)
+        Timber.e("Error performing Spotify authorization: $reason")
+        spotifyAuthCallback?.onFailure(reason)
     }
 
     private fun loadSpotifyProfileInfo() {

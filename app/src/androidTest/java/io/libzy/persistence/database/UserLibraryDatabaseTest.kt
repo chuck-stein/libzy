@@ -9,8 +9,11 @@ import io.libzy.persistence.database.entity.DbGenre
 import io.libzy.persistence.database.entity.junction.AlbumGenreJunction
 import io.libzy.persistence.database.tuple.AudioFeaturesTuple
 import io.libzy.persistence.database.tuple.FamiliarityTuple
+import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.IOException
 
@@ -60,7 +63,7 @@ class UserLibraryDatabaseTest {
     )
 
     @Before
-    fun createDb() {
+    fun createDb() = runTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(
             context, UserLibraryDatabase::class.java
@@ -72,9 +75,17 @@ class UserLibraryDatabaseTest {
                 AlbumGenreJunction("1", "metal"),
                 AlbumGenreJunction("2", "rock"),
                 AlbumGenreJunction("2", "metal"),
-                AlbumGenreJunction("3", "rock")
+                AlbumGenreJunction("3", "rock"),
+                AlbumGenreJunction("4", "rap")
             )
         )
+    }
+
+    @Test
+    fun deleteGenresForDeletedAlbum() = runTest {
+        assertTrue("rap" in db.genreDao.getAll())
+        db.genreDao.deleteForDeletedAlbum(rapAlbum.spotifyId)
+        assertFalse("rap" in db.genreDao.getAll())
     }
 
     @After

@@ -17,10 +17,8 @@ import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.FabPosition
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Snackbar
-import androidx.compose.material.SnackbarData
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
@@ -33,14 +31,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
-import io.libzy.ui.BackgroundGradient
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.theme.LibzyColors
 
 /**
  * A custom [Scaffold] implementation which takes care of creating a common [TopAppBar] and [SnackbarHost],
  * adding padding for the system status bar and navigation bar so that they do not overlap screen content,
- * and making the background transparent so that content appears over the [BackgroundGradient] from [LibzyContent].
+ * and making the background transparent so that content appears over the [Shimmer] from [LibzyContent].
  */
 @Composable
 fun LibzyScaffold(
@@ -50,7 +47,7 @@ fun LibzyScaffold(
     navigationIcon: @Composable (() -> Unit)? = null,
     actionIcons: @Composable RowScope.() -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
-    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    floatingActionButtonPosition: FabPosition = FabPosition.Center,
     content: @Composable (BoxScope) -> Unit
 ) {
     Scaffold(

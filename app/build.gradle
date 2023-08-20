@@ -173,6 +173,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'com.adamratzman:spotify-api-kotlin-core:4.0.2'
 
+    // Networking
+    implementation "io.ktor:ktor-client-core:2.3.2"
+
     // Room
     def room_version = "2.5.1"
     implementation "androidx.room:room-runtime:$room_version"
@@ -208,6 +211,6 @@ dependencies {
     androidTestImplementation 'com.android.support:support-annotations:28.0.0'
 
     // Debug
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
 
 }

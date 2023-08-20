@@ -1,6 +1,8 @@
 package io.libzy.spotify.auth
 
+import android.net.ConnectivityManager
 import com.spotify.sdk.android.auth.AuthorizationRequest
+import io.libzy.util.connectedToNetwork
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,7 +13,6 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -22,11 +23,7 @@ TODO:
     - unit test this
  */
 @Singleton
-class SpotifyAuthDispatcher @Inject constructor() {
-
-    companion object {
-        private const val AUTH_TIMEOUT = 10 // in seconds
-    }
+class SpotifyAuthDispatcher @Inject constructor(private val connectivityManager: ConnectivityManager) {
 
     var authClientProxy: SpotifyAuthClientProxy? = null
         set(proxy) {
@@ -49,8 +46,8 @@ class SpotifyAuthDispatcher @Inject constructor() {
             pendingAuthCallbacks.clear()
         }
 
-        override fun onFailure(exception: SpotifyAuthException) {
-            for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onFailure(exception)
+        override fun onFailure(reason: String?) {
+            for (pendingAuthCallback in pendingAuthCallbacks) pendingAuthCallback.onFailure(reason)
             pendingAuthCallbacks.clear()
         }
     }
@@ -58,42 +55,57 @@ class SpotifyAuthDispatcher @Inject constructor() {
     suspend fun requestAuthorization(
         withTimeout: Boolean = true,
         authOptions: AuthorizationRequest.Builder.() -> AuthorizationRequest.Builder = { this },
-    ): SpotifyAccessToken = withContext(Dispatchers.IO) {
-        val timeout = if (withTimeout) AUTH_TIMEOUT.seconds else Duration.INFINITE
-        withTimeoutOrNull(timeout) {
-            suspendCancellableCoroutine { continuation ->
-                // TODO: Reassess which dispatchers we need here.
-                //  It's a network operation so we open with Dispatchers.IO, but spotify auth SDK
-                //  must be invoked from the main thread, so we launch on the main thread here.
-                //  Is Dispatchers.IO necessary? Instead of launching on Main can we do withContext(Main) here?
-                CoroutineScope(Dispatchers.Main).launch {
+    ): SpotifyAuthResult = withContext(Dispatchers.IO) {
+        if (!connectivityManager.connectedToNetwork()) {
+            SpotifyAuthResult.Failure("No network connection")
+        } else {
+            val timeout = if (withTimeout) authTimeout else Duration.INFINITE
+            withTimeoutOrNull(timeout) {
+                suspendCancellableCoroutine<SpotifyAuthResult> { continuation ->
+                    // TODO: Reassess which dispatchers we need here.
+                    //  It's a network operation so we open with Dispatchers.IO, but spotify auth SDK
+                    //  must be invoked from the main thread, so we launch on the main thread here.
+                    //  Is Dispatchers.IO necessary? Instead of launching on Main can we do withContext(Main) here?
+                    CoroutineScope(Dispatchers.Main).launch {
 
-                    // initialize an auth callback to unsuspend the coroutine upon completion with either a token or exception
-                    val spotifyAuthCallback = object : SpotifyAuthCallback {
-                        override fun onSuccess(accessToken: SpotifyAccessToken) {
-                            if (continuation.isActive) continuation.resume(accessToken)
+                        // initialize an auth callback to unsuspend the coroutine upon completion with either a token or exception
+                        val spotifyAuthCallback = object : SpotifyAuthCallback {
+                            override fun onSuccess(accessToken: SpotifyAccessToken) {
+                                if (continuation.isActive) continuation.resume(SpotifyAuthResult.Success(accessToken))
+                            }
+
+                            override fun onFailure(reason: String?) {
+                                if (continuation.isActive) continuation.resume(SpotifyAuthResult.Failure(reason))
+                            }
                         }
 
-                        override fun onFailure(exception: SpotifyAuthException) {
-                            if (continuation.isActive) continuation.resumeWithException(exception)
-                        }
-                    }
+                        // add auth callback to the list of pending callbacks so it will be called when auth completes
+                        pendingAuthCallbacks.add(spotifyAuthCallback)
 
-                    // add auth callback to the list of pending callbacks so it will be called when auth completes
-                    pendingAuthCallbacks.add(spotifyAuthCallback)
+                        // remove auth callback upon coroutine cancellation, so it is not called with nowhere to continue
+                        continuation.invokeOnCancellation { pendingAuthCallbacks.remove(spotifyAuthCallback) }
 
-                    // remove auth callback upon coroutine cancellation, so it is not called with nowhere to continue
-                    continuation.invokeOnCancellation { pendingAuthCallbacks.remove(spotifyAuthCallback) }
-
-                    // if this is the only pending auth callback, initiate auth since it is not already in progress
-                    if (pendingAuthCallbacks.size == 1) {
-                        authClientProxy.let {
-                            if (it == null) requestsWaitingForProxy = true
-                            else it.initiateSpotifyAuthRequest(onAuthComplete, authOptions)
+                        // if this is the only pending auth callback, initiate auth since it is not already in progress
+                        if (pendingAuthCallbacks.size == 1) {
+                            authClientProxy.let {
+                                if (it == null) requestsWaitingForProxy = true
+                                else it.initiateSpotifyAuthRequest(onAuthComplete, authOptions)
+                            }
                         }
                     }
                 }
-            }
-        } ?: throw SpotifyAuthException("Timed out while waiting for Spotify auth callback").also { Timber.e(it) }
+            } ?: SpotifyAuthResult.Failure("Timed out while waiting for Spotify auth callback")
+        }
+    }.also { result ->
+        if (result is SpotifyAuthResult.Failure) {
+            Timber.e("Failed to authorize Spotify: ${result.reason}")
+        }
     }
+}
+
+private val authTimeout = 20.seconds
+
+sealed interface SpotifyAuthResult {
+    data class Success(val accessToken: SpotifyAccessToken) : SpotifyAuthResult
+    data class Failure(val reason: String?) : SpotifyAuthResult
 }

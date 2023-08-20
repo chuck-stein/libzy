@@ -3,6 +3,7 @@ package io.libzy.spotify.api
 import com.adamratzman.spotify.SpotifyApiOptions
 import com.adamratzman.spotify.SpotifyClientApi
 import com.adamratzman.spotify.SpotifyClientApiBuilder
+import com.adamratzman.spotify.SpotifyException
 import com.adamratzman.spotify.SpotifyException.AuthenticationException
 import com.adamratzman.spotify.SpotifyException.BadRequestException
 import com.adamratzman.spotify.SpotifyException.ParseException
@@ -15,12 +16,15 @@ import com.adamratzman.spotify.models.AudioFeatures
 import com.adamratzman.spotify.models.PlayHistory
 import com.adamratzman.spotify.models.SavedAlbum
 import com.adamratzman.spotify.models.Track
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.network.sockets.SocketTimeoutException
 import io.libzy.repository.SessionRepository
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
+import io.libzy.spotify.auth.SpotifyAuthResult
 import io.libzy.util.handle
 import io.libzy.util.handleAny
 import io.libzy.util.unwrap
-import io.libzy.util.wrapResultForOutput
+import io.libzy.util.wrapResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +32,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,7 +44,7 @@ class SpotifyApiDelegator @Inject constructor(
 ) {
     companion object {
         // the lower of Spotify's limits for how many items are available from an endpoint
-        private const val API_ITEM_LIMIT_LOW = 50
+        const val API_ITEM_LIMIT_LOW = 50
 
         // a limit to maximize the number of items available from Spotify's paging endpoints which use the lower max
         // limit -- this works by requesting the next page at the highest allowed offset
@@ -70,10 +75,10 @@ class SpotifyApiDelegator @Inject constructor(
     }
 
     private suspend fun createApiDelegateWithNewToken(): SpotifyClientApi {
-        val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
-        val delegate = createApiDelegate(newAccessToken.token)
-        _apiDelegate = delegate
-        return delegate
+        return when (val spotifyAuthResult = spotifyAuthDispatcher.requestAuthorization()) {
+            is SpotifyAuthResult.Success -> createApiDelegate(spotifyAuthResult.accessToken.token).also { _apiDelegate = it }
+            is SpotifyAuthResult.Failure -> throw AuthenticationException("Failed to create API delegate due to auth failure: ${spotifyAuthResult.reason}")
+        }
     }
 
     private suspend fun createApiDelegate(accessToken: String): SpotifyClientApi {
@@ -111,42 +116,87 @@ class SpotifyApiDelegator @Inject constructor(
         getApiDelegate().users.getClientProfile()
     }
 
-    // TODO: remove num503s param when Spotify's issue with frequent 503s is resolved
-    private suspend fun <T> doSafeApiCall(num503s: Int = 0, apiCall: suspend () -> T): T {
-
-        suspend fun retryCallWithNewToken(): T {
-            val newAccessToken = spotifyAuthDispatcher.requestAuthorization()
-            getApiDelegate().updateToken {
-                accessToken = newAccessToken.token
-                expiresIn = newAccessToken.expiresIn // duration of validity in seconds
-            }
-            return apiCall()
-        }
-
-        return withContext(Dispatchers.IO) {
-            wrapResultForOutput {
-                apiCall()
-            }.handleAny(AuthenticationException::class, ReAuthenticationNeededException::class) {
-                retryCallWithNewToken()
-            }.handle(BadRequestException::class) { e ->
-                if (e.statusCode == 401) retryCallWithNewToken()
-                else e.statusCode.let { errorCode ->
-                    if (errorCode != null && errorCode in 500..599) {
-                        Timber.w(e, "API call failed due to server error $errorCode, trying one more time...")
-                        apiCall()
+    suspend fun <T> apiCall(
+        callDescription: String,
+        allowRetries: Boolean = true,
+        call: suspend SpotifyClientApi.() -> T?
+    ): T? = withContext(Dispatchers.IO) {
+        try {
+            Timber.i("Calling Spotify API - $callDescription")
+            getApiDelegate().call()
+        } catch (e: Exception) {
+            when {
+                e.isAuthError() && allowRetries -> {
+                    Timber.w(e, "Spotify auth failure, refreshing auth and retrying API call - $callDescription")
+                    if (refreshAuthToken()) {
+                        apiCall(callDescription, allowRetries = false, call)
+                    } else {
+                        null
                     }
-                    else throw e
                 }
-            }.handle(ParseException::class) { e ->
-                Timber.w(e, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
-                // this is a temporary workaround for Spotify sometimes sending 503 errors during library refresh
-                if (num503s < 10) doSafeApiCall(num503s + 1, apiCall)
-                else throw e
-            }.handle(TimeoutException::class) { e ->
-                Timber.w(e, "API call failed due to timing out, trying one more time...")
-                apiCall()
-            }.unwrap()
+                e.isExpectedError() -> {
+                    Timber.e(e, "Spotify API call failed - $callDescription")
+                    null
+                }
+                else -> throw e
+            }
         }
     }
 
+    private fun Throwable.isAuthError() = this is AuthenticationException || this is ReAuthenticationNeededException
+            || this is BadRequestException && statusCode == 401
+
+    private fun Throwable.isExpectedError() = this is SpotifyException || this is SocketTimeoutException
+            || this is ConnectTimeoutException || this is UnknownHostException
+
+    // TODO: remove num503s param when Spotify's issue with frequent 503s is resolved
+    private suspend fun <T> doSafeApiCall(num503s: Int = 0, apiCall: suspend () -> T): T = withContext(Dispatchers.IO) {
+        wrapResult {
+            apiCall()
+        }.handleAny(AuthenticationException::class, ReAuthenticationNeededException::class) {
+            refreshAuthTokenUnsafe()
+            apiCall()
+        }.handle(BadRequestException::class) { e ->
+            when (e.statusCode) {
+                401 -> {
+                    refreshAuthTokenUnsafe()
+                    apiCall()
+                }
+                in 500..599 -> {
+                    Timber.w(e, "API call failed due to server error ${e.statusCode}, trying one more time...")
+                    apiCall()
+                }
+                else -> throw e
+            }
+        }.handle(ParseException::class) { e ->
+            Timber.w(e, "API call failed due to server error 503 (unwrapped to ParseException), trying one more time...")
+            // this is a temporary workaround for Spotify sometimes sending 503 errors during library refresh
+            if (num503s < 10) doSafeApiCall(num503s + 1, apiCall)
+            else throw e
+        }.handle(TimeoutException::class) { e ->
+            Timber.w(e, "API call failed due to timing out, trying one more time...")
+            apiCall()
+        }.unwrap()
+    }
+
+    private suspend fun refreshAuthToken(): Boolean {
+        val spotifyAuthResult = spotifyAuthDispatcher.requestAuthorization()
+        if (spotifyAuthResult is SpotifyAuthResult.Success) {
+            getApiDelegate().updateToken {
+                accessToken = spotifyAuthResult.accessToken.token
+                expiresIn = spotifyAuthResult.accessToken.expiresIn // duration of validity in seconds
+            }
+        }
+        return spotifyAuthResult is SpotifyAuthResult.Success
+    }
+
+    private suspend fun refreshAuthTokenUnsafe() {
+        when (val spotifyAuthResult = spotifyAuthDispatcher.requestAuthorization()) {
+            is SpotifyAuthResult.Success -> getApiDelegate().updateToken {
+                accessToken = spotifyAuthResult.accessToken.token
+                expiresIn = spotifyAuthResult.accessToken.expiresIn // duration of validity in seconds
+            }
+            is SpotifyAuthResult.Failure -> throw ReAuthenticationNeededException(message = "failed to refresh auth")
+        }
+    }
 }

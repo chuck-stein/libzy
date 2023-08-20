@@ -13,6 +13,7 @@ sealed class Destination {
     open val arguments: List<NamedNavArgument> = emptyList()
     open val deepLinks: List<NavDeepLink> = emptyList()
     open val requiresSpotifyConnection = true
+    open val requiresEnoughAlbumsSaved = true
     open val requiresOnboarding = true
 
     protected fun createDeepLinkUri(): Uri = Uri.Builder()
@@ -34,6 +35,12 @@ sealed class Destination {
         val deepLinkUri = createDeepLinkUri()
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
         override val requiresSpotifyConnection = false
+        override val requiresEnoughAlbumsSaved = false
+        override val requiresOnboarding = false
+    }
+    object ExpandLibrary : Destination() {
+        override val route = "expandLibrary"
+        override val requiresEnoughAlbumsSaved = false
         override val requiresOnboarding = false
     }
     object Onboarding : Destination() {

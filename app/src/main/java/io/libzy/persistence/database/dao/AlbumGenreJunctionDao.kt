@@ -15,8 +15,11 @@ interface AlbumGenreJunctionDao : BaseDao<AlbumGenreJunction> {
     @Query("SELECT genre_id FROM album_has_genre GROUP BY genre_id ORDER BY COUNT(album_id) DESC")
     fun getAllGenresSortedByNumAssociatedAlbums(): Flow<List<String>>
 
+    @Query("DELETE FROM album_has_genre WHERE album_id = :albumId")
+    suspend fun deleteAllForAlbum(albumId: String)
+
     @Transaction
-    fun replaceAll(albumGenreJunctions: Collection<AlbumGenreJunction>) {
+    suspend fun replaceAll(albumGenreJunctions: Collection<AlbumGenreJunction>) {
         deleteAll()
         insertAll(albumGenreJunctions)
     }

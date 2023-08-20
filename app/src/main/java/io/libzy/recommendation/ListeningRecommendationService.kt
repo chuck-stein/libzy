@@ -4,16 +4,15 @@ import androidx.annotation.StringRes
 import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.domain.RecommendationCategory
-import io.libzy.domain.toAlbumResult
 import io.libzy.persistence.database.tuple.LibraryAlbum
 import io.libzy.util.combinationsOfSize
 import javax.inject.Inject
 import kotlin.math.abs
 
 /**
- * Holds functionality related to searching through a set of albums to find recommendations based on a certain mood.
+ * Recommends albums or genres to listen to based on a certain mood.
  */
-class RecommendationService @Inject constructor() {
+class ListeningRecommendationService @Inject constructor() {
 
     /**
      * Recommend genres contained within the given [libraryAlbums],
@@ -106,9 +105,9 @@ class RecommendationService @Inject constructor() {
         if (fullyRelevantAlbums.isNotEmpty() && !fullyRelevantAlbums.matchDifferentGenres()) {
             val fullyRelevantCategory = RecommendationCategory(
                 relevance = RecommendationCategory.Relevance.Full,
-                albumResults = fullyRelevantAlbums
+                albums = fullyRelevantAlbums
                     .sortedByDescending { it.overallRelevance }
-                    .map { it.libraryAlbum.toAlbumResult() }
+                    .map { it.libraryAlbum }
             )
             recommendationCategories.add(fullyRelevantCategory)
             possibleAlbums.minusAssign(fullyRelevantAlbums.toSet())
@@ -359,7 +358,7 @@ class RecommendationService @Inject constructor() {
                         albumsInChosenCategory
                             .toList()
                             .sortedWith(albumComparator)
-                            .map { it.libraryAlbum.toAlbumResult() }
+                            .map { it.libraryAlbum }
                     )
                 )
                 possibleCategories.remove(categoryRelevance)

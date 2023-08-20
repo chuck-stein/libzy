@@ -1,20 +1,22 @@
 package io.libzy.ui.findalbum.results
 
-import android.content.Context
-import android.content.Intent
 import android.content.res.Resources
-import android.net.Uri
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
 import io.libzy.BuildConfig
+import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.domain.Query
-import io.libzy.recommendation.RecommendationService
+import io.libzy.domain.RecommendationCategory
+import io.libzy.recommendation.ListeningRecommendationService
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
 import io.libzy.ui.common.LibzyViewModel
-import io.libzy.util.androidAppUriFor
-import io.libzy.util.isPackageInstalled
+import io.libzy.ui.common.component.toUiState
+import io.libzy.util.TextResource
+import io.libzy.util.capitalizeAllWords
+import io.libzy.util.emptyTextResource
+import io.libzy.util.joinToUserFriendlyString
+import io.libzy.util.toTextResource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -22,7 +24,7 @@ import javax.inject.Inject
 
 class ResultsViewModel @Inject constructor(
     private val userLibraryRepository: UserLibraryRepository,
-    private val recommendationService: RecommendationService,
+    private val listeningRecommendationService: ListeningRecommendationService,
     private val spotifyAppRemoteService: SpotifyAppRemoteService,
     private val analyticsDispatcher: AnalyticsDispatcher
 ) : LibzyViewModel<ResultsUiState, ResultsUiEvent>() {
@@ -35,7 +37,8 @@ class ResultsViewModel @Inject constructor(
         albumRecommendationJob?.cancel()
         albumRecommendationJob = viewModelScope.launch {
             userLibraryRepository.albums.collect { albums ->
-                val recommendationCategories = recommendationService.recommendAlbums(query, albums)
+                val recommendationCategories = listeningRecommendationService.recommendAlbums(query, albums)
+                    .map { it.toUiState() }
                 updateUiState {
                     ResultsUiState.Loaded(recommendationCategories)
                 }
@@ -87,25 +90,6 @@ class ResultsViewModel @Inject constructor(
         }
     }
 
-    fun openSpotify(context: Context) { // not leaking context here because we don't store it in memory
-        val spotifyIsInstalled = context.packageManager.isPackageInstalled(SPOTIFY_PACKAGE_NAME)
-        val currentAlbumUri = (uiState as? ResultsUiState.Loaded)?.currentAlbumUri
-
-        val uri = when {
-            !spotifyIsInstalled -> Uri.parse(PLAY_STORE_URI).withSpotifyPlayStoreId()
-            currentAlbumUri != null -> Uri.parse(currentAlbumUri)
-            else -> androidAppUriFor(SPOTIFY_PACKAGE_NAME)
-        }
-        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-            putExtra(Intent.EXTRA_REFERRER, androidAppUriFor(context.packageName))
-        }
-        ContextCompat.startActivity(context, intent, null)
-    }
-
-    private fun Uri.withSpotifyPlayStoreId() = buildUpon()
-        .appendQueryParameter(PLAY_STORE_ID_QUERY_PARAM, SPOTIFY_PACKAGE_NAME)
-        .build()
-
     private fun logAlbumDetails(spotifyUri: String) {
         viewModelScope.launch {
             val album = userLibraryRepository.getAlbumFromUri(spotifyUri)
@@ -127,8 +111,45 @@ class ResultsViewModel @Inject constructor(
             Timber.d(albumDetails.trimIndent())
         }
     }
-}
 
-private const val SPOTIFY_PACKAGE_NAME = "com.spotify.music"
-private const val PLAY_STORE_URI = "https://play.google.com/store/apps/details"
-private const val PLAY_STORE_ID_QUERY_PARAM = "id"
+    private fun RecommendationCategory.toUiState() = RecommendationCategoryUiState(
+        albums = albums.map { it.toUiState() },
+        title = when (relevance) {
+            is RecommendationCategory.Relevance.Full -> R.string.full_match_category_title.toTextResource()
+            is RecommendationCategory.Relevance.Partial -> {
+                val adjectiveFormatString = relevance.adjectives.indices.map { "%$it" }.joinToUserFriendlyString()
+                val adjectiveFormatArgs = relevance.adjectives.map { it.toTextResource() }
+
+                val capitalizedGenre = relevance.genre?.capitalizeAllWords()
+
+                val nounFormatArg: TextResource = when (relevance.familiarity) {
+                    Query.Familiarity.CURRENT_FAVORITE -> when {
+                        capitalizedGenre != null -> TextResource.Id(R.string.current_genre_favorites, capitalizedGenre)
+                        else -> TextResource.Id(R.string.current_favorites)
+                    }
+                    Query.Familiarity.RELIABLE_CLASSIC -> when {
+                        capitalizedGenre != null -> TextResource.Id(R.string.reliable_genre_classics, capitalizedGenre)
+                        else -> TextResource.Id(R.string.reliable_classics)
+                    }
+                    Query.Familiarity.UNDERAPPRECIATED_GEM -> when {
+                        capitalizedGenre != null -> TextResource.Id(R.string.underappreciated_genre, capitalizedGenre)
+                        else -> TextResource.Id(R.string.underappreciated_gems)
+                    }
+                    null -> capitalizedGenre?.toTextResource() ?: emptyTextResource
+                }
+                val nounFormatString = "%${adjectiveFormatArgs.lastIndex + 1}"
+
+                TextResource.Composite(
+                    formatArgs = adjectiveFormatArgs + nounFormatArg,
+                    formattedText = buildString {
+                        append(adjectiveFormatString)
+                        if (adjectiveFormatString.isNotEmpty() && nounFormatString.isNotEmpty()) {
+                            append(" ")
+                        }
+                        append(nounFormatString)
+                    }
+                )
+            }
+        }
+    )
+}

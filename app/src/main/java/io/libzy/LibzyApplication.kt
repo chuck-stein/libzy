@@ -7,8 +7,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.DelegatingWorkerFactory
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy.KEEP
 import androidx.work.WorkManager
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.CrashlyticsTree
@@ -17,7 +16,7 @@ import io.libzy.di.DaggerAppComponent
 import io.libzy.repository.SessionRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.work.LibrarySyncWorker
-import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
+import io.libzy.work.enqueuePeriodicLibrarySync
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -109,15 +108,7 @@ class LibzyApplication : Application(), Configuration.Provider {
     private fun scheduleLibrarySync() {
         applicationScope.launch {
             if (sessionRepository.isSpotifyConnected()) {
-                val workRequest =
-                    PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL)
-                        .build()
-
-                workManager.enqueueUniquePeriodicWork(
-                    LibrarySyncWorker.WORK_NAME,
-                    ExistingPeriodicWorkPolicy.KEEP,
-                    workRequest
-                )
+                workManager.enqueuePeriodicLibrarySync(existingWorkPolicy = KEEP)
             }
         }
     }

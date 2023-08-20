@@ -4,11 +4,15 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import io.libzy.ui.common.component.Shimmer
 import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyTheme
 
@@ -34,6 +38,22 @@ fun LibzyContent(content: @Composable () -> Unit) {
             systemUiController.setNavigationBarColor(LibzyColors.ForcedTransparency)
         }
 
-        BackgroundGradient(content)
+        Shimmer(
+            animationDurationMillis = 18_000,
+            shimmerColor = LibzyColors.DeepPurple,
+            backgroundColor = LibzyColors.VeryDeepPurple,
+            modifier = Modifier.drawWithContent {
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black),
+                        startY = size.height * 0.75f,
+                        endY = size.height * 0.9f
+                    )
+                )
+                drawContent()
+            }
+        ) {
+            content()
+        }
     }
 }

@@ -4,15 +4,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
@@ -38,12 +34,11 @@ import androidx.navigation.NavController
 import io.libzy.R
 import io.libzy.ui.LibzyContent
 import io.libzy.ui.common.component.EventHandler
+import io.libzy.ui.common.component.LibrarySyncProgress
 import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.theme.LibzyColors
-import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
-import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import kotlinx.coroutines.launch
 
 /**
@@ -102,7 +97,7 @@ private fun ConnectSpotifyScreen(
 ) {
     LoadedContent(uiState.loading, enableProgressIndicator = false) {
         LibzyScaffold(scaffoldState = scaffoldState, showTopBar = false) {
-            Crossfade(targetState = uiState.showSyncProgress) { showSyncProgress ->
+            Crossfade(targetState = uiState.showSyncProgress, label = "sync progress crossfade") { showSyncProgress ->
                 if (showSyncProgress) {
                     LibrarySyncProgress()
                 } else {
@@ -159,29 +154,6 @@ private fun WelcomePage(onConnectSpotifyClick: () -> Unit) {
                     )
                 }
             )
-        }
-    }
-}
-
-// TODO: replace CircularProgressIndicator with LinearProgressIndicator(progress = X) where X is a float representing approximate progress,
-//  based on number of albums synced (could also show some text indicating this) and number of other network operations completed
-@Composable
-private fun LibrarySyncProgress() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = HORIZONTAL_INSET.dp)
-    ) {
-        Text(
-            stringResource(R.string.syncing_library_heading),
-            style = MaterialTheme.typography.h3,
-            modifier = Modifier.weight(0.45f).padding(top = 64.dp)
-        )
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(0.55f)) {
-            CircularProgressIndicator(Modifier.size(CIRCULAR_PROGRESS_INDICATOR_SIZE.dp))
-            Spacer(Modifier.height(36.dp))
-            Text(stringResource(R.string.syncing_library_subheading), style = MaterialTheme.typography.h6)
         }
     }
 }

@@ -3,11 +3,11 @@ package io.libzy.ui.onboarding
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
-import io.libzy.domain.toAlbumResult
 import io.libzy.repository.SessionRepository
 import io.libzy.repository.UserLibraryRepository
 import io.libzy.spotify.remote.SpotifyAppRemoteService
 import io.libzy.ui.common.StateOnlyViewModel
+import io.libzy.ui.common.component.toUiState
 import io.libzy.ui.onboarding.OnboardingUiEvent.CompleteOnboarding
 import io.libzy.ui.onboarding.OnboardingUiEvent.PlayAlbum
 import kotlinx.coroutines.Dispatchers
@@ -69,10 +69,10 @@ class OnboardingViewModel @Inject constructor(
         val albums = userLibraryRepository.albums.first()
         updateUiState {
             copy(
-                exampleAlbumResult = albums
+                exampleAlbumRecommendation = albums
                     .shuffled()
                     .maxByOrNull { it.familiarity.longTermFavorite }
-                    ?.toAlbumResult()
+                    ?.toUiState(clickEvent = PlayAlbum)
             )
         }
     }
@@ -93,7 +93,7 @@ class OnboardingViewModel @Inject constructor(
     }
 
     private fun playAlbum() {
-        uiState.exampleAlbumResult?.spotifyUri?.let {
+        uiState.exampleAlbumRecommendation?.spotifyUri?.let {
             spotifyAppRemoteService.playAlbum(it, onFailure = {})
         }
     }

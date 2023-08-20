@@ -10,6 +10,7 @@ import io.libzy.ui.connect.ConnectSpotifyViewModel
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
 import io.libzy.ui.findalbum.query.QueryViewModel
 import io.libzy.ui.findalbum.results.ResultsViewModel
+import io.libzy.ui.library.ExpandLibraryViewModel
 import io.libzy.ui.onboarding.OnboardingViewModel
 import io.libzy.ui.settings.SettingsViewModel
 
@@ -53,4 +54,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(OnboardingViewModel::class)
     abstract fun bindOnboardingViewModel(viewModel: OnboardingViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ExpandLibraryViewModel::class)
+    abstract fun bindExpandLibraryViewModel(viewModel: ExpandLibraryViewModel): ViewModel
 }

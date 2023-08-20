@@ -26,6 +26,8 @@
     <string name="cd_navigate_back">Navigate back</string>
     <string name="action_submit">Submit</string>
     <string name="action_cancel">Cancel</string>
+    <string name="error">Error</string>
+    <string name="no_network_connection">No network connection</string>
 
     <!-- Connect Spotify Screen -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
@@ -37,6 +39,25 @@
     <string name="snackbar_library_sync_failed">There was a problem syncing your Spotify library! Please try again.</string>
     <string name="syncing_library_heading">Syncing your Spotify library…</string>
     <string name="syncing_library_subheading">This may take a few minutes, so feel free to come back later</string>
+
+    <!-- Expand Library Screen -->
+    <plurals name="not_enough_albums_header">
+        <item quantity="one">To give you valuable mood-based recommendations, we recommend saving %d more album to your Spotify library</item>
+        <item quantity="other">To give you valuable mood-based recommendations, we recommend saving %d more albums to your Spotify library</item>
+    </plurals>
+    <string name="add_more_albums_header">Keep saving every album you like (or want to check out) to improve your experience.</string>
+    <string name="add_more_albums_hint">Have a physical record collection? A great starting point is to save all your vinyl, CDs, or cassettes on Spotify</string>
+    <string name="finish_saving_albums_button">ALL SET</string>
+    <plurals name="albums_in_your_collection">
+        <item quantity="zero">You have no albums in your collection</item>
+        <item quantity="one">You have %d album in your collection</item>
+        <item quantity="other">You have %d albums in your collection</item>
+    </plurals>
+    <string name="placeholder_album_title">Loading…</string>
+    <string name="placeholder_album_artists">Please wait…</string>
+    <string name="error_fetching_recommendations">There was a problem recommending albums</string>
+    <string name="save_album_cd">save album</string>
+    <string name="remove_album_cd">remove album</string>
 
     <!-- Onboarding Screen -->
     <string name="onboarding_header">Browsing your digital record collection</string>
@@ -107,6 +128,8 @@
     <string name="log_out_dialog_description">Are you sure you want to disconnect your Spotify account? The next time you log in with this account we will need to sync your entire library.</string>
     <string name="last_sync_date_label">Spotify library last synced:</string>
     <string name="sync">SYNC</string>
+    <string name="manage_your_collection">Manage your collection:</string>
+    <string name="add_more_albums">ADD MORE ALBUMS</string>
     <string name="ask_me_about">Ask me about:</string>
     <string name="familiarity_label">Familiarity</string>
     <string name="instrumentalness_label">Instrumental or Vocal</string>
@@ -116,5 +139,6 @@
     <string name="danceability_label">Danceable or Arrhythmic</string>
     <string name="genres_label">Genres</string>
     <string name="unknown">Unknown</string>
+    <string name="cd_spotify_logo">Spotify logo</string>
 
 </resources>

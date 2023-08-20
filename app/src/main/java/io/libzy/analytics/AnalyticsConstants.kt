@@ -2,9 +2,11 @@ package io.libzy.analytics
 
 import io.libzy.domain.Query.Familiarity
 import io.libzy.domain.RecommendationCategory
+import io.libzy.recommendation.RecommendationTechnique
 import io.libzy.ui.connect.ConnectSpotifyScreen
 import io.libzy.ui.findalbum.query.QueryScreen
 import io.libzy.ui.findalbum.results.ResultsScreen
+import io.libzy.ui.library.ExpandLibraryScreen
 import io.libzy.work.LibrarySyncWorker
 
 /**
@@ -88,6 +90,11 @@ object AnalyticsConstants {
          * "find album" flow.
          */
         const val CLICK_START_OVER = "click start over"
+
+        /**
+         * When a new page of recommended albums is populated on [ExpandLibraryScreen]
+         */
+        const val LOAD_LIBRARY_RECOMMENDATIONS = "load library recommendations"
     }
 
     object EventProperties {
@@ -308,6 +315,40 @@ object AnalyticsConstants {
          * (or false if just viewing recommendations) for [Events.SELECT_GENRE] or [Events.DESELECT_GENRE].
          */
         const val CURRENTLY_SEARCHING = "currently searching"
+
+        /**
+         * An [Int] property representing the number of albums recommended for the user's library in
+         * [Events.LOAD_LIBRARY_RECOMMENDATIONS].
+         */
+        const val NUM_RECOMMENDATIONS = "num recommendations"
+
+        /**
+         * A [String] property representing the [RecommendationTechnique] used to recommend albums for
+         * [Events.LOAD_LIBRARY_RECOMMENDATIONS]
+         */
+        const val CHOSEN_TECHNIQUE = "chosen technique"
+
+        /**
+         * A [List] property representing which [RecommendationTechnique]s were exhausted (and thus not used) at the
+         * time of [Events.LOAD_LIBRARY_RECOMMENDATIONS]
+         */
+        const val EXHAUSTED_TECHNIQUES = "exhausted techniques"
+
+        /**
+         * An [Int] property representing the time it took (in milliseconds) to load recommendations for
+         * [Events.LOAD_LIBRARY_RECOMMENDATIONS]
+         */
+        const val LOAD_TIME_MILLIS = "load time millis"
+
+        /**
+         * A [String] property representing which albums were recommended in [Events.LOAD_LIBRARY_RECOMMENDATIONS]
+         */
+        const val RECOMMENDED_ALBUMS = "recommended albums"
+
+        /**
+         * A [Boolean] property representing whether we failed to recommend albums for [Events.LOAD_LIBRARY_RECOMMENDATIONS]
+         */
+        const val ERROR = "error"
     }
     
     object UserProperties {

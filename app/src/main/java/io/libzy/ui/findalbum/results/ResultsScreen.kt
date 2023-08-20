@@ -2,12 +2,10 @@ package io.libzy.ui.findalbum.results
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,16 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ExtendedFloatingActionButton
-import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -50,19 +43,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -71,27 +59,32 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import io.libzy.R
-import io.libzy.domain.AlbumResult
-import io.libzy.domain.RecommendationCategory
-import io.libzy.domain.title
 import io.libzy.ui.Destination
 import io.libzy.ui.LibzyContent
-import io.libzy.ui.common.component.AlbumArtwork
+import io.libzy.ui.common.component.ALBUM_LIST_ITEM_PADDING
+import io.libzy.ui.common.component.AlbumGrid
+import io.libzy.ui.common.component.AlbumListItem
+import io.libzy.ui.common.component.AlbumUiState
 import io.libzy.ui.common.component.AutoResizeText
 import io.libzy.ui.common.component.BackIcon
+import io.libzy.ui.common.component.DEFAULT_ALBUM_LIST_ITEM_WIDTH
 import io.libzy.ui.common.component.EventHandler
 import io.libzy.ui.common.component.Frame
 import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LifecycleObserver
+import io.libzy.ui.common.component.OpenSpotifyButton
 import io.libzy.ui.common.component.StartOverIconButton
-import io.libzy.ui.common.util.fadingEdge
 import io.libzy.ui.common.util.restartFindAlbumFlow
+import io.libzy.ui.common.util.scrollableFade
 import io.libzy.ui.findalbum.FindAlbumFlowViewModel
-import io.libzy.ui.theme.LibzyColors
 import io.libzy.ui.theme.LibzyDimens.CIRCULAR_PROGRESS_INDICATOR_SIZE
+import io.libzy.ui.theme.LibzyDimens.FAB_BOTTOM_PADDING
+import io.libzy.ui.theme.LibzyDimens.FAB_REGION_HEIGHT
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
 import io.libzy.ui.theme.LibzyIconTheme
+import io.libzy.util.resolveText
+import io.libzy.util.toTextResource
 import kotlinx.coroutines.launch
 
 /**
@@ -157,7 +150,6 @@ fun ResultsScreen(
             navController.restartFindAlbumFlow()
             findAlbumFlowViewModel.sendClickStartOverAnalyticsEvent()
         },
-        onOpenSpotifyClick = { viewModel.openSpotify(context) },
         onRateResultsDismissed = viewModel::dismissRateResultsDialog,
         onRateResultsClick = viewModel::openRateResultsDialog,
         onRateResultsSubmit = viewModel::rateResults
@@ -175,7 +167,6 @@ private fun ResultsScreen(
     onBackClick: () -> Unit,
     onAlbumClick: (String) -> Unit,
     onStartOverClick: () -> Unit,
-    onOpenSpotifyClick: () -> Unit,
     onRateResultsDismissed: () -> Unit,
     onRateResultsClick: () -> Unit,
     onRateResultsSubmit: (Int, String?) -> Unit
@@ -205,19 +196,9 @@ private fun ResultsScreen(
         },
         floatingActionButton = {
             if (uiState is ResultsUiState.Loaded) {
-                ExtendedFloatingActionButton(
-                    text = { Text(stringResource(R.string.open_spotify).uppercase()) },
-                    onClick = { onOpenSpotifyClick() },
-                    icon = {
-                        Icon(
-                            painterResource(R.drawable.ic_spotify_black),
-                            contentDescription = null
-                        )
-                    }
-                )
+                OpenSpotifyButton(uiState.currentAlbumUri)
             }
-        },
-        floatingActionButtonPosition = FabPosition.Center
+        }
     ) {
 
         when (uiState) {
@@ -251,10 +232,19 @@ private fun ResultsScreen(
                         }
                         1 -> {
                             // TODO: if the one category is a partial match, indicate that somehow (since we won't have a category title)
-                            AlbumResultsGrid(
-                                uiState.recommendationCategories.first().albumResults,
-                                onAlbumClick,
-                                Modifier.resultsGradient()
+                            AlbumGrid(
+                                albums = uiState.recommendationCategories.first().albums
+                                    .map { it.copy(clickEvent = it.spotifyUri) }, // TODO: assign proper events in VM
+                                modifier = Modifier.resultsGradient(),
+                                contentPadding = PaddingValues(
+                                    top = RECOMMENDATION_LIST_TOP_PADDING.dp,
+                                    bottom = FAB_REGION_HEIGHT.dp + RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp
+                                ),
+                                onUiEvent = {
+                                    if (it is String) {
+                                        onAlbumClick(it)
+                                    }
+                                }
                             )
                         }
                         else -> {
@@ -281,119 +271,48 @@ private fun ResultsScreen(
     }
 }
 
-private fun Modifier.resultsGradient() = this
-    .fadingEdge {
-        // gradient to fade out top of recommendation list
-        Brush.verticalGradient(
-            colors = listOf(Color.Transparent, Color.Black),
-            endY = RECOMMENDATION_LIST_TOP_PADDING.dp.toPx(),
-        )
-    }
-    .fadingEdge {
-        // gradient to fade out bottom of recommendation list
-        Brush.verticalGradient(
-            colors = listOf(
-                Color.Black,
-                Color.Black.copy(alpha = 0.4f),
-                Color.Black.copy(alpha = 0.1f),
-                Color.Transparent
-            ),
-            startY = size.height - RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT.dp.toPx()
-        )
-    }
+private fun Modifier.resultsGradient() = scrollableFade(
+    topFadeHeight = RECOMMENDATION_LIST_TOP_PADDING.dp,
+    bottomFadeHeight = RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT.dp
+)
 
 @Composable
 private fun AlbumResultsCategories(
-    recommendationCategories: List<RecommendationCategory>,
+    recommendationCategories: List<RecommendationCategoryUiState>,
     onAlbumClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
-            top = RECOMMENDATION_LIST_TOP_PADDING.dp, bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp
+            top = RECOMMENDATION_LIST_TOP_PADDING.dp, bottom = FAB_REGION_HEIGHT.dp
         )
     ) {
         items(recommendationCategories) { category ->
             Column(modifier = Modifier.padding(bottom = RECOMMENDATION_CATEGORY_BOTTOM_PADDING.dp)) {
                 Text(
-                    category.title(LocalContext.current.resources),
+                    text = category.title.resolveText(),
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.ExtraBold,
                     style = MaterialTheme.typography.h5,
                     modifier = Modifier.padding(horizontal = HORIZONTAL_INSET.dp)
                 )
-                LazyRow(contentPadding = PaddingValues(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp)) {
-                    items(category.albumResults.size) { albumIndex ->
-                        val albumResult = category.albumResults[albumIndex]
-                        AlbumResultListItem(
-                            albumResult = albumResult,
-                            onAlbumClick = onAlbumClick,
-                            modifier = Modifier.width(DEFAULT_ALBUM_ART_WIDTH.dp + ALBUM_RESULT_PADDING.dp * 2),
-                            albumArtModifier = { Modifier.size(DEFAULT_ALBUM_ART_WIDTH.dp) }
+                LazyRow(contentPadding = PaddingValues(horizontal = (HORIZONTAL_INSET - ALBUM_LIST_ITEM_PADDING).dp)) {
+                    items(category.albums.size) { albumIndex ->
+                        val albumResult = category.albums[albumIndex]
+                        AlbumListItem(
+                            album = albumResult.copy(clickEvent = albumResult.spotifyUri), // TODO: set events from VM
+                            modifier = Modifier.width(DEFAULT_ALBUM_LIST_ITEM_WIDTH.dp),
+                            onAlbumClick = {
+                                if (it is String) {
+                                    onAlbumClick(it)
+                                }
+                            }
                         )
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun AlbumResultsGrid(
-    albumResults: List<AlbumResult>,
-    onAlbumClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val gridWidth = LocalConfiguration.current.screenWidthDp - (HORIZONTAL_INSET * 2) + (ALBUM_RESULT_PADDING * 2)
-    val numColumns = maxOf((gridWidth / MIN_ALBUM_RESULT_WIDTH), 1)
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(numColumns),
-        modifier = modifier.padding(horizontal = (HORIZONTAL_INSET - ALBUM_RESULT_PADDING).dp),
-        contentPadding = PaddingValues(bottom = RECOMMENDATION_LIST_BOTTOM_PADDING.dp)
-    ) {
-        items(albumResults) { albumResult ->
-            val albumResultWidth = (gridWidth / numColumns).dp
-            AlbumResultListItem(
-                albumResult = albumResult,
-                onAlbumClick = onAlbumClick,
-                modifier = Modifier.width(albumResultWidth),
-                albumArtModifier = { Modifier.size(albumResultWidth - ALBUM_RESULT_PADDING.dp * 2) }
-            )
-        }
-    }
-}
-
-@Composable
-fun AlbumResultListItem(
-    albumResult: AlbumResult,
-    onAlbumClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    maxLinesPerLabel: Int = 3,
-    albumArtModifier: ColumnScope.() -> Modifier = { Modifier }
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .clickable { onAlbumClick(albumResult.spotifyUri) }
-            .padding(ALBUM_RESULT_PADDING.dp)
-    ) {
-        AlbumArtwork(albumResult.artworkUrl, albumArtModifier())
-        Text(
-            text = albumResult.title,
-            style = MaterialTheme.typography.body2,
-            maxLines = maxLinesPerLabel,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 6.dp)
-        )
-        Text(
-            text = albumResult.artists,
-            style = MaterialTheme.typography.body2,
-            maxLines = maxLinesPerLabel,
-            overflow = TextOverflow.Ellipsis,
-            color = LibzyColors.Gray
-        )
     }
 }
 
@@ -493,31 +412,24 @@ private fun RatingBar(rating: Int?, onStarPress: (Int) -> Unit, modifier: Modifi
     }
 }
 
+private val previewAlbum = AlbumUiState(
+    title = "Album Title".toTextResource(),
+    artists = "Album Artist".toTextResource(),
+    artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
+    spotifyId = ""
+)
+
 private val previewRecommendationCategories = List(4) { index ->
-    RecommendationCategory(
-        relevance = RecommendationCategory.Relevance.Partial(genre = "Genre $index"),
-        albumResults = List(5) {
-            AlbumResult(
-                "Album Title",
-                "Album Artist",
-                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
-                spotifyUri = ""
-            )
-        }
+    RecommendationCategoryUiState(
+        title = "Genre $index".toTextResource(),
+        albums = List(5) { previewAlbum }
     )
 }
 
 private val previewRecommendationsOneCategory = listOf(
-    RecommendationCategory(
-        relevance = RecommendationCategory.Relevance.Full,
-        albumResults = List(20) {
-            AlbumResult(
-                "Album Title",
-                "Album Artist",
-                artworkUrl = "https://i.scdn.co/image/8b662d81966a0ec40dc10563807696a8479cd48b0",
-                spotifyUri = ""
-            )
-        }
+    RecommendationCategoryUiState(
+        title = "Best Overall Match".toTextResource(),
+        albums = List(20) { previewAlbum }
     )
 )
 
@@ -531,7 +443,6 @@ private fun ResultsScreenPreview() {
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onOpenSpotifyClick = {},
             onRateResultsDismissed = {},
             onRateResultsClick = {},
             onRateResultsSubmit = { _, _ -> }
@@ -549,7 +460,6 @@ private fun ResultsScreenOneCategoryPixel4XlPreview() {
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onOpenSpotifyClick = {},
             onRateResultsDismissed = {},
             onRateResultsClick = {},
             onRateResultsSubmit = { _, _ -> }
@@ -567,7 +477,6 @@ private fun ResultsScreenOneCategoryPixelCPreview() {
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onOpenSpotifyClick = {},
             onRateResultsDismissed = {},
             onRateResultsClick = {},
             onRateResultsSubmit = { _, _ -> }
@@ -585,7 +494,6 @@ private fun ResultsScreenOneCategoryPixel3APreview() {
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onOpenSpotifyClick = {},
             onRateResultsDismissed = {},
             onRateResultsClick = {},
             onRateResultsSubmit = { _, _ -> }
@@ -603,7 +511,6 @@ private fun ResultsScreenOneCategoryNexus5Preview() {
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onOpenSpotifyClick = {},
             onRateResultsDismissed = {},
             onRateResultsClick = {},
             onRateResultsSubmit = { _, _ -> }
@@ -621,7 +528,6 @@ private fun NoResultsScreenPreview() {
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onOpenSpotifyClick = {},
             onRateResultsDismissed = {},
             onRateResultsClick = {},
             onRateResultsSubmit = { _, _ -> }
@@ -642,7 +548,6 @@ private fun ResultsScreenFeedbackDialogPreview() {
             onBackClick = {},
             onAlbumClick = {},
             onStartOverClick = {},
-            onOpenSpotifyClick = {},
             onRateResultsDismissed = {},
             onRateResultsClick = {},
             onRateResultsSubmit = { _, _ -> }
@@ -650,16 +555,9 @@ private fun ResultsScreenFeedbackDialogPreview() {
     }
 }
 
-// all in DP
-const val FAB_HEIGHT = 48
-const val FAB_BOTTOM_PADDING = 16
-const val RECOMMENDATION_CATEGORY_BOTTOM_PADDING = 28
-const val RECOMMENDATION_LIST_TOP_PADDING = 16
-const val RECOMMENDATION_LIST_BOTTOM_PADDING = FAB_HEIGHT + FAB_BOTTOM_PADDING
-const val RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT =
-    RECOMMENDATION_LIST_BOTTOM_PADDING + RECOMMENDATION_CATEGORY_BOTTOM_PADDING
-const val ALBUM_RESULT_PADDING = 10
-const val MIN_ALBUM_RESULT_WIDTH = 150
-const val DEFAULT_ALBUM_ART_WIDTH = 150
-const val FEEDBACK_DIALOG_CONTENT_VERTICAL_PADDING = 12
-const val FEEDBACK_TEXT_FIELD_HEIGHT = 72
+private const val RECOMMENDATION_CATEGORY_BOTTOM_PADDING = 28
+private const val RECOMMENDATION_LIST_TOP_PADDING = 16
+private const val RECOMMENDATION_LIST_BOTTOM_GRADIENT_HEIGHT =
+    FAB_REGION_HEIGHT + RECOMMENDATION_CATEGORY_BOTTOM_PADDING
+private const val FEEDBACK_DIALOG_CONTENT_VERTICAL_PADDING = 12
+private const val FEEDBACK_TEXT_FIELD_HEIGHT = 72

@@ -11,11 +11,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface AlbumDao : BaseDao<DbAlbum> {
 
+    @Query("DELETE FROM album WHERE id = :id")
+    suspend fun delete(id: String)
+
     @Query("DELETE FROM album")
     fun deleteAll()
 
     @Transaction
-    fun replaceAll(albums: Collection<DbAlbum>) {
+    suspend fun replaceAll(albums: Collection<DbAlbum>) {
         deleteAll()
         insertAll(albums)
     }

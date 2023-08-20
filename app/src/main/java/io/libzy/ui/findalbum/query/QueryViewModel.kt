@@ -11,7 +11,7 @@ import io.libzy.domain.Query.Parameter.GENRES
 import io.libzy.domain.Query.Parameter.INSTRUMENTALNESS
 import io.libzy.domain.Query.Parameter.VALENCE
 import io.libzy.persistence.database.tuple.LibraryAlbum
-import io.libzy.recommendation.RecommendationService
+import io.libzy.recommendation.ListeningRecommendationService
 import io.libzy.repository.SessionRepository
 import io.libzy.repository.SettingsRepository
 import io.libzy.repository.UserLibraryRepository
@@ -44,7 +44,7 @@ class QueryViewModel @Inject constructor(
     userLibraryRepository: UserLibraryRepository,
     private val settingsRepository: SettingsRepository,
     private val sessionRepository: SessionRepository,
-    private val recommendationService: RecommendationService,
+    private val listeningRecommendationService: ListeningRecommendationService,
     private val analyticsDispatcher: AnalyticsDispatcher
 ) : LibzyViewModel<QueryUiState, QueryUiEvent>() {
 
@@ -87,7 +87,7 @@ class QueryViewModel @Inject constructor(
         uiStateFlow
             .map { it.query.copy(genres = null) }
             .combine(libraryAlbumsFlow) { query, libraryAlbums ->
-                recommendationService.recommendGenres(query, libraryAlbums)
+                listeningRecommendationService.recommendGenres(query, libraryAlbums)
             }.collect { recommendedGenres ->
                 updateUiState {
                     copy(genreOptions = recommendedGenres)

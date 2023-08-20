@@ -1,11 +1,11 @@
 package io.libzy.ui.onboarding
 
-import io.libzy.domain.AlbumResult
+import io.libzy.ui.common.component.AlbumUiState
 
 data class OnboardingUiState(
     val randomAlbumArtUrls: List<String> = emptyList(),
     val albumArtUrlsForExampleRecommendations: List<List<String>> = emptyList(),
-    val exampleAlbumResult: AlbumResult? = null,
+    val exampleAlbumRecommendation: AlbumUiState? = null,
     val onboardingCompleted: Boolean = false,
     val onboardingMandatory: Boolean = true
 )

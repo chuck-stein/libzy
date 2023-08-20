@@ -6,8 +6,11 @@ import android.content.pm.ServiceInfo
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.ListenableWorker
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.adamratzman.spotify.SpotifyException
@@ -22,11 +25,13 @@ import io.libzy.ui.Destination.ConnectSpotify
 import io.libzy.ui.Destination.Settings
 import io.libzy.util.appInForeground
 import io.libzy.util.createNotificationTapAction
+import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
-import kotlin.time.TimedValue
-import kotlin.time.measureTimedValue
+import kotlin.time.measureTime
 import kotlin.time.toJavaDuration
 
 class LibrarySyncWorker(
@@ -60,8 +65,8 @@ class LibrarySyncWorker(
         }
         beforeLibrarySync()
 
-        val numAlbumsSynced = try {
-            measureTimedValue {
+        val librarySyncTime = try {
+            measureTime {
                 userLibraryRepository.syncLibraryData()
             }
         } catch (e: SpotifyException.BadRequestException) {
@@ -79,7 +84,7 @@ class LibrarySyncWorker(
             return fail(e)
         }
 
-        afterLibrarySync(numAlbumsSynced)
+        afterLibrarySync(librarySyncTime)
         return Result.success()
     }
 
@@ -89,7 +94,7 @@ class LibrarySyncWorker(
         setForeground(createInitialSyncForegroundInfo(notificationDeepLinkUri))
     }
 
-    private suspend fun afterLibrarySync(numAlbumsSynced: TimedValue<Int>) {
+    private suspend fun afterLibrarySync(librarySyncTime: Duration) {
         if (isInitialSync) {
             sessionRepository.setSpotifyConnected(true)
             notifyLibrarySyncEnded(
@@ -103,8 +108,8 @@ class LibrarySyncWorker(
         analyticsDispatcher.sendSyncLibraryDataEvent(
             LibrarySyncResult.SUCCESS,
             isInitialSync,
-            numAlbumsSynced.value,
-            numAlbumsSynced.duration.toDouble(DurationUnit.SECONDS)
+            userLibraryRepository.albums.first().size,
+            librarySyncTime.toDouble(DurationUnit.SECONDS)
         )
     }
 
@@ -191,3 +196,14 @@ class LibrarySyncWorker(
         }
     }
 }
+
+fun WorkManager.enqueuePeriodicLibrarySync(
+    existingWorkPolicy: ExistingPeriodicWorkPolicy,
+    withInitialDelay: Boolean = false
+) = enqueueUniquePeriodicWork(
+    LibrarySyncWorker.WORK_NAME,
+    existingWorkPolicy,
+    PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL)
+        .setInitialDelay(if (withInitialDelay) LIBRARY_SYNC_INTERVAL else java.time.Duration.ZERO)
+        .build()
+)

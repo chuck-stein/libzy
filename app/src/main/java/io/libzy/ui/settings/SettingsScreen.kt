@@ -9,20 +9,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,20 +41,23 @@ import io.libzy.R
 import io.libzy.domain.Query
 import io.libzy.ui.Destination
 import io.libzy.ui.common.component.BackIcon
-import io.libzy.ui.common.component.LibzyButton
 import io.libzy.ui.common.component.LibzyIcon
 import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.common.util.hideIf
+import io.libzy.ui.common.util.scrollableFade
 import io.libzy.ui.common.util.surfaceBackground
 import io.libzy.ui.settings.SettingsUiEvent.CloseLogOutConfirmation
+import io.libzy.ui.settings.SettingsUiEvent.ExpandLibrary
 import io.libzy.ui.settings.SettingsUiEvent.LogOut
 import io.libzy.ui.settings.SettingsUiEvent.OpenLogOutConfirmation
 import io.libzy.ui.settings.SettingsUiEvent.OpenTutorial
 import io.libzy.ui.settings.SettingsUiEvent.ReturnToQuery
 import io.libzy.ui.settings.SettingsUiEvent.SyncLibrary
 import io.libzy.ui.settings.SettingsUiEvent.ToggleQueryParam
+import io.libzy.ui.theme.LibzyDimens.FAB_REGION_HEIGHT
 import io.libzy.ui.theme.LibzyDimens.HORIZONTAL_INSET
+import io.libzy.ui.theme.LibzyIconTheme
 import io.libzy.util.TextResource
 import io.libzy.util.resolveText
 
@@ -76,6 +80,7 @@ fun SettingsScreen(navController: NavController, viewModelFactory: ViewModelProv
         when (uiEvent) {
             is ReturnToQuery -> navController.popBackStack()
             is OpenTutorial -> navController.navigate(Destination.Onboarding.route)
+            is ExpandLibrary -> navController.navigate(Destination.ExpandLibrary.route)
             is SyncLibrary -> viewModel.syncLibrary()
             is OpenLogOutConfirmation -> viewModel.openLogOutConfirmation()
             is CloseLogOutConfirmation -> viewModel.closeLogOutConfirmation()
@@ -98,20 +103,47 @@ private fun SettingsScreen(uiState: SettingsUiState, onUiEvent: (SettingsUiEvent
                     LibzyIcon(painterResource(R.drawable.ic_help), contentDescription = stringResource(R.string.tutorial))
                 }
             },
-            title = { Text(stringResource(R.string.settings)) }
+            title = { Text(stringResource(R.string.settings)) },
+            floatingActionButton = {
+                LogOutButton(onUiEvent)
+            }
         ) {
             Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .scrollableFade(
+                        topFadeHeight = 16.dp,
+                        bottomFadeHeight = FAB_REGION_HEIGHT.dp
+                    )
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(Modifier.height(16.dp))
                 AskMeAboutSection(uiState.enabledQueryParams, onUiEvent)
                 LibrarySyncSection(uiState.lastLibrarySyncDate, uiState.syncingLibrary, onUiEvent)
-                Spacer(Modifier.weight(1f))
-                LogOutSection(uiState.logOutState, onUiEvent)
+                YourCollectionSection(onUiEvent)
                 AppVersionSection(uiState.appVersion)
+                Spacer(Modifier.height(FAB_REGION_HEIGHT.dp + 16.dp))
+            }
+            if (uiState.logOutState == LogOutState.Confirmation) {
+                LogOutConfirmationDialog(onUiEvent)
             }
         }
     }
+}
+
+@Composable
+private fun LogOutButton(onUiEvent: (SettingsUiEvent) -> Unit) {
+    ExtendedFloatingActionButton(
+        text = { Text(stringResource(R.string.log_out).uppercase()) },
+        onClick = { onUiEvent(OpenLogOutConfirmation) },
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_spotify_black),
+                contentDescription = stringResource(R.string.cd_spotify_logo)
+            )
+        }
+    )
 }
 
 @Composable
@@ -149,6 +181,16 @@ private fun LibrarySyncSection(
 }
 
 @Composable
+private fun YourCollectionSection(onUiEvent: (SettingsUiEvent) -> Unit) {
+    SettingsSection(headerTextResId = R.string.manage_your_collection) {
+        TextButton(onClick = { onUiEvent(ExpandLibrary) }) {
+            Icon(LibzyIconTheme.Add, contentDescription = null, Modifier.padding(end = 8.dp))
+            Text(stringResource(R.string.add_more_albums))
+        }
+    }
+}
+
+@Composable
 private fun LibrarySyncButton(syncingLibrary: Boolean, onUiEvent: (SettingsUiEvent) -> Unit) {
     Box(contentAlignment = Alignment.Center) {
         TextButton(
@@ -158,44 +200,30 @@ private fun LibrarySyncButton(syncingLibrary: Boolean, onUiEvent: (SettingsUiEve
         ) {
             Text(stringResource(R.string.sync), maxLines = 1)
         }
-        CircularProgressIndicator(Modifier.size(24.dp).hideIf(!syncingLibrary))
+        CircularProgressIndicator(
+            Modifier
+                .size(24.dp)
+                .hideIf(!syncingLibrary))
     }
 }
 
 @Composable
-private fun LogOutSection(logOutState: LogOutState, onUiEvent: (SettingsUiEvent) -> Unit) {
-    LibzyButton(
-        textResId = R.string.log_out,
-        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
-        shape = MaterialTheme.shapes.small.copy(CornerSize(percent = 50)),
-        startContent = {
-            Icon(
-                painterResource(R.drawable.ic_spotify_black),
-                contentDescription = null
-            )
+private fun LogOutConfirmationDialog(onUiEvent: (SettingsUiEvent) -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onUiEvent(CloseLogOutConfirmation) },
+        dismissButton = {
+            TextButton(onClick = { onUiEvent(CloseLogOutConfirmation) }) {
+                Text(stringResource(R.string.action_cancel).uppercase())
+            }
         },
-        modifier = Modifier.padding(vertical = 16.dp)
-    ) {
-        onUiEvent(OpenLogOutConfirmation)
-    }
-
-    if (logOutState == LogOutState.Confirmation) {
-        AlertDialog(
-            onDismissRequest = { onUiEvent(CloseLogOutConfirmation) },
-            dismissButton = {
-                TextButton(onClick = { onUiEvent(CloseLogOutConfirmation) }) {
-                    Text(stringResource(R.string.action_cancel).uppercase())
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { onUiEvent(LogOut) }) {
-                    Text(stringResource(R.string.log_out).uppercase())
-                }
-            },
-            title = { Text(stringResource(R.string.log_out)) },
-            text = { Text(stringResource(R.string.log_out_dialog_description), textAlign = TextAlign.Start) }
-        )
-    }
+        confirmButton = {
+            TextButton(onClick = { onUiEvent(LogOut) }) {
+                Text(stringResource(R.string.log_out).uppercase())
+            }
+        },
+        title = { Text(stringResource(R.string.log_out)) },
+        text = { Text(stringResource(R.string.log_out_dialog_description), textAlign = TextAlign.Start) }
+    )
 }
 
 @Composable
@@ -203,7 +231,7 @@ private fun AppVersionSection(appVersion: TextResource) {
     Text(
         text = appVersion.resolveText(),
         style = MaterialTheme.typography.caption,
-        modifier = Modifier.padding(bottom = 16.dp)
+        modifier = Modifier.padding(vertical = 16.dp)
     )
 }
 
@@ -214,7 +242,7 @@ private fun SettingsSection(
 ) {
     Box(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .surfaceBackground()
             .padding(16.dp)
             .fillMaxWidth()
@@ -222,7 +250,9 @@ private fun SettingsSection(
         Column {
             Text(
                 text = stringResource(headerTextResId),
-                modifier = Modifier.padding(bottom = 8.dp).padding(horizontal = HORIZONTAL_INSET.dp),
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .padding(horizontal = HORIZONTAL_INSET.dp),
                 style = MaterialTheme.typography.h6.copy(textAlign = TextAlign.Start),
                 textAlign = TextAlign.Start
             )

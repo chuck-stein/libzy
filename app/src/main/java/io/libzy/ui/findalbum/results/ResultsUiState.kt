@@ -1,7 +1,7 @@
 package io.libzy.ui.findalbum.results
 
-import io.libzy.domain.RecommendationCategory
-
+import io.libzy.ui.common.component.AlbumUiState
+import io.libzy.util.TextResource
 
 sealed interface ResultsUiState {
 
@@ -13,8 +13,13 @@ sealed interface ResultsUiState {
      * @property currentAlbumUri The Spotify URI of the album currently playing, if any
      */
     data class Loaded(
-        val recommendationCategories: List<RecommendationCategory>,
+        val recommendationCategories: List<RecommendationCategoryUiState>,
         val submittingFeedback: Boolean = false,
         val currentAlbumUri: String? = null
     ) : ResultsUiState
 }
+
+data class RecommendationCategoryUiState(
+    val title: TextResource,
+    val albums: List<AlbumUiState>
+)

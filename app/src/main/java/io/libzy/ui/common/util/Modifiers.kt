@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 fun Modifier.hideIf(shouldHide: Boolean) = alpha(if (shouldHide) 0f else 1f)
@@ -36,5 +37,29 @@ fun Modifier.fadingMarquee() = fadingEdge {
     )
 }.basicMarquee(iterations = Int.MAX_VALUE, delayMillis = 0, spacing = { _, _ -> 0 })
 
+fun Modifier.scrollableFade(topFadeHeight: Dp, bottomFadeHeight: Dp) = this
+    .fadingEdge {
+        // gradient to fade out top of list
+        Brush.verticalGradient(
+            colors = listOf(Color.Transparent, Color.Black),
+            endY = topFadeHeight.toPx(),
+        )
+    }
+    .fadingEdge {
+        // gradient to fade out bottom of list
+        Brush.verticalGradient(
+            colors = listOf(
+                Color.Black,
+                Color.Black.copy(alpha = 0.4f),
+                Color.Black.copy(alpha = 0.1f),
+                Color.Transparent
+            ),
+            startY = size.height - bottomFadeHeight.toPx()
+        )
+    }
+
 @Composable
-fun Modifier.surfaceBackground() = background(MaterialTheme.colors.surface.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
+fun Modifier.surfaceBackground(alpha: Float = 0.7f) = background(
+    color = MaterialTheme.colors.surface.copy(alpha = alpha),
+    shape = RoundedCornerShape(8.dp)
+)

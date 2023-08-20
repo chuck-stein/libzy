@@ -3,8 +3,7 @@ package io.libzy.ui.settings
 import android.icu.text.DateFormat
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import io.libzy.BuildConfig
@@ -18,7 +17,7 @@ import io.libzy.ui.common.StateOnlyViewModel
 import io.libzy.util.flatten
 import io.libzy.util.toTextResource
 import io.libzy.work.LibrarySyncWorker
-import io.libzy.work.LibrarySyncWorker.Companion.LIBRARY_SYNC_INTERVAL
+import io.libzy.work.enqueuePeriodicLibrarySync
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -118,12 +117,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun syncLibrary() {
-        val workRequest = PeriodicWorkRequestBuilder<LibrarySyncWorker>(LIBRARY_SYNC_INTERVAL).build()
-        workManager.enqueueUniquePeriodicWork(
-            LibrarySyncWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-            workRequest
-        )
+        workManager.enqueuePeriodicLibrarySync(existingWorkPolicy = CANCEL_AND_REENQUEUE)
     }
 
     fun openLogOutConfirmation() {
