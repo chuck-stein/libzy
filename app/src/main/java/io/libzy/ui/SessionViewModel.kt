@@ -2,6 +2,8 @@ package io.libzy.ui
 
 import android.content.Context
 import android.net.ConnectivityManager
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE
 import androidx.work.WorkManager
@@ -33,7 +35,7 @@ class SessionViewModel @Inject constructor(
     private val workManager: WorkManager,
     private val connectivityManager: ConnectivityManager,
     appContext: Context
-) : LibzyViewModel<SessionUiState, SessionUiEvent>(), SpotifyAuthClientProxy {
+) : LibzyViewModel<SessionUiState, SessionUiEvent>(), SpotifyAuthClientProxy, DefaultLifecycleObserver {
 
     override val initialUiState = SessionUiState(
         isSpotifyConnected = sessionRepository.isSpotifyConnected(),
@@ -59,12 +61,14 @@ class SessionViewModel @Inject constructor(
     }
 
     init {
-        spotifyAuthDispatcher.authClientProxy = this
         updateSessionState()
     }
 
-    override fun onCleared() {
-        super.onCleared()
+    override fun onStart(owner: LifecycleOwner) {
+        spotifyAuthDispatcher.authClientProxy = this
+    }
+
+    override fun onStop(owner: LifecycleOwner) {
         spotifyAuthDispatcher.authClientProxy = null
     }
 

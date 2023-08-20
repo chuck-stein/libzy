@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         (applicationContext as LibzyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(viewModel)
         collectSpotifyAuthRequests()
 
         setContent {
@@ -61,6 +62,11 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.onNewSpotifyAuthAvailable()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycle.removeObserver(viewModel)
     }
 
     private fun collectSpotifyAuthRequests() {
