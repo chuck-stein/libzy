@@ -23,7 +23,6 @@ import io.libzy.util.connectedToNetwork
 import io.libzy.work.enqueuePeriodicLibrarySync
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 class SessionViewModel @Inject constructor(
@@ -128,8 +127,8 @@ class SessionViewModel @Inject constructor(
             AuthorizationResponse.Type.TOKEN -> handleSpotifyAuthSuccess(
                 SpotifyAccessToken(response.accessToken, response.expiresIn)
             )
-            AuthorizationResponse.Type.ERROR -> handleSpotifyAuthFailure(response.error)
-            else -> handleSpotifyAuthFailure("Authorization was prematurely cancelled")
+            AuthorizationResponse.Type.ERROR -> spotifyAuthCallback?.onFailure(response.error)
+            else -> spotifyAuthCallback?.onFailure("Authorization was prematurely cancelled")
         }
         spotifyAuthCallback = null
     }
@@ -141,11 +140,6 @@ class SessionViewModel @Inject constructor(
             loadSpotifyProfileInfo()
             analyticsDispatcher.sendAuthorizeSpotifyConnectionEvent()
         }
-    }
-
-    private fun handleSpotifyAuthFailure(reason: String) {
-        Timber.e("Error performing Spotify authorization: $reason")
-        spotifyAuthCallback?.onFailure(reason)
     }
 
     private fun loadSpotifyProfileInfo() {
