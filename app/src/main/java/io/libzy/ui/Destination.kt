@@ -8,17 +8,36 @@ import androidx.navigation.navDeepLink
 /**
  * Represents a screen in the navigation graph, with a corresponding route, arguments, and deep links.
  */
-sealed class Destination {
-    abstract val route: String
-    open val arguments: List<NamedNavArgument> = emptyList()
+sealed class Destination(
+    val name: String,
+    private val requiredArguments: List<NamedNavArgument> = emptyList(),
+    private val optionalArguments: List<NamedNavArgument> = emptyList(),
+    val requiresSpotifyConnection: Boolean = true,
+    val requiresEnoughAlbumsSaved: Boolean = true,
+    val requiresOnboarding: Boolean = true
+) {
+    val arguments = requiredArguments + optionalArguments
     open val deepLinks: List<NavDeepLink> = emptyList()
-    open val requiresSpotifyConnection = true
-    open val requiresEnoughAlbumsSaved = true
-    open val requiresOnboarding = true
+
+    /** Defines the route for identifying this destination and the arguments that it accepts. */
+    val route = buildString {
+        append(name)
+        requiredArguments.forEach { arg ->
+            append("/{${arg.name}}")
+        }
+        optionalArguments.forEachIndexed { index, arg ->
+            if (index == 0) {
+                append("?")
+            } else {
+                append("&")
+            }
+            append("${arg.name}={${arg.name}}")
+        }
+    }
 
     protected fun createDeepLinkUri(): Uri = Uri.Builder()
         .scheme("libzy")
-        .authority(route)
+        .authority(name)
         .build()
 
     protected fun createDeepLinksFrom(vararg deepLinkUris: Uri) = deepLinkUris.map {
@@ -27,39 +46,39 @@ sealed class Destination {
         }
     }
 
-    object NavHost : Destination() {
-        override val route = "host"
-    }
-    object ConnectSpotify : Destination() {
-        override val route = "connect"
-        val deepLinkUri = createDeepLinkUri()
-        override val deepLinks = createDeepLinksFrom(deepLinkUri)
-        override val requiresSpotifyConnection = false
-        override val requiresEnoughAlbumsSaved = false
-        override val requiresOnboarding = false
-    }
-    object ExpandLibrary : Destination() {
-        override val route = "expandLibrary"
-        override val requiresEnoughAlbumsSaved = false
-        override val requiresOnboarding = false
-    }
-    object Onboarding : Destination() {
-        override val route = "onboarding"
-        override val requiresOnboarding = false
-    }
-    object FindAlbumFlow : Destination() {
-        override val route = "findAlbum"
-    }
-    object Query : Destination() {
-        override val route = "query"
+    object NavHost : Destination(name = "host")
+
+    object ConnectSpotify : Destination(
+        name = "connect",
+        requiresSpotifyConnection = false,
+        requiresEnoughAlbumsSaved = false,
+        requiresOnboarding = false
+    ) {
         val deepLinkUri = createDeepLinkUri()
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
-    object Results : Destination() {
-        override val route = "results"
+
+    object ExpandLibrary : Destination(
+        name = "expandLibrary",
+        requiresEnoughAlbumsSaved = false,
+        requiresOnboarding = false
+    )
+
+    object Onboarding : Destination(
+        name = "onboarding",
+        requiresOnboarding = false
+    )
+
+    object FindAlbumFlow : Destination(name = "findAlbum")
+
+    object Query : Destination(name = "query") {
+        val deepLinkUri = createDeepLinkUri()
+        override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
-    object Settings : Destination() {
-        override val route = "settings"
+
+    object Results : Destination(name = "results")
+
+    object Settings : Destination(name = "settings") {
         val deepLinkUri = createDeepLinkUri()
         override val deepLinks = createDeepLinksFrom(deepLinkUri)
     }
