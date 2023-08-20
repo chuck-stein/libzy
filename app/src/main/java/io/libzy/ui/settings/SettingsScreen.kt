@@ -38,6 +38,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
+import io.libzy.analytics.AnalyticsConstants.Events.VIEW_SETTINGS_SCREEN
+import io.libzy.analytics.LocalAnalytics
 import io.libzy.domain.Query
 import io.libzy.ui.Destination
 import io.libzy.ui.common.component.BackIcon
@@ -74,6 +76,11 @@ fun SettingsScreen(navController: NavController, viewModelFactory: ViewModelProv
                 }
             }
         }
+    }
+
+    val analytics = LocalAnalytics.current
+    LaunchedEffect(Unit) {
+        analytics.sendEvent(eventName = VIEW_SETTINGS_SCREEN)
     }
 
     SettingsScreen(uiState) { uiEvent ->

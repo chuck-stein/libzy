@@ -8,6 +8,7 @@ import io.libzy.ui.findalbum.query.QueryScreen
 import io.libzy.ui.findalbum.results.ResultsScreen
 import io.libzy.ui.library.ExpandLibraryScreen
 import io.libzy.ui.onboarding.OnboardingScreen
+import io.libzy.ui.settings.SettingsScreen
 import io.libzy.work.LibrarySyncWorker
 
 /**
@@ -106,6 +107,11 @@ object AnalyticsConstants {
          * When the user views one of the several onboarding steps in [OnboardingScreen]
          */
         const val VIEW_ONBOARDING_STEP = "view onboarding step"
+
+        /**
+         * When the user views [SettingsScreen]
+         */
+        const val VIEW_SETTINGS_SCREEN = "view settings screen"
     }
 
     object EventProperties {
