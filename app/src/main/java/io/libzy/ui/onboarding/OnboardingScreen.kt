@@ -45,7 +45,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -196,7 +196,7 @@ private fun OnboardingInfo(stepIndex: Int, isCurrentStep: Boolean, useAutotyping
     getOnboardingInfoText(stepIndex)?.let { onboardingInfoText ->
 
         var numDisplayedCharacters by remember {
-            mutableStateOf(if (useAutotypingEffect) 0 else onboardingInfoText.length)
+            mutableIntStateOf(if (useAutotypingEffect) 0 else onboardingInfoText.length)
         }
         LaunchedEffect(isCurrentStep) {
             if (isCurrentStep) {
@@ -378,7 +378,7 @@ private fun ColumnScope.ExampleAlbumRecommendations(
     isCurrentStep: Boolean,
     modifier: Modifier
 ) {
-    var recommendationGroupIndex by remember { mutableStateOf(0) }
+    var recommendationGroupIndex by remember { mutableIntStateOf(0) }
     val gridArrangement = Arrangement.Center
 
     Crossfade(
