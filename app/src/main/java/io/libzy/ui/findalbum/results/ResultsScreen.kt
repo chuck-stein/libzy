@@ -196,7 +196,7 @@ private fun ResultsScreen(
         },
         floatingActionButton = {
             if (uiState is ResultsUiState.Loaded) {
-                OpenSpotifyButton(uiState.currentAlbumUri)
+                OpenSpotifyButton(uri = uiState.currentAlbumUri, source = Destination.Results)
             }
         }
     ) {

@@ -82,7 +82,8 @@ import kotlin.math.roundToInt
 class AnalyticsDispatcher @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
     private val coroutineScope: CoroutineScope
-) {
+): BaseAnalyticsDispatcher {
+
     private val amplitude = Amplitude.getInstance()
 
     fun initialize(application: Application, apiKey: String) {
@@ -117,10 +118,10 @@ class AnalyticsDispatcher @Inject constructor(
     /**
      * Send an event with the given name and properties to Amplitude.
      */
-    fun sendEvent(
+    override fun sendEvent(
         eventName: String,
-        eventProperties: Map<String, Any?>? = null,
-        outOfSession: Boolean = false
+        eventProperties: Map<String, Any?>?,
+        outOfSession: Boolean
     ) {
         val eventPropertiesJson = eventProperties?.let { JSONObject(eventProperties) }
         amplitude.logEvent(eventName, eventPropertiesJson, outOfSession)

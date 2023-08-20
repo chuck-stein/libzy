@@ -100,7 +100,11 @@ private fun ExpandLibraryScreen(uiState: ExpandLibraryUiState, onUiEvent: (Expan
         LibzyScaffold(
             scaffoldState = scaffoldState,
             showTopBar = false,
-            floatingActionButton = { if (!uiState.awaitingLibrarySync) OpenSpotifyButton() }
+            floatingActionButton = {
+                if (!uiState.awaitingLibrarySync) {
+                    OpenSpotifyButton(source = Destination.ExpandLibrary)
+                }
+            }
         ) {
             Crossfade(targetState = uiState.awaitingLibrarySync, label = "awaiting sync crossfade") { awaitingLibrarySync ->
                 if (awaitingLibrarySync) {

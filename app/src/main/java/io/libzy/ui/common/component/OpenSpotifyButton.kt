@@ -12,19 +12,41 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import io.libzy.R
+import io.libzy.analytics.AnalyticsConstants.EventProperties.SOURCE
+import io.libzy.analytics.AnalyticsConstants.EventProperties.URI
+import io.libzy.analytics.AnalyticsConstants.Events.OPEN_SPOTIFY
+import io.libzy.analytics.LocalAnalytics
+import io.libzy.ui.Destination
 import io.libzy.util.androidAppUriFor
 import io.libzy.util.isPackageInstalled
 
+/**
+ * A floating action button that opens Spotify when clicked.
+ *
+ * @param uri A specific Spotify URI to open, or null if the destination within Spotify does not matter
+ * @param source The screen that the button is on, used for analytics
+ */
 @Composable
-fun OpenSpotifyButton(uri: String? = null) {
+fun OpenSpotifyButton(uri: String? = null, source: Destination) {
     val context = LocalContext.current
+    val analytics = LocalAnalytics.current
+
     ExtendedFloatingActionButton(
         text = { Text(stringResource(R.string.open_spotify).uppercase()) },
-        onClick = { context.openSpotify(uri) },
         icon = {
             Icon(
                 painterResource(R.drawable.ic_spotify_black),
                 contentDescription = null
+            )
+        },
+        onClick = {
+            context.openSpotify(uri)
+            analytics.sendEvent(
+                eventName = OPEN_SPOTIFY,
+                eventProperties = mapOf(
+                    SOURCE to source.name,
+                    URI to uri
+                )
             )
         }
     )

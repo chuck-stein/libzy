@@ -95,6 +95,11 @@ object AnalyticsConstants {
          * When a new page of recommended albums is populated on [ExpandLibraryScreen]
          */
         const val LOAD_LIBRARY_RECOMMENDATIONS = "load library recommendations"
+
+        /**
+         * When the user opens Spotify via the "Open Spotify" floating action button
+         */
+        const val OPEN_SPOTIFY = "open spotify"
     }
 
     object EventProperties {
@@ -349,6 +354,18 @@ object AnalyticsConstants {
          * A [Boolean] property representing whether we failed to recommend albums for [Events.LOAD_LIBRARY_RECOMMENDATIONS]
          */
         const val ERROR = "error"
+
+        /**
+         * A [String] property representing the screen the user was on
+         * at the time of opening Spotify for [Events.OPEN_SPOTIFY]
+         */
+        const val SOURCE = "source"
+
+        /**
+         * A nullable [String] property representing a specific destination
+         * within Spotify to open (if any) for [Events.OPEN_SPOTIFY]
+         */
+        const val URI = "uri"
     }
     
     object UserProperties {

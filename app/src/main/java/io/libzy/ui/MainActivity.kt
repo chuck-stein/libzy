@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.Lifecycle
@@ -19,6 +20,8 @@ import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.LibzyApplication
+import io.libzy.analytics.AnalyticsDispatcher
+import io.libzy.analytics.LocalAnalytics
 import io.libzy.ui.common.component.LoadedContent
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,6 +39,10 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    @Inject
+    lateinit var analytics: AnalyticsDispatcher
+
     private val viewModel by viewModels<SessionViewModel> { viewModelFactory }
 
     private val requestSpotifyAuth = registerForActivityResult(RequestSpotifyAuth()) { response: AuthorizationResponse ->
@@ -51,9 +58,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LibzyContent {
-                val uiState by viewModel.uiStateFlow.collectAsState()
-                LoadedContent(uiState.loading) {
-                    LibzyNavGraph(uiState, viewModelFactory, exitApp = ::finish)
+                CompositionLocalProvider(LocalAnalytics provides analytics) {
+                    val uiState by viewModel.uiStateFlow.collectAsState()
+                    LoadedContent(uiState.loading) {
+                        LibzyNavGraph(uiState, viewModelFactory, exitApp = ::finish)
+                    }
                 }
             }
         }
