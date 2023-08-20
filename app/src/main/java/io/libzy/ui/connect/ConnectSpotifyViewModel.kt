@@ -11,6 +11,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.repository.SessionRepository
+import io.libzy.repository.UserProfileRepository
 import io.libzy.spotify.auth.SpotifyAuthDispatcher
 import io.libzy.spotify.auth.SpotifyAuthResult
 import io.libzy.ui.common.LibzyViewModel
@@ -27,7 +28,8 @@ class ConnectSpotifyViewModel @Inject constructor(
     private val analyticsDispatcher: AnalyticsDispatcher,
     private val spotifyAuthDispatcher: SpotifyAuthDispatcher,
     private val workManager: WorkManager,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val userProfileRepository: UserProfileRepository
 ) : LibzyViewModel<ConnectSpotifyUiState, ConnectSpotifyUiEvent>() {
 
     override val initialUiState = ConnectSpotifyUiState(loading = true, showSyncProgress = false)
@@ -78,7 +80,7 @@ class ConnectSpotifyViewModel @Inject constructor(
 
     fun onConnectSpotifyClick() {
         viewModelScope.launch {
-            analyticsDispatcher.sendClickConnectSpotifyEvent(sessionRepository.getSpotifyUserId())
+            analyticsDispatcher.sendClickConnectSpotifyEvent(userProfileRepository.getSpotifyUserId())
 
             when (spotifyAuthDispatcher.requestAuthorization(withTimeout = false) { setShowDialog(true) }) {
                 is SpotifyAuthResult.Failure -> produceUiEvent(ConnectSpotifyUiEvent.SPOTIFY_AUTHORIZATION_FAILED)

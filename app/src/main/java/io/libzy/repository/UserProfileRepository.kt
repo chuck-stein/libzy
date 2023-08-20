@@ -1,18 +1,27 @@
 package io.libzy.repository
 
-import com.adamratzman.spotify.models.SpotifyUserInformation
+import io.libzy.persistence.prefs.PrefsStore
+import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_USER_ID
 import io.libzy.spotify.api.SpotifyApiDelegator
-import timber.log.Timber
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class UserProfileRepository @Inject constructor(
-    private val spotifyApi: SpotifyApiDelegator
+    private val spotifyApi: SpotifyApiDelegator,
+    private val prefsStore: PrefsStore
 ) {
-    suspend fun fetchProfileInfo(): SpotifyUserInformation? =
-        try {
-            spotifyApi.fetchProfileInfo()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to fetch Spotify profile info")
-            null
+    suspend fun updateProfileInfo() {
+        val profileInfo = spotifyApi.apiCall("fetch Spotify profile info") {
+            users.getClientProfile()
         }
+        profileInfo?.id?.let {
+            prefsStore.edit { prefs ->
+                prefs[SPOTIFY_USER_ID] = it
+            }
+        }
+    }
+
+    val spotifyUserId = prefsStore.getFlowOf(SPOTIFY_USER_ID)
+
+    suspend fun getSpotifyUserId() = spotifyUserId.first()
 }

@@ -359,11 +359,6 @@ object AnalyticsConstants {
         const val NUM_ALBUMS_IN_LIBRARY = "num albums in library"
 
         /**
-         * A [String] property representing the user's Spotify display name
-         */
-        const val DISPLAY_NAME = "display name"
-
-        /**
          * An [Int] property representing the total number of times this user has played an album from Libzy
          */
         const val NUM_ALBUM_PLAYS = "num album plays"

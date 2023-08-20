@@ -6,7 +6,6 @@ import io.libzy.persistence.prefs.PrefsStore.Keys.ONBOARDING_COMPLETED
 import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_AUTH_EXPIRATION_TIMESTAMP_SECONDS
 import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_AUTH_TOKEN
 import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_CONNECTED
-import io.libzy.persistence.prefs.PrefsStore.Keys.SPOTIFY_USER_ID
 import io.libzy.spotify.auth.SpotifyAccessToken
 import io.libzy.util.currentTimeSeconds
 import kotlinx.coroutines.CoroutineScope
@@ -29,16 +28,6 @@ class SessionRepository @Inject constructor(
     suspend fun setSpotifyConnected(isSpotifyConnected: Boolean) {
         prefsStore.edit { prefs ->
             prefs[SPOTIFY_CONNECTED] = isSpotifyConnected
-        }
-    }
-
-    val spotifyUserId = prefsStore.getFlowOf(SPOTIFY_USER_ID)
-
-    suspend fun getSpotifyUserId() = spotifyUserId.first()
-
-    suspend fun setSpotifyUserId(userId: String) {
-        prefsStore.edit { prefs ->
-            prefs[SPOTIFY_USER_ID] = userId
         }
     }
 

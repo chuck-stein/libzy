@@ -137,19 +137,8 @@ class SessionViewModel @Inject constructor(
         spotifyAuthCallback?.onSuccess(accessToken)
         viewModelScope.launch {
             sessionRepository.updateSpotifyAuth(accessToken)
-            loadSpotifyProfileInfo()
             analyticsDispatcher.sendAuthorizeSpotifyConnectionEvent()
-        }
-    }
-
-    private fun loadSpotifyProfileInfo() {
-        viewModelScope.launch {
-            userProfileRepository.fetchProfileInfo()?.let { profileInfo ->
-                sessionRepository.setSpotifyUserId(profileInfo.id)
-                profileInfo.displayName?.let {
-                    analyticsDispatcher.setUserDisplayName(it)
-                }
-            }
+            userProfileRepository.updateProfileInfo()
         }
     }
 }

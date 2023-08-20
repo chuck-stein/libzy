@@ -54,13 +54,12 @@ import io.libzy.analytics.AnalyticsConstants.Events.SYNC_LIBRARY_DATA
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_ALBUM_RESULTS
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_CONNECT_SPOTIFY_SCREEN
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_QUESTION
-import io.libzy.analytics.AnalyticsConstants.UserProperties.DISPLAY_NAME
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUMS_IN_LIBRARY
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_ALBUM_PLAYS
 import io.libzy.analytics.AnalyticsConstants.UserProperties.NUM_QUERIES_SUBMITTED
 import io.libzy.domain.Query
 import io.libzy.persistence.database.tuple.LibraryAlbum
-import io.libzy.repository.SessionRepository
+import io.libzy.repository.UserProfileRepository
 import io.libzy.ui.findalbum.results.RecommendationCategoryUiState
 import io.libzy.util.plus
 import io.libzy.util.resolveText
@@ -81,7 +80,7 @@ import kotlin.math.roundToInt
  */
 @Singleton
 class AnalyticsDispatcher @Inject constructor(
-    private val sessionRepository: SessionRepository,
+    private val userProfileRepository: UserProfileRepository,
     private val coroutineScope: CoroutineScope
 ) {
     private val amplitude = Amplitude.getInstance()
@@ -93,7 +92,7 @@ class AnalyticsDispatcher @Inject constructor(
             .enableForegroundTracking(application)
 
         coroutineScope.launch {
-            sessionRepository.spotifyUserId.filterNotNull().collect {
+            userProfileRepository.spotifyUserId.filterNotNull().collect {
                 amplitude.userId = it
             }
         }
@@ -112,10 +111,6 @@ class AnalyticsDispatcher @Inject constructor(
      * Shorthand for incrementing a numerical user property by 1
      */
     private fun Identify.increment(property: String) = add(property, 1)
-
-    fun setUserDisplayName(displayName: String) {
-        Identify().set(DISPLAY_NAME, displayName).updateUserProperties()
-    }
 
     // ~~~~~~~~~~~~~~~~~~ Events ~~~~~~~~~~~~~~~~~~
 

@@ -112,10 +112,6 @@ class SpotifyApiDelegator @Inject constructor(
         getApiDelegate().tracks.getAudioFeatures(*ids.toTypedArray())
     }
 
-    suspend fun fetchProfileInfo() = doSafeApiCall {
-        getApiDelegate().users.getClientProfile()
-    }
-
     suspend fun <T> apiCall(
         callDescription: String,
         allowRetries: Boolean = true,
