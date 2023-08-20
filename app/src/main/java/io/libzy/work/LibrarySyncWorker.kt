@@ -14,6 +14,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.adamratzman.spotify.SpotifyException
+import com.adamratzman.spotify.SpotifyException.ReAuthenticationNeededException
 import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LibrarySyncResult
@@ -58,10 +59,7 @@ class LibrarySyncWorker(
         if (sessionRepository.isSpotifyAuthExpired() && !appInForeground()) {
             // If auth has expired and the app is in the background,
             // fail the library sync job since we need to be in the foreground to refresh auth
-            analyticsDispatcher.sendSyncLibraryDataEvent(
-                LibrarySyncResult.FAILURE, isInitialSync, message = "auth expired and app not foregrounded"
-            )
-            return Result.failure()
+            return fail(ReAuthenticationNeededException(message = "auth expired and app not foregrounded"))
         }
         beforeLibrarySync()
 
