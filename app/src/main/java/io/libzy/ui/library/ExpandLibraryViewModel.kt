@@ -342,7 +342,7 @@ class ExpandLibraryViewModel @Inject constructor(
         mapOf(
             NUM_ALBUMS_SAVED to numAlbumsSaved,
             ENOUGH_ALBUMS_SAVED to enoughAlbumsSavedAndCached,
-            NUM_ALBUMS_REMAINING to UserLibraryRepository.MINIMUM_NUM_ALBUMS_SAVED - numAlbumsSaved
+            NUM_ALBUMS_REMAINING to (UserLibraryRepository.MINIMUM_NUM_ALBUMS_SAVED - numAlbumsSaved).coerceAtLeast(0)
         )
     }
 }
