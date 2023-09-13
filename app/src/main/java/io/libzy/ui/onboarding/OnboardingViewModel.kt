@@ -37,7 +37,7 @@ class OnboardingViewModel @Inject constructor(
             copy(
                 randomAlbumArtUrls = albums
                     .shuffled()
-                    .take(20)
+                    .take(UserLibraryRepository.MINIMUM_NUM_ALBUMS_SAVED)
                     .mapNotNull { it.artworkUrl }
             )
         }
