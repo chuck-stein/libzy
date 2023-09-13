@@ -112,6 +112,47 @@ object AnalyticsConstants {
          * When the user views [SettingsScreen]
          */
         const val VIEW_SETTINGS_SCREEN = "view settings screen"
+
+        /**
+         * When the user logs out from [SettingsScreen]
+         */
+        const val LOG_OUT = "log out"
+
+        /**
+         * When the user manually initiates a Spotify library sync from [SettingsScreen]
+         */
+        const val START_MANUAL_LIBRARY_SYNC = "start manual library sync"
+
+        /**
+         * When the user toggles which query params are enabled on [SettingsScreen]
+         */
+        const val TOGGLE_QUERY_PARAM = "toggle query param"
+
+        /**
+         * When the user saves an album on [ExpandLibraryScreen]
+         */
+        const val SAVE_ALBUM = "save album"
+
+        /**
+         * When the user removes an album on [ExpandLibraryScreen]
+         */
+        const val REMOVE_ALBUM = "remove album"
+
+        /**
+         * When the user views [ExpandLibraryScreen]
+         */
+        const val VIEW_EXPAND_LIBRARY_SCREEN = "view expand library screen"
+
+        /**
+         * When [ExpandLibraryScreen] detects that more albums have been saved on Spotify
+         * so we will start a library sync to get those new albums into our cache
+         */
+        const val START_EXPAND_LIBRARY_AUTO_SYNC = "start expand library auto sync"
+
+        /**
+         * When a user leaves [ExpandLibraryScreen]
+         */
+        const val LEAVE_EXPAND_LIBRARY_SCREEN = "leave expand library screen"
     }
 
     object EventProperties {
@@ -363,6 +404,12 @@ object AnalyticsConstants {
         const val RECOMMENDED_ALBUMS = "recommended albums"
 
         /**
+         * An [Int] property representing the total number of albums recommended so far on [ExpandLibraryScreen]
+         * for [Events.LOAD_LIBRARY_RECOMMENDATIONS]
+         */
+        const val TOTAL_RECOMMENDATIONS_SO_FAR = "total recommendations so far"
+
+        /**
          * A [Boolean] property representing whether we failed to recommend albums for [Events.LOAD_LIBRARY_RECOMMENDATIONS]
          */
         const val ERROR = "error"
@@ -380,9 +427,86 @@ object AnalyticsConstants {
         const val URI = "uri"
 
         /**
-         * Which number onboarding step the user viewed in [Events.VIEW_ONBOARDING_STEP]
+         * An [Int] property representing which number onboarding step the user viewed in [Events.VIEW_ONBOARDING_STEP]
          */
         const val STEP_NUM = "step num"
+
+        /**
+         * A [Boolean] property for [Events.VIEW_ONBOARDING_STEP] representing whether the user
+         * is viewing onboarding because they need to (since they haven't completed it yet),
+         * or because they are revisiting it from the settings screen.
+         */
+        const val IS_MANDATORY_ONBOARDING = "is mandatory onboarding"
+
+        /**
+         * A [Long] property representing how many minutes ago the last library sync was
+         * at the time of [Events.START_MANUAL_LIBRARY_SYNC]
+         */
+        const val MINUTES_SINCE_LAST_SYNC = "minutes since last sync"
+
+        /**
+         * A [String] property representing which query parameter was toggled in [Events.TOGGLE_QUERY_PARAM]
+         */
+        const val PARAM = "param"
+
+        /**
+         * A [Boolean] property representing whether a query parameter was enabled or disabled for [Events.TOGGLE_QUERY_PARAM]
+         */
+        const val ENABLED = "enabled"
+
+        /**
+         * A [List] of [String]s property representing which query parameters are enabled
+         * after toggling a param for [Events.TOGGLE_QUERY_PARAM]
+         */
+        const val ALL_ENABLED_PARAMS = "all enabled params"
+
+        /**
+         * A [String] property representing the ID of an album saved in [Events.SAVE_ALBUM] or [Events.REMOVE_ALBUM]
+         */
+        const val ID = "id"
+
+        /**
+         * A [String] property representing which album was saved in [Events.SAVE_ALBUM] or [Events.REMOVE_ALBUM],
+         * in the format `Artist - Album Title`
+         */
+        const val ALBUM = "album"
+
+        /**
+         * An [Int] property representing how many albums the user has saved at the time of
+         * [Events.SAVE_ALBUM], [Events.REMOVE_ALBUM], [Events.VIEW_EXPAND_LIBRARY_SCREEN],
+         * or [Events.LEAVE_EXPAND_LIBRARY_SCREEN]
+         */
+        const val NUM_ALBUMS_SAVED = "num albums saved"
+
+        /**
+         * A [Boolean] property representing whether the user has enough albums in their library to use Libzy,
+         * for [Events.SAVE_ALBUM], [Events.REMOVE_ALBUM], or [Events.VIEW_EXPAND_LIBRARY_SCREEN]
+         */
+        const val ENOUGH_ALBUMS_SAVED = "enough albums saved"
+
+        /**
+         * An [Int] property representing how many more albums the user must save to have enough albums in their library
+         * to use Libzy, for [Events.SAVE_ALBUM], [Events.REMOVE_ALBUM], or [Events.VIEW_EXPAND_LIBRARY_SCREEN]
+         */
+        const val NUM_ALBUMS_REMAINING = "num albums remaining"
+
+        /**
+         * An [Int] property for [Events.START_EXPAND_LIBRARY_AUTO_SYNC] representing how many albums Spotify told us
+         * the user has saved.
+         */
+        const val NUM_ALBUMS_SAVED_ON_SPOTIFY = "num albums saved on spotify"
+
+        /**
+         * An [Int] property for [Events.START_EXPAND_LIBRARY_AUTO_SYNC] representing how many albums we have cached
+         * locally in the user's library.
+         */
+        const val NUM_ALBUMS_SAVED_IN_CACHE = "num albums saved in cache"
+
+        /**
+         * A [Boolean] property representing how the user triggered [Events.LEAVE_EXPAND_LIBRARY_SCREEN],
+         * true if they clicked the done button or false if they clicked the back button
+         */
+        const val CLICKED_DONE_BUTTON = "clicked done button"
     }
     
     object UserProperties {

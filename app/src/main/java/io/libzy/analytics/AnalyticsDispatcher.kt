@@ -5,6 +5,7 @@ import android.content.res.Resources
 import com.amplitude.api.Amplitude
 import com.amplitude.api.Identify
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ACOUSTICNESS
+import io.libzy.analytics.AnalyticsConstants.EventProperties.ALL_ENABLED_PARAMS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.ARTIST
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CATEGORIES
 import io.libzy.analytics.AnalyticsConstants.EventProperties.CURRENTLY_CONNECTED_USER_ID
@@ -150,10 +151,10 @@ class AnalyticsDispatcher @Inject constructor(
         sendEvent(RATE_ALBUM_RESULTS, mapOf(RATING to rating, FEEDBACK to feedback))
     }
 
-    fun sendSubmitQueryEvent(query: Query) {
+    fun sendSubmitQueryEvent(query: Query, enabledParams: List<Query.Parameter>) {
         Identify().increment(NUM_QUERIES_SUBMITTED).updateUserProperties()
 
-        sendEvent(SUBMIT_QUERY, query.toEventPropertyMap())
+        sendEvent(SUBMIT_QUERY, query.toEventPropertyMap() + (ALL_ENABLED_PARAMS to enabledParams.map { it.stringValue }))
     }
 
     fun sendViewAlbumResultsEvent(

@@ -33,6 +33,8 @@ class SessionRepository @Inject constructor(
 
     val lastSyncTimestampMillis = prefsStore.getFlowOf(LAST_SYNC_TIMESTAMP_MILLIS)
 
+    suspend fun getLastSyncTimestampMillis() = lastSyncTimestampMillis.first()
+
     suspend fun setLastSyncTimestamp(lastSyncTimestampMillis: Long) {
         prefsStore.edit { prefs ->
             prefs[LAST_SYNC_TIMESTAMP_MILLIS] = lastSyncTimestampMillis

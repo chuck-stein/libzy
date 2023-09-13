@@ -13,5 +13,6 @@ sealed interface ExpandLibraryUiEvent {
 
     sealed interface ForView : ExpandLibraryUiEvent
     object NavToQueryScreen : ForView
+    object GoBack : ForView
     object ExitApp : ForView
 }

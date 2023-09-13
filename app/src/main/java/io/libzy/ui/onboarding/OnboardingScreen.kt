@@ -65,6 +65,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
+import io.libzy.analytics.AnalyticsConstants.EventProperties.IS_MANDATORY_ONBOARDING
 import io.libzy.analytics.AnalyticsConstants.EventProperties.STEP_NUM
 import io.libzy.analytics.AnalyticsConstants.Events.VIEW_ONBOARDING_STEP
 import io.libzy.analytics.LocalAnalytics
@@ -126,7 +127,7 @@ fun OnboardingScreen(
     onUiEvent: (OnboardingUiEvent) -> Unit = {}
 ) {
     val onboardingStepPager = rememberPagerState(initialStepIndex, pageCount = { 7 })
-    OnboardingAnalyticsDispatcher(onboardingStepPager)
+    OnboardingAnalyticsDispatcher(onboardingStepPager, uiState)
 
     LibzyScaffold(showTopBar = false) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -142,12 +143,15 @@ fun OnboardingScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun OnboardingAnalyticsDispatcher(onboardingStepPager: PagerState) {
+private fun OnboardingAnalyticsDispatcher(onboardingStepPager: PagerState, uiState: OnboardingUiState) {
     val analytics = LocalAnalytics.current
     LaunchedEffect(onboardingStepPager.currentPage) {
         analytics.sendEvent(
             eventName = VIEW_ONBOARDING_STEP,
-            eventProperties = mapOf(STEP_NUM to onboardingStepPager.currentPage + 1)
+            eventProperties = mapOf(
+                STEP_NUM to onboardingStepPager.currentPage + 1,
+                IS_MANDATORY_ONBOARDING to uiState.onboardingMandatory
+            )
         )
     }
 }

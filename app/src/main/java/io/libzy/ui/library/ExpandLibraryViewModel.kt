@@ -10,7 +10,20 @@ import androidx.work.ExistingPeriodicWorkPolicy.KEEP
 import androidx.work.WorkManager
 import com.adamratzman.spotify.models.Album
 import io.libzy.R
+import io.libzy.analytics.AnalyticsConstants.EventProperties.ALBUM
+import io.libzy.analytics.AnalyticsConstants.EventProperties.ENOUGH_ALBUMS_SAVED
+import io.libzy.analytics.AnalyticsConstants.EventProperties.ID
+import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_REMAINING
+import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SAVED
+import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SAVED_IN_CACHE
+import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SAVED_ON_SPOTIFY
+import io.libzy.analytics.AnalyticsConstants.Events.REMOVE_ALBUM
+import io.libzy.analytics.AnalyticsConstants.Events.SAVE_ALBUM
+import io.libzy.analytics.AnalyticsConstants.Events.START_EXPAND_LIBRARY_AUTO_SYNC
+import io.libzy.analytics.AnalyticsConstants.Events.VIEW_EXPAND_LIBRARY_SCREEN
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.domain.artworkUrl
+import io.libzy.domain.describe
 import io.libzy.persistence.database.tuple.LibraryAlbum
 import io.libzy.recommendation.LibraryRecommendationService
 import io.libzy.repository.UserLibraryRepository
@@ -19,6 +32,7 @@ import io.libzy.ui.common.component.AlbumUiState
 import io.libzy.ui.library.ExpandLibraryUiEvent.AwaitLibrarySync
 import io.libzy.ui.library.ExpandLibraryUiEvent.DismissError
 import io.libzy.ui.library.ExpandLibraryUiEvent.ExitApp
+import io.libzy.ui.library.ExpandLibraryUiEvent.GoBack
 import io.libzy.ui.library.ExpandLibraryUiEvent.Initialize
 import io.libzy.ui.library.ExpandLibraryUiEvent.NavToQueryScreen
 import io.libzy.ui.library.ExpandLibraryUiEvent.RecommendAlbums
@@ -42,7 +56,8 @@ class ExpandLibraryViewModel @Inject constructor(
     private val userLibraryRepository: UserLibraryRepository,
     private val libraryRecommendationService: LibraryRecommendationService,
     private val workManager: WorkManager,
-    private val connectivityManager: ConnectivityManager
+    private val connectivityManager: ConnectivityManager,
+    private val analytics: AnalyticsDispatcher
 ) : StateOnlyViewModel<ExpandLibraryUiState>(libraryRecommendationService) {
 
     override val initialUiState = ExpandLibraryUiState()
@@ -63,6 +78,8 @@ class ExpandLibraryViewModel @Inject constructor(
     }
 
     private fun initialize() {
+        analytics.sendEvent(eventName = VIEW_EXPAND_LIBRARY_SCREEN, eventProperties = getCommonAnalyticsProperties())
+
         viewModelScope.launch {
             setInitialNumAlbumsSaved()
         }
@@ -90,7 +107,7 @@ class ExpandLibraryViewModel @Inject constructor(
             updateUiState {
                 copy(
                     doneSavingEvent = if (enoughAlbumsSavedInCache) NavToQueryScreen else AwaitLibrarySync,
-                    backClickEvent = if (enoughAlbumsSavedInCache) NavToQueryScreen else ExitApp,
+                    backClickEvent = if (enoughAlbumsSavedInCache) GoBack else ExitApp,
                     enoughAlbumsSavedAndCached = enoughAlbumsSavedInCache
                 )
             }
@@ -134,6 +151,13 @@ class ExpandLibraryViewModel @Inject constructor(
                                 else -> KEEP
                             }
                         )
+                        analytics.sendEvent(
+                            eventName = START_EXPAND_LIBRARY_AUTO_SYNC,
+                            eventProperties = mapOf(
+                                NUM_ALBUMS_SAVED_ON_SPOTIFY to uiState.numAlbumsSaved,
+                                NUM_ALBUMS_SAVED_IN_CACHE to cachedLibraryAlbums.size
+                            )
+                        )
                     }
                 }
                 delay(30.seconds)
@@ -176,6 +200,10 @@ class ExpandLibraryViewModel @Inject constructor(
             isHighlighted = true,
             clickEvent = null
         )
+        analytics.sendEvent(
+            eventName = SAVE_ALBUM,
+            eventProperties = getCommonAnalyticsProperties() + mapOf(ID to id, ALBUM to album.describe())
+        )
         refreshJob?.join()
         updateNumAlbumsSaved(uiState.numAlbumsSaved + 1)
 
@@ -201,6 +229,10 @@ class ExpandLibraryViewModel @Inject constructor(
             iconContentDescription = R.string.save_album_cd.toTextResource(),
             isHighlighted = false,
             clickEvent = null
+        )
+        analytics.sendEvent(
+            eventName = REMOVE_ALBUM,
+            eventProperties = getCommonAnalyticsProperties() + mapOf(ID to id, ALBUM to album.describe())
         )
         refreshJob?.join()
         updateNumAlbumsSaved(uiState.numAlbumsSaved - 1)
@@ -305,4 +337,12 @@ class ExpandLibraryViewModel @Inject constructor(
         iconContentDescription = R.string.save_album_cd.toTextResource(),
         clickEvent = SaveAlbum(id)
     )
+
+    private fun getCommonAnalyticsProperties() = with(uiState) {
+        mapOf(
+            NUM_ALBUMS_SAVED to numAlbumsSaved,
+            ENOUGH_ALBUMS_SAVED to enoughAlbumsSavedAndCached,
+            NUM_ALBUMS_REMAINING to UserLibraryRepository.MINIMUM_NUM_ALBUMS_SAVED - numAlbumsSaved
+        )
+    }
 }

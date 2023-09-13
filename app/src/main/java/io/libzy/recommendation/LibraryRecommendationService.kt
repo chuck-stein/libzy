@@ -11,6 +11,7 @@ import io.libzy.analytics.AnalyticsConstants.EventProperties.EXHAUSTED_TECHNIQUE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.LOAD_TIME_MILLIS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_RECOMMENDATIONS
 import io.libzy.analytics.AnalyticsConstants.EventProperties.RECOMMENDED_ALBUMS
+import io.libzy.analytics.AnalyticsConstants.EventProperties.TOTAL_RECOMMENDATIONS_SO_FAR
 import io.libzy.analytics.AnalyticsConstants.Events.LOAD_LIBRARY_RECOMMENDATIONS
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.domain.describe
@@ -164,7 +165,8 @@ class LibraryRecommendationService @Inject constructor(
                 CHOSEN_TECHNIQUE to chosenTechnique.techniqueName,
                 EXHAUSTED_TECHNIQUES to exhaustedTechniques.map { it.techniqueName },
                 LOAD_TIME_MILLIS to timeToRecommend.inWholeMilliseconds,
-                RECOMMENDED_ALBUMS to recommendedAlbums.orEmpty().joinToString { it.describe() }
+                RECOMMENDED_ALBUMS to recommendedAlbums.orEmpty().joinToString { it.describe() },
+                TOTAL_RECOMMENDATIONS_SO_FAR to recommendationState.value.albumIdsAlreadyRecommendedThisSession.size
             )
         )
         recommendedAlbums

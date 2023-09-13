@@ -111,7 +111,7 @@ class QueryViewModel @Inject constructor(
             is SelectNoPreference -> selectNoPreference(event.queryParam)
             is SendDismissKeyboardAnalytics -> sendDismissKeyboardAnalyticsEvent()
             is SendQuestionViewAnalytics -> sendQuestionViewAnalyticsEvent(event.queryParam)
-            is SendSubmitQueryAnalytics -> analyticsDispatcher.sendSubmitQueryEvent(uiState.query)
+            is SendSubmitQueryAnalytics -> analyticsDispatcher.sendSubmitQueryEvent(uiState.query, uiState.stepOrder)
         }
     }
 

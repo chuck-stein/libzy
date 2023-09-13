@@ -8,6 +8,14 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import io.libzy.BuildConfig
 import io.libzy.R
+import io.libzy.analytics.AnalyticsConstants.EventProperties.ALL_ENABLED_PARAMS
+import io.libzy.analytics.AnalyticsConstants.EventProperties.ENABLED
+import io.libzy.analytics.AnalyticsConstants.EventProperties.MINUTES_SINCE_LAST_SYNC
+import io.libzy.analytics.AnalyticsConstants.EventProperties.PARAM
+import io.libzy.analytics.AnalyticsConstants.Events.LOG_OUT
+import io.libzy.analytics.AnalyticsConstants.Events.START_MANUAL_LIBRARY_SYNC
+import io.libzy.analytics.AnalyticsConstants.Events.TOGGLE_QUERY_PARAM
+import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.domain.Query
 import io.libzy.persistence.prefs.PrefsStore
 import io.libzy.repository.SessionRepository
@@ -21,6 +29,7 @@ import io.libzy.work.enqueuePeriodicLibrarySync
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
@@ -28,6 +37,7 @@ class SettingsViewModel @Inject constructor(
     private val userLibraryRepository: UserLibraryRepository,
     private val prefsStore: PrefsStore,
     private val workManager: WorkManager,
+    private val analytics: AnalyticsDispatcher
 ) : StateOnlyViewModel<SettingsUiState>() {
 
     private val lastSyncDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
@@ -110,6 +120,14 @@ class SettingsViewModel @Inject constructor(
                 else -> enabledQueryParams.plus(param)
             }
         }
+        analytics.sendEvent(
+            eventName = TOGGLE_QUERY_PARAM,
+            eventProperties = mapOf(
+                PARAM to param.stringValue,
+                ENABLED to enabledQueryParams.contains(param),
+                ALL_ENABLED_PARAMS to enabledQueryParams.map { it.stringValue }
+            )
+        )
 
         viewModelScope.launch {
             settingsRepository.setEnabledQueryParams(enabledQueryParams)
@@ -118,6 +136,15 @@ class SettingsViewModel @Inject constructor(
 
     fun syncLibrary() {
         workManager.enqueuePeriodicLibrarySync(existingWorkPolicy = CANCEL_AND_REENQUEUE)
+
+        viewModelScope.launch {
+            val lastSyncTimestampMillis = sessionRepository.getLastSyncTimestampMillis() ?: 0
+            val timeSinceLastSync = System.currentTimeMillis().milliseconds - lastSyncTimestampMillis.milliseconds
+            analytics.sendEvent(
+                eventName = START_MANUAL_LIBRARY_SYNC,
+                eventProperties = mapOf(MINUTES_SINCE_LAST_SYNC to timeSinceLastSync.inWholeMinutes)
+            )
+        }
     }
 
     fun openLogOutConfirmation() {
@@ -130,6 +157,7 @@ class SettingsViewModel @Inject constructor(
 
     fun logOut() {
         viewModelScope.launch {
+            analytics.sendEvent(eventName = LOG_OUT)
             prefsStore.clear()
             userLibraryRepository.clearLibraryData()
             workManager.cancelUniqueWork(LibrarySyncWorker.WORK_NAME)

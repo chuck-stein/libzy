@@ -44,6 +44,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.libzy.R
+import io.libzy.analytics.AnalyticsConstants.EventProperties.CLICKED_DONE_BUTTON
+import io.libzy.analytics.AnalyticsConstants.EventProperties.NUM_ALBUMS_SAVED
+import io.libzy.analytics.AnalyticsConstants.Events.LEAVE_EXPAND_LIBRARY_SCREEN
+import io.libzy.analytics.BaseAnalyticsDispatcher
+import io.libzy.analytics.LocalAnalytics
 import io.libzy.ui.Destination
 import io.libzy.ui.common.component.AlbumGrid
 import io.libzy.ui.common.component.AlbumListItem
@@ -60,6 +65,7 @@ import io.libzy.ui.common.util.rememberedNumItemsSeen
 import io.libzy.ui.common.util.scrollableFade
 import io.libzy.ui.library.ExpandLibraryUiEvent.ExitApp
 import io.libzy.ui.library.ExpandLibraryUiEvent.ForViewModel
+import io.libzy.ui.library.ExpandLibraryUiEvent.GoBack
 import io.libzy.ui.library.ExpandLibraryUiEvent.Initialize
 import io.libzy.ui.library.ExpandLibraryUiEvent.NavToQueryScreen
 import io.libzy.ui.library.ExpandLibraryUiEvent.RecommendAlbums
@@ -83,6 +89,7 @@ fun ExpandLibraryScreen(
     ExpandLibraryScreen(uiState) { event ->
         when (event) {
             is NavToQueryScreen -> navController.popBackStack(Destination.Query.route, inclusive = false)
+            is GoBack -> navController.popBackStack()
             is ExitApp -> exitApp()
             is ForViewModel -> viewModel.processEvent(event)
         }
@@ -130,7 +137,11 @@ private fun ExpandLibraryEventListeners(
     uiState: ExpandLibraryUiState,
     onUiEvent: (ExpandLibraryUiEvent) -> Unit
 ) {
-    BackHandler { onUiEvent(uiState.backClickEvent) }
+    val analytics = LocalAnalytics.current
+    BackHandler {
+        onUiEvent(uiState.backClickEvent)
+        analytics.sendLeaveExpandLibraryScreenEvent(uiState, clickedDoneButton = false)
+    }
     LifecycleEffect(ON_CREATE) { onUiEvent(Initialize) }
     LifecycleEffect(ON_START) { onUiEvent(Refresh) }
 
@@ -167,6 +178,8 @@ private fun ExpandLibraryEventListeners(
 
 @Composable
 private fun ExpandLibraryHeaders(uiState: ExpandLibraryUiState, onUiEvent: (ExpandLibraryUiEvent) -> Unit) {
+    val analytics = LocalAnalytics.current
+
     if (uiState.headerText != null) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -198,7 +211,10 @@ private fun ExpandLibraryHeaders(uiState: ExpandLibraryUiState, onUiEvent: (Expa
 
             if (uiState.enoughAlbumsSaved) {
                 TextButton(
-                    onClick = { onUiEvent(uiState.doneSavingEvent) },
+                    onClick = {
+                        onUiEvent(uiState.doneSavingEvent)
+                        analytics.sendLeaveExpandLibraryScreenEvent(uiState, clickedDoneButton = true)
+                    },
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     Text(stringResource(R.string.finish_saving_albums_button))
@@ -279,6 +295,16 @@ private fun PlaceholderAlbum() {
                 spotifyId = UUID.randomUUID().toString()
             )
         }
+    )
+}
+
+private fun BaseAnalyticsDispatcher.sendLeaveExpandLibraryScreenEvent(
+    uiState: ExpandLibraryUiState,
+    clickedDoneButton: Boolean
+) {
+    sendEvent(
+        eventName = LEAVE_EXPAND_LIBRARY_SCREEN,
+        eventProperties = mapOf(NUM_ALBUMS_SAVED to uiState.numAlbumsSaved, CLICKED_DONE_BUTTON to clickedDoneButton)
     )
 }
 
