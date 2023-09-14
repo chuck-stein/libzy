@@ -15,11 +15,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,10 +70,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -84,6 +88,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import io.libzy.R
+import io.libzy.analytics.LocalAnalytics
 import io.libzy.domain.Query
 import io.libzy.domain.Query.Familiarity.CURRENT_FAVORITE
 import io.libzy.domain.Query.Familiarity.RELIABLE_CLASSIC
@@ -105,7 +110,9 @@ import io.libzy.ui.common.component.LibzyScaffold
 import io.libzy.ui.common.component.LoadedContent
 import io.libzy.ui.common.component.PagingIndicator
 import io.libzy.ui.common.component.SelectableButton
+import io.libzy.ui.common.component.SpotifyIconButton
 import io.libzy.ui.common.component.StartOverIconButton
+import io.libzy.ui.common.component.openSpotify
 import io.libzy.ui.common.util.StatefulAnimatedVisibility
 import io.libzy.ui.common.util.goToNextPage
 import io.libzy.ui.common.util.goToPreviousPage
@@ -246,6 +253,7 @@ private fun QueryScreen(uiState: QueryUiState, onUiEvent: (QueryUiEvent) -> Unit
                 ContinueButton(uiState, queryStepPagerState, currentQueryStep, onFinalQueryStep, onUiEvent)
                 NoPreferenceButton(onUiEvent, currentQueryStep, queryStepPagerState)
                 PagingIndicator(queryStepPagerState, Modifier.padding(bottom = 16.dp))
+                SpotifyAttribution()
             }
         }
     }
@@ -279,7 +287,8 @@ private fun QueryScreenActionIcons(
 
     Crossfade(
         targetState = actionIcon,
-        modifier = Modifier.rotate(iconRotation.value)
+        modifier = Modifier.rotate(iconRotation.value),
+        label = "query screen action icon crossfade"
     ) { currentActionIcon ->
         when (currentActionIcon) {
             QueryScreenActionIcon.Settings -> IconButton(onClick = { onUiEvent(OpenSettings) }) {
@@ -721,6 +730,27 @@ private fun SearchGenresButton(visible: Boolean, onSearchGenresClick: () -> Unit
             Text(stringResource(R.string.search_genres))
             Spacer(modifier = Modifier.weight(1f))
         }
+    }
+}
+
+@Composable
+private fun SpotifyAttribution() {
+    val context = LocalContext.current
+    val analytics = LocalAnalytics.current
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        SpotifyIconButton(source = Destination.Query)
+        Text(
+            text = stringResource(R.string.spotify_attribution),
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier
+                .padding(vertical = 10.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .clickable {
+                    context.openSpotify(source = Destination.Query, analytics = analytics)
+                }
+                .padding(vertical = 6.dp, horizontal = 2.dp)
+        )
     }
 }
 

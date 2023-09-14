@@ -95,6 +95,7 @@
     <string name="search_genres">Search genres</string>
     <string name="cd_clear_search_query">Clear search query</string>
     <string name="no_genre_results">There are no genres from your library matching \"%s\".</string>
+    <string name="spotify_attribution">All content sourced from Spotify.</string>
 
     <!-- Results Screen -->
     <string name="recommended_albums_title">Recommended Albums</string>

@@ -5,8 +5,10 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -15,8 +17,10 @@ import io.libzy.R
 import io.libzy.analytics.AnalyticsConstants.EventProperties.SOURCE
 import io.libzy.analytics.AnalyticsConstants.EventProperties.URI
 import io.libzy.analytics.AnalyticsConstants.Events.OPEN_SPOTIFY
+import io.libzy.analytics.BaseAnalyticsDispatcher
 import io.libzy.analytics.LocalAnalytics
 import io.libzy.ui.Destination
+import io.libzy.ui.theme.LibzyColors
 import io.libzy.util.androidAppUriFor
 import io.libzy.util.isPackageInstalled
 
@@ -40,19 +44,30 @@ fun OpenSpotifyButton(uri: String? = null, source: Destination) {
             )
         },
         onClick = {
-            context.openSpotify(uri)
-            analytics.sendEvent(
-                eventName = OPEN_SPOTIFY,
-                eventProperties = mapOf(
-                    SOURCE to source.name,
-                    URI to uri
-                )
-            )
+            context.openSpotify(source, analytics, uri)
         }
     )
 }
 
-private fun Context.openSpotify(specificUri: String?) {
+@Composable
+fun SpotifyIconButton(source: Destination, tint: Color = LibzyColors.Gray) {
+    val context = LocalContext.current
+    val analytics = LocalAnalytics.current
+
+    IconButton(
+        onClick = {
+            context.openSpotify(source, analytics)
+        }
+    ) {
+        LibzyIcon(
+            painter = painterResource(R.drawable.ic_spotify_black),
+            tint = tint,
+            contentDescription = stringResource(R.string.open_spotify)
+        )
+    }
+}
+
+fun Context.openSpotify(source: Destination, analytics: BaseAnalyticsDispatcher, specificUri: String? = null) {
     val spotifyIsInstalled = packageManager.isPackageInstalled(SPOTIFY_PACKAGE_NAME)
 
     val uri = when {
@@ -64,6 +79,11 @@ private fun Context.openSpotify(specificUri: String?) {
         putExtra(Intent.EXTRA_REFERRER, androidAppUriFor(packageName))
     }
     ContextCompat.startActivity(this, intent, null)
+
+    analytics.sendEvent(
+        eventName = OPEN_SPOTIFY,
+        eventProperties = mapOf(SOURCE to source.name, URI to specificUri)
+    )
 }
 
 private const val SPOTIFY_PACKAGE_NAME = "com.spotify.music"
