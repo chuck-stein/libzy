@@ -17,7 +17,7 @@ android {
         minSdk 26
         targetSdk 33
         versionCode 9
-        versionName "0.4.1"
+        versionName "0.5.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -48,6 +48,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
