@@ -50,14 +50,12 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
-            buildConfigField "String", AMPLITUDE_API_KEY, keystoreProperties.getProperty('amplitudeApiKeyProd')
         }
 
         debug {
             minifyEnabled false
             shrinkResources false
             debuggable true
-            buildConfigField "String", AMPLITUDE_API_KEY, keystoreProperties.getProperty('amplitudeApiKeyDev')
         }
     }
 
@@ -66,12 +64,14 @@ android {
         prod {
             dimension "env"
             resValue "string", "app_name", "Libzy"
+            buildConfigField "String", AMPLITUDE_API_KEY, keystoreProperties.getProperty('amplitudeApiKeyProd')
         }
 
         dev {
             dimension "env"
             resValue "string", "app_name", "Libzy Dev"
             applicationIdSuffix ".dev"
+            buildConfigField "String", AMPLITUDE_API_KEY, keystoreProperties.getProperty('amplitudeApiKeyDev')
         }
     }
 
