@@ -172,7 +172,7 @@ dependencies {
     implementation 'com.spotify.android:auth:2.0.2'
     implementation project(':spotify-app-remote')
     implementation 'com.google.code.gson:gson:2.9.0'
-    implementation 'com.adamratzman:spotify-api-kotlin-core:4.0.2'
+    implementation 'com.adamratzman:spotify-api-kotlin-core:4.0.3'
 
     // Networking
     implementation "io.ktor:ktor-client-core:2.3.2"

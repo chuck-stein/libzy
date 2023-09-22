@@ -66,7 +66,7 @@ class LibraryRecommendationService @Inject constructor(
 
     private val recommendationState = MutableStateFlow(LibraryRecommendationState())
 
-    private val market = Market.US // TODO: use Market.FROM_TOKEN once new adamint version is released with bug fix
+    private val market = Market.FROM_TOKEN
 
     private val albumIdsInLibrary = userLibraryRepository.albums
         .map { albums -> albums.map { it.spotifyId } }
