@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-parcelize'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
     id 'kotlinx-serialization'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
@@ -10,12 +10,12 @@ plugins {
 }
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "io.libzy"
         minSdk 26
-        targetSdk 33
+        targetSdk 34
         versionCode 12
         versionName "0.5.3"
 
@@ -23,10 +23,8 @@ android {
 
         manifestPlaceholders = [redirectSchemeName: "io.libzy", redirectHostName: "spotify-auth"]
 
-        kapt {
-            arguments {
-                arg("room.schemaLocation", "$projectDir/schemas")
-            }
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
         }
     }
 
@@ -118,17 +116,17 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     // Android
-    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.10.0'
 
     // Lifecycle
-    def lifecycle_version = "2.6.1"
+    def lifecycle_version = "2.6.2"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
@@ -136,7 +134,7 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
     // Navigation
-    def navigation_version = "2.6.0"
+    def navigation_version = "2.7.5"
     implementation "androidx.navigation:navigation-compose:$navigation_version"
     androidTestImplementation "androidx.navigation:navigation-testing:$navigation_version"
 
@@ -155,8 +153,8 @@ dependencies {
     implementation "androidx.compose.material:material-icons-core"
     implementation "androidx.compose.material:material-icons-extended"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
-    implementation "androidx.activity:activity-compose:1.7.2"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha10"
+    implementation "androidx.activity:activity-compose:1.8.0"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha13"
 
     // Accompanist
     def accompanist_version = "0.24.9-beta"
@@ -166,21 +164,21 @@ dependencies {
     // Glide
     def glide_version = "4.12.0"
     implementation "com.github.bumptech.glide:glide:$glide_version"
-    kapt "com.github.bumptech.glide:compiler:$glide_version"
+    ksp "com.github.bumptech.glide:compiler:$glide_version"
 
     // Spotify
-    implementation 'com.spotify.android:auth:2.0.2'
+    implementation 'com.spotify.android:auth:2.1.0'
     implementation project(':spotify-app-remote')
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'com.adamratzman:spotify-api-kotlin-core:4.0.3'
 
     // Networking
-    implementation "io.ktor:ktor-client-core:2.3.2"
+    implementation "io.ktor:ktor-client-core:2.3.4"
 
     // Room
-    def room_version = "2.5.1"
+    def room_version = "2.6.0"
     implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     testImplementation "androidx.room:room-testing:$room_version"
 
@@ -188,9 +186,9 @@ dependencies {
     implementation "androidx.datastore:datastore-preferences:1.0.0"
 
     // Dependency Injection
-    def dagger_version = "2.37"
+    def dagger_version = "2.48.1"
     implementation "com.google.dagger:dagger:$dagger_version"
-    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+    ksp "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Logging
     implementation 'com.jakewharton.timber:timber:4.7.1'
