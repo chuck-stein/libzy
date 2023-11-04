@@ -20,9 +20,11 @@ import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import io.libzy.LibzyApplication
+import io.libzy.R
 import io.libzy.analytics.AnalyticsDispatcher
 import io.libzy.analytics.LocalAnalytics
 import io.libzy.ui.common.component.LoadedContent
+import io.libzy.util.toTextResource
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -60,7 +62,7 @@ class MainActivity : ComponentActivity() {
             LibzyContent {
                 CompositionLocalProvider(LocalAnalytics provides analytics) {
                     val uiState by viewModel.uiStateFlow.collectAsState()
-                    LoadedContent(uiState.loading) {
+                    LoadedContent(uiState.loading, progressIndicatorCaption = R.string.connecting_to_spotify.toTextResource()) {
                         LibzyNavGraph(uiState, viewModelFactory, exitApp = ::finish)
                     }
                 }

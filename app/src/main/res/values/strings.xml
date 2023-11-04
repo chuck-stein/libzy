@@ -28,6 +28,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="error">Error</string>
     <string name="no_network_connection">No network connection</string>
+    <string name="connecting_to_spotify">Connecting to Spotify…</string>
 
     <!-- Connect Spotify Screen -->
     <string name="connect_spotify_button_text">Connect Spotify</string>
