@@ -1,5 +1,6 @@
 package io.libzy.analytics
 
+import android.util.Log.ASSERT
 import android.util.Log.DEBUG
 import android.util.Log.ERROR
 import android.util.Log.INFO
@@ -10,17 +11,22 @@ import com.google.firebase.ktx.Firebase
 import timber.log.Timber
 
 /**
- * A logging [Timber.Tree] which logs WARN and ERROR level messages to Firebase Crashlytics,
- * along with any exceptions the log contains. Ignores INFO, DEBUG, and VERBOSE level logs.
+ * A logging [Timber.Tree] which logs messages and reports any handled exceptions to Firebase Crashlytics.
  */
 class CrashlyticsTree : Timber.Tree() {
-    
-    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (priority !in listOf(WARN, ERROR)) return
 
-        val logPrefix = if (priority == WARN) "WARNING: " else "ERROR: "
-        Firebase.crashlytics.log(logPrefix + message)
+    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+        Firebase.crashlytics.log(createLogPrefix(priority) + message)
         if (t != null) Firebase.crashlytics.recordException(t)
     }
-    
+
+    private fun createLogPrefix(priority: Int) = when (priority) {
+        VERBOSE -> "VERBOSE: "
+        INFO -> "INFO: "
+        DEBUG -> "DEBUG: "
+        WARN -> "WARNING: "
+        ERROR -> "ERROR: "
+        ASSERT -> "ASSERT: "
+        else -> ""
+    }
 }
